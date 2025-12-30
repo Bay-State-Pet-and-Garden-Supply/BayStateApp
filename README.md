@@ -1,36 +1,112 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Bay State Pet & Garden Supply
 
-## Getting Started
+A high-performance, mobile-first PWA e-commerce platform for a local pet and garden supply store. Built with Next.js (App Router), TypeScript, and Supabase.
 
-First, run the development server:
+## 🌟 Features
+
+### Customer Storefront
+- **Intelligent Search** - Fuzzy search across 300+ products and services
+- **Bento-Grid Layout** - Modern, visual product browsing
+- **Mobile-First Design** - 44px+ touch targets, sticky cart
+- **PWA Support** - Installable on mobile devices
+
+### Admin Portal
+- **Product Management** - Add/edit products with images
+- **Brand Management** - CRUD for brands with logos
+- **Service Management** - Manage propane refills, knife sharpening, etc.
+- **Order Management** - Track and fulfill customer orders
+- **Campaign Controls** - Toggle seasonal banners and promotions
+
+### Technical Highlights
+- **SEO Optimized** - Meta tags, Open Graph, sitemap, robots.txt
+- **Structured Data** - JSON-LD for local business rich snippets
+- **Type-Safe** - Strict TypeScript throughout
+- **Tested** - 144+ unit tests with Jest
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+
+- Supabase account (for database)
+
+### Installation
 
 ```bash
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.local.example .env.local
+# Edit .env.local with your Supabase credentials
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view the storefront.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Admin Access
+Navigate to [http://localhost:3000/admin](http://localhost:3000/admin) for the manager portal.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📁 Project Structure
 
-## Learn More
+```
+app/
+├── (storefront)/     # Customer-facing pages
+│   ├── about/        # About page
+│   ├── contact/      # Contact page
+│   ├── products/     # Product browsing
+│   └── services/     # Services listing
+├── admin/            # Manager portal
+│   ├── brands/       # Brand management
+│   ├── products/     # Product management
+│   ├── services/     # Service management
+│   └── orders/       # Order management
+├── manifest.ts       # PWA manifest
+├── sitemap.ts        # Dynamic sitemap
+└── robots.ts         # SEO robots config
 
-To learn more about Next.js, take a look at the following resources:
+components/
+├── storefront/       # Customer UI components
+├── admin/            # Admin UI components
+└── ui/               # shadcn/ui base components
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+lib/
+├── supabase/         # Database client utilities
+├── data.ts           # Data fetching functions
+├── brands.ts         # Brand CRUD operations
+└── products.ts       # Product operations
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+conductor/            # Development workflow documentation
+```
 
-## Deploy on Vercel
+## 🧪 Testing
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+# Run all tests
+npm test
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Run tests in CI mode (single execution)
+CI=true npm test
+
+# Run specific test file
+npm test -- --testPathPatterns="brands"
+```
+
+## 🛠 Tech Stack
+
+| Category | Technology |
+|----------|------------|
+| Framework | Next.js 16 (App Router) |
+| Language | TypeScript (Strict) |
+| Database | Supabase (PostgreSQL) |
+| Styling | Tailwind CSS |
+| Components | shadcn/ui |
+| Icons | Lucide React |
+| State | Zustand |
+| Forms | React Hook Form + Zod |
+| Testing | Jest + React Testing Library |
+
+## 📄 License
+
+Private - Bay State Pet & Garden Supply
