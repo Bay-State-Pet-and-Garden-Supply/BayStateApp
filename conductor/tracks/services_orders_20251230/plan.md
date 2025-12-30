@@ -1,37 +1,37 @@
-# Track Plan: Services & Order Management
+# Track Plan: Services & Order Management [checkpoint: 36e8dcf]
 
-## Phase 1: Services Management (Admin)
-- [x] Task: Write Tests for Services CRUD operations [pending]
-- [x] Task: Create Services listing page in admin with data table [pending]
-- [x] Task: Implement Add Service form with Zod validation [pending]
-- [x] Task: Implement Edit Service and Toggle Active functionality [pending]
-- [~] Task: Conductor - User Manual Verification 'Services Management (Admin)' (Protocol in workflow.md)
+## Phase 1: Services Management (Admin) [checkpoint: e938dd1]
+- [x] Task: Write Tests for Services CRUD operations [e938dd1]
+- [x] Task: Create Services listing page in admin with data table [e938dd1]
+- [x] Task: Implement Add Service form with Zod validation [e938dd1]
+- [x] Task: Implement Edit Service and Toggle Active functionality [e938dd1]
+- [x] Task: Conductor - User Manual Verification 'Services Management (Admin)' [36e8dcf]
 
-## Phase 2: Services Storefront
-- [x] Task: Write Tests for services listing and detail pages [pending]
-- [x] Task: Create /services listing page with service cards [pending]
-- [x] Task: Create /services/[slug] detail page with Reserve CTA [pending]
-- [x] Task: Add service reservation to cart (service booking flow) [pending]
-- [~] Task: Conductor - User Manual Verification 'Services Storefront' (Protocol in workflow.md)
+## Phase 2: Services Storefront [checkpoint: c36f447]
+- [x] Task: Write Tests for services listing and detail pages [c36f447]
+- [x] Task: Create /services listing page with service cards [c36f447]
+- [x] Task: Create /services/[slug] detail page with Reserve CTA [c36f447]
+- [x] Task: Add service reservation to cart (service booking flow) [c36f447]
+- [x] Task: Conductor - User Manual Verification 'Services Storefront' [36e8dcf]
 
-## Phase 3: Checkout Flow
-- [x] Task: Write Tests for checkout and order creation [pending]
-- [x] Task: Create database schema for orders (migration) [pending]
-- [x] Task: Build /checkout page with customer info form [pending]
-- [x] Task: Implement order creation in Supabase [pending]
-- [x] Task: Create order confirmation page [pending]
-- [~] Task: Conductor - User Manual Verification 'Checkout Flow' (Protocol in workflow.md)
+## Phase 3: Checkout Flow [checkpoint: eec68b8]
+- [x] Task: Write Tests for checkout and order creation [eec68b8]
+- [x] Task: Create database schema for orders (migration) [eec68b8]
+- [x] Task: Build /checkout page with customer info form [eec68b8]
+- [x] Task: Implement order creation in Supabase [eec68b8]
+- [x] Task: Create order confirmation page [eec68b8]
+- [x] Task: Conductor - User Manual Verification 'Checkout Flow' [36e8dcf]
 
-## Phase 4: Order Management (Admin)
-- [x] Task: Write Tests for order listing and status updates [pending]
-- [x] Task: Create Orders listing page in admin [pending]
-- [x] Task: Build Order detail view with line items [pending]
-- [x] Task: Implement order status updates (pending, processing, completed, cancelled) [pending]
-- [~] Task: Conductor - User Manual Verification 'Order Management (Admin)' (Protocol in workflow.md)
+## Phase 4: Order Management (Admin) [checkpoint: 12fc3a5]
+- [x] Task: Write Tests for order listing and status updates [12fc3a5]
+- [x] Task: Create Orders listing page in admin [12fc3a5]
+- [x] Task: Build Order detail view with line items [12fc3a5]
+- [x] Task: Implement order status updates (pending, processing, completed, cancelled) [12fc3a5]
+- [x] Task: Conductor - User Manual Verification 'Order Management (Admin)' [36e8dcf]
 
-## Phase 5: Campaign Controls (Admin)
-- [x] Task: Write Tests for campaign settings [pending]
-- [x] Task: Create database schema for campaigns/settings [pending]
-- [x] Task: Build Campaign settings page in admin [pending]
-- [x] Task: Connect storefront banner to admin-controlled campaigns [pending]
-- [~] Task: Conductor - User Manual Verification 'Campaign Controls (Admin)' (Protocol in workflow.md)
+## Phase 5: Campaign Controls (Admin) [checkpoint: 389ad8c]
+- [x] Task: Write Tests for campaign settings [389ad8c]
+- [x] Task: Create database schema for campaigns/settings [389ad8c]
+- [x] Task: Build Campaign settings page in admin [389ad8c]
+- [x] Task: Connect storefront banner to admin-controlled campaigns [389ad8c]
+- [x] Task: Conductor - User Manual Verification 'Campaign Controls (Admin)' [36e8dcf]

@@ -16,11 +16,13 @@ This file tracks all major tracks for the project. Each track has its own detail
 - **Status:** ✅ Complete
 - **Checkpoint:** `11b15f6`
 
+### Services & Order Management
+- **Location:** `tracks/services_orders_20251230/`
+- **Status:** ✅ Complete
+- **Checkpoint:** `36e8dcf`
+
 ---
 
 ## Active Tracks
 
-### Services & Order Management
-- **Location:** `tracks/services_orders_20251230/`
-- **Status:** 🚧 In Progress
-- **Description:** Complete hybrid product/service model with order tracking
+None currently active.
