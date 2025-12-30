@@ -1,0 +1,211 @@
+'use client';
+
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { Search, X, ArrowRight, Package, Wrench, Tag } from 'lucide-react';
+import Fuse from 'fuse.js';
+import { type SearchResult } from '@/lib/search';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+
+interface CommandBarProps {
+  searchIndex: Fuse<unknown> | null;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const typeIcons = {
+  product: Package,
+  service: Wrench,
+  brand: Tag,
+};
+
+const typeLabels = {
+  product: 'Product',
+  service: 'Service',
+  brand: 'Brand',
+};
+
+/**
+ * CommandBar - Intelligent fuzzy search with keyboard navigation.
+ */
+export function CommandBar({ searchIndex, isOpen, onClose }: CommandBarProps) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
+
+  // Focus input when opened
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isOpen]);
+
+  // Perform search on query change
+  useEffect(() => {
+    if (!searchIndex || query.length < 2) {
+      setResults([]);
+      return;
+    }
+
+    const searchResults = searchIndex.search(query, { limit: 8 });
+    setResults(
+      searchResults.map((r) => {
+        const item = r.item as SearchResult;
+        return {
+          type: item.type,
+          id: item.id,
+          name: item.name,
+          slug: item.slug,
+          description: item.description,
+          price: item.price,
+          imageUrl: item.imageUrl,
+        };
+      })
+    );
+    setSelectedIndex(0);
+  }, [query, searchIndex]);
+
+  // Handle keyboard navigation
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          setSelectedIndex((prev) => Math.min(prev + 1, results.length - 1));
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          setSelectedIndex((prev) => Math.max(prev - 1, 0));
+          break;
+        case 'Enter':
+          e.preventDefault();
+          if (results[selectedIndex]) {
+            navigateToResult(results[selectedIndex]);
+          }
+          break;
+        case 'Escape':
+          onClose();
+          break;
+      }
+    },
+    [results, selectedIndex, onClose]
+  );
+
+  const navigateToResult = (result: SearchResult) => {
+    const paths = {
+      product: `/products/${result.slug}`,
+      service: `/services/${result.slug}`,
+      brand: `/products?brand=${result.slug}`,
+    };
+    router.push(paths[result.type]);
+    onClose();
+    setQuery('');
+  };
+
+  if (!isOpen) {
+    return null;
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      {/* Command Bar */}
+      <div className="relative w-full max-w-xl mx-4 rounded-xl bg-white shadow-2xl">
+        {/* Search Input */}
+        <div className="flex items-center border-b px-4">
+          <Search className="h-5 w-5 text-zinc-400" />
+          <Input
+            ref={inputRef}
+            type="text"
+            placeholder="Search products, services, brands..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="flex-1 border-0 bg-transparent px-4 py-4 text-lg focus-visible:ring-0"
+          />
+          <Button variant="ghost" size="icon" onClick={onClose}>
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+
+        {/* Results */}
+        {results.length > 0 && (
+          <ul className="max-h-[60vh] overflow-y-auto p-2">
+            {results.map((result, index) => {
+              const Icon = typeIcons[result.type];
+              const isSelected = index === selectedIndex;
+
+              return (
+                <li key={`${result.type}-${result.id}`}>
+                  <button
+                    className={`flex w-full items-center gap-4 rounded-lg px-4 py-3 text-left transition-colors ${
+                      isSelected ? 'bg-zinc-100' : 'hover:bg-zinc-50'
+                    }`}
+                    onClick={() => navigateToResult(result)}
+                    onMouseEnter={() => setSelectedIndex(index)}
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-100">
+                      <Icon className="h-5 w-5 text-zinc-500" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-zinc-900 truncate">
+                          {result.name}
+                        </span>
+                        <span className="text-xs text-zinc-400">
+                          {typeLabels[result.type]}
+                        </span>
+                      </div>
+                      {result.description && (
+                        <p className="text-sm text-zinc-500 truncate">
+                          {result.description}
+                        </p>
+                      )}
+                    </div>
+                    {result.price && (
+                      <span className="text-sm font-medium text-zinc-900">
+                        ${result.price.toFixed(2)}
+                      </span>
+                    )}
+                    <ArrowRight className="h-4 w-4 text-zinc-400" />
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        {/* Empty state */}
+        {query.length >= 2 && results.length === 0 && (
+          <div className="p-8 text-center">
+            <p className="text-zinc-500">No results found for "{query}"</p>
+            <p className="mt-2 text-sm text-zinc-400">
+              Try a different search term
+            </p>
+          </div>
+        )}
+
+        {/* Keyboard hints */}
+        <div className="flex items-center justify-center gap-4 border-t px-4 py-2 text-xs text-zinc-400">
+          <span>
+            <kbd className="rounded bg-zinc-100 px-1.5 py-0.5">↑↓</kbd> Navigate
+          </span>
+          <span>
+            <kbd className="rounded bg-zinc-100 px-1.5 py-0.5">Enter</kbd> Select
+          </span>
+          <span>
+            <kbd className="rounded bg-zinc-100 px-1.5 py-0.5">Esc</kbd> Close
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}

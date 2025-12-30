@@ -6,3 +6,5 @@ export { ProductCard } from './product-card';
 export { FeaturedProducts } from './featured-products';
 export { ProductFilters } from './product-filters';
 export { ServiceCard } from './service-card';
+export { CommandBar } from './command-bar';
+export { SearchProvider, useSearch } from './search-provider';

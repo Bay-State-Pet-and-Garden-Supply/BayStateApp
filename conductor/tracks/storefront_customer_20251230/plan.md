@@ -22,11 +22,11 @@
 - [~] Task: Conductor - User Manual Verification 'Product Discovery' (Protocol in workflow.md)
 
 ## Phase 4: Intelligent Command Bar
-- [ ] Task: Write Tests for fuzzy search functionality
-- [ ] Task: Implement Command Bar component with keyboard navigation
-- [ ] Task: Add fuzzy search with typo tolerance across products, brands, and services
-- [ ] Task: Create search results dropdown with product previews
-- [ ] Task: Conductor - User Manual Verification 'Intelligent Command Bar' (Protocol in workflow.md)
+- [x] Task: Write Tests for fuzzy search functionality [pending]
+- [x] Task: Implement Command Bar component with keyboard navigation [pending]
+- [x] Task: Add fuzzy search with typo tolerance across products, brands, and services [pending]
+- [x] Task: Create search results dropdown with product previews [pending]
+- [~] Task: Conductor - User Manual Verification 'Intelligent Command Bar' (Protocol in workflow.md)
 
 ## Phase 5: Cart & Checkout Foundation
 - [ ] Task: Write Tests for cart state management (Zustand)

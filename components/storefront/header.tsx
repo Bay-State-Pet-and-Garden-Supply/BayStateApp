@@ -3,12 +3,15 @@
 import Link from 'next/link';
 import { Menu, Search, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useSearch } from '@/components/storefront/search-provider';
 
 /**
  * StorefrontHeader - Main navigation header for the customer-facing storefront.
  * Features mobile-first design with 44px+ touch targets.
  */
 export function StorefrontHeader() {
+  const { openSearch } = useSearch();
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
       <div className="container flex h-16 items-center justify-between px-4">
@@ -51,6 +54,7 @@ export function StorefrontHeader() {
             size="icon"
             className="h-11 w-11"
             aria-label="Search"
+            onClick={openSearch}
           >
             <Search className="h-5 w-5" />
           </Button>

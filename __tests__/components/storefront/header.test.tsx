@@ -1,6 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import { StorefrontHeader } from '@/components/storefront/header';
 
+// Mock the search provider
+jest.mock('@/components/storefront/search-provider', () => ({
+  useSearch: () => ({ openSearch: jest.fn() }),
+}));
+
 describe('StorefrontHeader', () => {
   it('renders the logo with store name', () => {
     render(<StorefrontHeader />);
