@@ -14,12 +14,12 @@
 - [~] Task: Conductor - User Manual Verification 'Homepage & Bento Grid' (Protocol in workflow.md)
 
 ## Phase 3: Product Discovery
-- [ ] Task: Write Tests for category listing and product filtering
-- [ ] Task: Create Category listing page with product grid
-- [ ] Task: Implement product filtering (by brand, price, stock status)
-- [ ] Task: Create Product Detail page with imagery, pricing, and Add to Cart
-- [ ] Task: Integrate service cards contextually in product grids
-- [ ] Task: Conductor - User Manual Verification 'Product Discovery' (Protocol in workflow.md)
+- [x] Task: Write Tests for category listing and product filtering [pending]
+- [x] Task: Create Category listing page with product grid [pending]
+- [x] Task: Implement product filtering (by brand, price, stock status) [pending]
+- [x] Task: Create Product Detail page with imagery, pricing, and Add to Cart [pending]
+- [x] Task: Integrate service cards contextually in product grids [pending]
+- [~] Task: Conductor - User Manual Verification 'Product Discovery' (Protocol in workflow.md)
 
 ## Phase 4: Intelligent Command Bar
 - [ ] Task: Write Tests for fuzzy search functionality
