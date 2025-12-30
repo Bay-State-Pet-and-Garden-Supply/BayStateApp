@@ -1,17 +1,17 @@
 # Track Plan: Build the Customer Storefront
 
-## Phase 1: Storefront Layout & Navigation
-- [x] Task: Create storefront layout with header, footer, and mobile navigation [pending]
-- [x] Task: Implement responsive header with logo, search trigger, and cart icon [pending]
-- [x] Task: Build mobile-first bottom navigation bar with sticky cart [pending]
-- [~] Task: Conductor - User Manual Verification 'Storefront Layout & Navigation' (Protocol in workflow.md)
+## Phase 1: Storefront Layout & Navigation [checkpoint: 6108ddd]
+- [x] Task: Create storefront layout with header, footer, and mobile navigation [28403dc]
+- [x] Task: Implement responsive header with logo, search trigger, and cart icon [28403dc]
+- [x] Task: Build mobile-first bottom navigation bar with sticky cart [28403dc]
+- [x] Task: Conductor - User Manual Verification 'Storefront Layout & Navigation' (Protocol in workflow.md) [6108ddd]
 
 ## Phase 2: Homepage & Bento Grid
-- [ ] Task: Write Tests for Homepage data fetching and rendering
-- [ ] Task: Create Bento-grid homepage with category tiles and featured products
-- [ ] Task: Implement seasonal campaign banner component (admin-controlled)
-- [ ] Task: Add hero section with store branding and value proposition
-- [ ] Task: Conductor - User Manual Verification 'Homepage & Bento Grid' (Protocol in workflow.md)
+- [x] Task: Write Tests for Homepage data fetching and rendering [pending]
+- [x] Task: Create Bento-grid homepage with category tiles and featured products [pending]
+- [x] Task: Implement seasonal campaign banner component (admin-controlled) [pending]
+- [x] Task: Add hero section with store branding and value proposition [pending]
+- [~] Task: Conductor - User Manual Verification 'Homepage & Bento Grid' (Protocol in workflow.md)
 
 ## Phase 3: Product Discovery
 - [ ] Task: Write Tests for category listing and product filtering

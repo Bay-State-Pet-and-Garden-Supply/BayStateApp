@@ -1,0 +1,53 @@
+import { render, screen } from '@testing-library/react';
+import { FeaturedProducts } from '@/components/storefront/featured-products';
+import { type Product } from '@/lib/data';
+
+const mockProducts: Product[] = [
+  {
+    id: '1',
+    brand_id: '1',
+    name: 'Product 1',
+    slug: 'product-1',
+    description: 'Description 1',
+    price: 19.99,
+    stock_status: 'in_stock',
+    images: [],
+    is_featured: true,
+    created_at: '2024-01-01',
+  },
+  {
+    id: '2',
+    brand_id: '1',
+    name: 'Product 2',
+    slug: 'product-2',
+    description: 'Description 2',
+    price: 29.99,
+    stock_status: 'in_stock',
+    images: [],
+    is_featured: true,
+    created_at: '2024-01-01',
+  },
+];
+
+describe('FeaturedProducts', () => {
+  it('renders section title', () => {
+    render(<FeaturedProducts products={mockProducts} />);
+    expect(screen.getByText('Featured Products')).toBeInTheDocument();
+  });
+
+  it('renders all products', () => {
+    render(<FeaturedProducts products={mockProducts} />);
+    expect(screen.getByText('Product 1')).toBeInTheDocument();
+    expect(screen.getByText('Product 2')).toBeInTheDocument();
+  });
+
+  it('renders View All link', () => {
+    render(<FeaturedProducts products={mockProducts} />);
+    expect(screen.getByRole('link', { name: /view all/i })).toHaveAttribute('href', '/products');
+  });
+
+  it('renders nothing when no products', () => {
+    const { container } = render(<FeaturedProducts products={[]} />);
+    expect(container.firstChild).toBeNull();
+  });
+});

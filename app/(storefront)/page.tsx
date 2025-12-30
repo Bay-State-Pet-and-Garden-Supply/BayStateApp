@@ -2,12 +2,16 @@ import { ArrowRight, Leaf, Dog, Flame } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { FeaturedProducts } from '@/components/storefront/featured-products';
+import { getFeaturedProducts } from '@/lib/data';
 
 /**
  * Homepage - Main landing page for Bay State Pet & Garden Supply.
  * Features a bento-grid layout with category highlights and value proposition.
  */
-export default function HomePage() {
+export default async function HomePage() {
+  const featuredProducts = await getFeaturedProducts(6);
+
   return (
     <div className="w-full max-w-none px-4 py-8">
       {/* Hero Section */}
@@ -96,6 +100,9 @@ export default function HomePage() {
           </Card>
         </div>
       </section>
+
+      {/* Featured Products */}
+      <FeaturedProducts products={featuredProducts} />
 
       {/* Services Callout */}
       <section className="rounded-xl bg-zinc-900 p-8 text-center text-white">
