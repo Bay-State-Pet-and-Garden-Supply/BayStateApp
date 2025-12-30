@@ -11,7 +11,7 @@
 - [x] Task: Write Tests for Admin Auth and Route Protection [3a850fa]
 - [x] Task: Implement Next.js Middleware for `/admin` protection [3a850fa]
 - [x] Task: Implement Admin Login Page using Supabase Auth [f65f64f]
-- [ ] Task: Create Admin Layout with Side Navigation
+- [~] Task: Create Admin Layout with Side Navigation
 - [ ] Task: Conductor - User Manual Verification 'Secure Admin Foundation' (Protocol in workflow.md)
 
 ## Phase 3: Inventory Management (MVP)
