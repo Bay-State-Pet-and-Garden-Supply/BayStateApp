@@ -17,6 +17,7 @@ export async function login(formData: FormData) {
   })
 
   if (error) {
+    console.error('Login error:', error)
     redirect('/admin/login?error=Could not authenticate user')
   }
 
