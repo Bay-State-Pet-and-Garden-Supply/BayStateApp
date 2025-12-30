@@ -1,10 +1,10 @@
 # Track Plan: PWA & Polish
 
-## Phase 1: Brand Management (Admin)
+## Phase 1: Brand Management (Admin) [checkpoint: f5e9859]
 - [x] Task: Write Tests for Brand CRUD operations [ec0094e]
 - [x] Task: Create Brands listing page in admin [ec0094e]
 - [x] Task: Implement Add/Edit Brand form with logo upload [ec0094e]
-- [~] Task: Conductor - User Manual Verification 'Brand Management (Admin)' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Brand Management (Admin)' [f5e9859]
 
 ## Phase 2: Static Pages & Navigation
 - [ ] Task: Write Tests for static pages
