@@ -20,12 +20,10 @@ export function AdminSidebar() {
           <Wrench className="h-5 w-5" />
           <span>Services</span>
         </Link>
-        {/*
         <Link href="/admin/orders" className="flex items-center space-x-3 rounded px-4 py-2 hover:bg-gray-800">
           <ShoppingCart className="h-5 w-5" />
           <span>Orders</span>
         </Link>
-        */}
       </nav>
     </div>
   )

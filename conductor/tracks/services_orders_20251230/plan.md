@@ -23,11 +23,11 @@
 - [~] Task: Conductor - User Manual Verification 'Checkout Flow' (Protocol in workflow.md)
 
 ## Phase 4: Order Management (Admin)
-- [ ] Task: Write Tests for order listing and status updates
-- [ ] Task: Create Orders listing page in admin
-- [ ] Task: Build Order detail view with line items
-- [ ] Task: Implement order status updates (pending, processing, completed, cancelled)
-- [ ] Task: Conductor - User Manual Verification 'Order Management (Admin)' (Protocol in workflow.md)
+- [x] Task: Write Tests for order listing and status updates [pending]
+- [x] Task: Create Orders listing page in admin [pending]
+- [x] Task: Build Order detail view with line items [pending]
+- [x] Task: Implement order status updates (pending, processing, completed, cancelled) [pending]
+- [~] Task: Conductor - User Manual Verification 'Order Management (Admin)' (Protocol in workflow.md)
 
 ## Phase 5: Campaign Controls (Admin)
 - [ ] Task: Write Tests for campaign settings
