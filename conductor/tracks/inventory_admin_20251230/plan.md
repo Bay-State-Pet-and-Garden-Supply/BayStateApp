@@ -15,8 +15,8 @@
 - [x] Task: Conductor - User Manual Verification 'Secure Admin Foundation' (Protocol in workflow.md) [checkpoint: cddf777]
 
 ## Phase 3: Inventory Management (MVP)
-- [~] Task: Write Tests for Product/Service Listing and Management
-- [ ] Task: Create Product/Service Listing Page with Bento-grid layout
+- [x] Task: Write Tests for Product/Service Listing and Management [2c1ef7b]
+- [x] Task: Create Product/Service Listing Page with Bento-grid layout [2c1ef7b]
 - [ ] Task: Implement 'Add Product' Form with Zod validation and shadcn/ui
 - [ ] Task: Implement 'Edit Product' and 'Toggle Stock' functionality
 - [ ] Task: Conductor - User Manual Verification 'Inventory Management (MVP)' (Protocol in workflow.md)
