@@ -7,10 +7,10 @@
 - [x] Task: Conductor - User Manual Verification 'API Client & Infrastructure' (Protocol in workflow.md)
 
 ## Phase 2: Product Synchronization
-- [ ] Task: Develop `syncProducts` Server Action using the API client
-- [ ] Task: Implement transformation and upsert logic for products
-- [ ] Task: Add progress feedback to the Admin UI
-- [ ] Task: Conductor - User Manual Verification 'Product Synchronization' (Protocol in workflow.md)
+- [x] Task: Develop `syncProducts` Server Action using the API client [9c0c24b]
+- [x] Task: Implement transformation and upsert logic for products [9c0c24b]
+- [x] Task: Add progress feedback to the Admin UI
+- [~] Task: Conductor - User Manual Verification 'Product Synchronization' (Protocol in workflow.md)
 
 ## Phase 3: Customer & Order Synchronization
 - [ ] Task: Develop `syncCustomers` Server Action (download + upsert)
