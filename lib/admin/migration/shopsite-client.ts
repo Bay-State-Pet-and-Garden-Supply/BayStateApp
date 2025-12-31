@@ -39,13 +39,31 @@ export class ShopSiteClient {
     }
 
     /**
+     * Build the full URL for the API request.
+     * Handles various storeUrl formats and different CGI scripts.
+     */
+    private buildUrl(queryParams: string, scriptName: string = 'db_xml.cgi'): string {
+        let baseUrl = this.config.storeUrl.replace(/\/$/, '');
+
+        // If the URL ends in .cgi, strip the filename to get the directory
+        if (baseUrl.endsWith('.cgi')) {
+            const lastSlash = baseUrl.lastIndexOf('/');
+            if (lastSlash !== -1) {
+                baseUrl = baseUrl.substring(0, lastSlash);
+            }
+        }
+
+        return `${baseUrl}/${scriptName}?${queryParams}`;
+    }
+
+    /**
      * Test the connection to ShopSite.
      * Makes a lightweight request to verify credentials.
      */
     async testConnection(): Promise<ConnectionTestResult> {
         try {
             const response = await fetch(
-                `${this.config.storeUrl}/cgi-bin/db_xml.cgi?action=list`,
+                this.buildUrl('action=list', 'db_xml.cgi'),
                 {
                     method: 'GET',
                     headers: {
@@ -76,7 +94,7 @@ export class ShopSiteClient {
     async fetchProducts(): Promise<ShopSiteProduct[]> {
         try {
             const response = await fetch(
-                `${this.config.storeUrl}/cgi-bin/db_xml.cgi?action=download&type=products`,
+                this.buildUrl('action=download&type=products', 'db_xml.cgi'),
                 {
                     method: 'GET',
                     headers: {
@@ -104,7 +122,7 @@ export class ShopSiteClient {
     async fetchOrders(): Promise<ShopSiteOrder[]> {
         try {
             const response = await fetch(
-                `${this.config.storeUrl}/cgi-bin/order_download.cgi?format=xml`,
+                this.buildUrl('format=xml', 'order_download.cgi'),
                 {
                     method: 'GET',
                     headers: {
@@ -132,7 +150,7 @@ export class ShopSiteClient {
     async fetchCustomers(): Promise<ShopSiteCustomer[]> {
         try {
             const response = await fetch(
-                `${this.config.storeUrl}/cgi-bin/db_xml.cgi?action=download&type=customers`,
+                this.buildUrl('action=download&type=customers', 'db_xml.cgi'),
                 {
                     method: 'GET',
                     headers: {
