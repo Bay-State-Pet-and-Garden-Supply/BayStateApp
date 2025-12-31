@@ -210,12 +210,21 @@ export class ShopSiteClient {
 
     private parseOrdersXml(xmlText: string): ShopSiteOrder[] {
         const orders: ShopSiteOrder[] = [];
+        const startTag = '<Order>';
+        const endTag = '</Order>';
+        let searchPos = 0;
 
-        // Match <Order>...</Order> blocks (PascalCase per DTD)
-        const orderMatches = xmlText.match(/<Order>([\s\S]*?)<\/Order>/gi);
-        if (!orderMatches) return orders;
+        // Iterate through the XML using indexOf (much faster than global regex on large files)
+        while (true) {
+            const startIdx = xmlText.indexOf(startTag, searchPos);
+            if (startIdx === -1) break;
 
-        for (const orderXml of orderMatches) {
+            const endIdx = xmlText.indexOf(endTag, startIdx);
+            if (endIdx === -1) break;
+
+            const orderXml = xmlText.substring(startIdx, endIdx + endTag.length);
+            searchPos = endIdx + endTag.length;
+
             // Extract order-level fields (PascalCase per DTD)
             const orderNumber = this.extractXmlValue(orderXml, 'OrderNumber');
             const orderDate = this.extractXmlValue(orderXml, 'OrderDate');
@@ -233,34 +242,40 @@ export class ShopSiteClient {
             let shippingTotal = 0;
             if (totalsMatch) {
                 grandTotal = parseFloat(this.extractXmlValue(totalsMatch[1], 'GrandTotal') || '0');
-                // Tax is nested: <Tax><TaxAmount>...</TaxAmount></Tax>
                 const taxMatch = totalsMatch[1].match(/<Tax>([\s\S]*?)<\/Tax>/i);
                 if (taxMatch) {
                     tax = parseFloat(this.extractXmlValue(taxMatch[1], 'TaxAmount') || '0');
                 }
-                // ShippingTotal is nested: <ShippingTotal><Total>...</Total></ShippingTotal>
                 const shippingMatch = totalsMatch[1].match(/<ShippingTotal>([\s\S]*?)<\/ShippingTotal>/i);
                 if (shippingMatch) {
                     shippingTotal = parseFloat(this.extractXmlValue(shippingMatch[1], 'Total') || '0');
                 }
             }
 
-            // Parse order items from Shipping/Products/Product (per DTD structure)
+            // Parse order items from Shipping/Products/Product
             const items: ShopSiteOrderItem[] = [];
             const shippingMatch = orderXml.match(/<Shipping>([\s\S]*?)<\/Shipping>/i);
             if (shippingMatch) {
                 const productsMatch = shippingMatch[1].match(/<Products>([\s\S]*?)<\/Products>/i);
                 if (productsMatch) {
-                    const productMatches = productsMatch[1].match(/<Product>([\s\S]*?)<\/Product>/gi);
-                    if (productMatches) {
-                        for (const productXml of productMatches) {
-                            const itemSku = this.extractXmlValue(productXml, 'SKU');
-                            const quantity = parseInt(this.extractXmlValue(productXml, 'Quantity') || '0', 10);
-                            const itemPrice = parseFloat(this.extractXmlValue(productXml, 'ItemPrice') || '0');
+                    // Use indexOf for products too
+                    const productsXml = productsMatch[1];
+                    let productPos = 0;
+                    while (true) {
+                        const pStart = productsXml.indexOf('<Product>', productPos);
+                        if (pStart === -1) break;
+                        const pEnd = productsXml.indexOf('</Product>', pStart);
+                        if (pEnd === -1) break;
 
-                            if (itemSku) {
-                                items.push({ sku: itemSku, quantity, price: itemPrice });
-                            }
+                        const productXml = productsXml.substring(pStart, pEnd + 10);
+                        productPos = pEnd + 10;
+
+                        const itemSku = this.extractXmlValue(productXml, 'SKU');
+                        const quantity = parseInt(this.extractXmlValue(productXml, 'Quantity') || '0', 10);
+                        const itemPrice = parseFloat(this.extractXmlValue(productXml, 'ItemPrice') || '0');
+
+                        if (itemSku) {
+                            items.push({ sku: itemSku, quantity, price: itemPrice });
                         }
                     }
                 }
