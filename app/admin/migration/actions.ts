@@ -7,6 +7,7 @@ import { transformShopSiteProduct, generateUniqueSlug } from '@/lib/admin/migrat
 import { transformShopSiteCustomer } from '@/lib/admin/migration/customer-sync';
 import { transformShopSiteOrder, batchOrders } from '@/lib/admin/migration/order-sync';
 import { SyncResult, MigrationError } from '@/lib/admin/migration/types';
+import { startMigrationLog, completeMigrationLog } from '@/lib/admin/migration/history';
 
 const MIGRATION_SETTINGS_KEY = 'shopsite_migration';
 
@@ -102,9 +103,11 @@ export async function syncProductsAction(): Promise<SyncResult> {
     let updated = 0;
     let failed = 0;
 
+    const logId = await startMigrationLog('products');
+
     const credentials = await getCredentials();
     if (!credentials) {
-        return {
+        const result = {
             success: false,
             processed: 0,
             created: 0,
@@ -113,6 +116,8 @@ export async function syncProductsAction(): Promise<SyncResult> {
             errors: [{ record: 'N/A', error: 'No credentials configured', timestamp: new Date().toISOString() }],
             duration: Date.now() - startTime,
         };
+        if (logId) await completeMigrationLog(logId, result);
+        return result;
     }
 
     const supabase = await createClient();
@@ -125,10 +130,25 @@ export async function syncProductsAction(): Promise<SyncResult> {
     };
 
     const client = new ShopSiteClient(config);
-    const shopSiteProducts = await client.fetchProducts();
+    let shopSiteProducts = [];
+    try {
+        shopSiteProducts = await client.fetchProducts();
+    } catch (err) {
+        const result = {
+            success: false,
+            processed: 0,
+            created: 0,
+            updated: 0,
+            failed: 0,
+            errors: [{ record: 'N/A', error: err instanceof Error ? err.message : 'Failed to fetch products', timestamp: new Date().toISOString() }],
+            duration: Date.now() - startTime,
+        };
+        if (logId) await completeMigrationLog(logId, result);
+        return result;
+    }
 
     if (shopSiteProducts.length === 0) {
-        return {
+        const result = {
             success: true,
             processed: 0,
             created: 0,
@@ -137,6 +157,8 @@ export async function syncProductsAction(): Promise<SyncResult> {
             errors: [],
             duration: Date.now() - startTime,
         };
+        if (logId) await completeMigrationLog(logId, result);
+        return result;
     }
 
     // Get existing slugs to ensure uniqueness
@@ -195,7 +217,7 @@ export async function syncProductsAction(): Promise<SyncResult> {
     revalidatePath('/admin/products');
     revalidatePath('/admin/migration');
 
-    return {
+    const result = {
         success: failed === 0,
         processed: shopSiteProducts.length,
         created,
@@ -204,6 +226,10 @@ export async function syncProductsAction(): Promise<SyncResult> {
         errors,
         duration: Date.now() - startTime,
     };
+
+    if (logId) await completeMigrationLog(logId, result);
+
+    return result;
 }
 
 /**
@@ -224,9 +250,11 @@ export async function syncCustomersAction(): Promise<SyncResult> {
     let updated = 0;
     let failed = 0;
 
+    const logId = await startMigrationLog('customers');
+
     const credentials = await getCredentials();
     if (!credentials) {
-        return {
+        const result = {
             success: false,
             processed: 0,
             created: 0,
@@ -235,6 +263,8 @@ export async function syncCustomersAction(): Promise<SyncResult> {
             errors: [{ record: 'N/A', error: 'No credentials configured', timestamp: new Date().toISOString() }],
             duration: Date.now() - startTime,
         };
+        if (logId) await completeMigrationLog(logId, result);
+        return result;
     }
 
     const supabase = await createClient();
@@ -245,10 +275,25 @@ export async function syncCustomersAction(): Promise<SyncResult> {
     };
 
     const client = new ShopSiteClient(config);
-    const shopSiteCustomers = await client.fetchCustomers();
+    let shopSiteCustomers = [];
+    try {
+        shopSiteCustomers = await client.fetchCustomers();
+    } catch (err) {
+        const result = {
+            success: false,
+            processed: 0,
+            created: 0,
+            updated: 0,
+            failed: 0,
+            errors: [{ record: 'N/A', error: err instanceof Error ? err.message : 'Failed to fetch customers', timestamp: new Date().toISOString() }],
+            duration: Date.now() - startTime,
+        };
+        if (logId) await completeMigrationLog(logId, result);
+        return result;
+    }
 
     if (shopSiteCustomers.length === 0) {
-        return {
+        const result = {
             success: true,
             processed: 0,
             created: 0,
@@ -257,6 +302,8 @@ export async function syncCustomersAction(): Promise<SyncResult> {
             errors: [],
             duration: Date.now() - startTime,
         };
+        if (logId) await completeMigrationLog(logId, result);
+        return result;
     }
 
     // Get existing emails to check for updates
@@ -305,7 +352,7 @@ export async function syncCustomersAction(): Promise<SyncResult> {
 
     revalidatePath('/admin/migration');
 
-    return {
+    const result = {
         success: failed === 0,
         processed: shopSiteCustomers.length,
         created,
@@ -314,6 +361,10 @@ export async function syncCustomersAction(): Promise<SyncResult> {
         errors,
         duration: Date.now() - startTime,
     };
+
+    if (logId) await completeMigrationLog(logId, result);
+
+    return result;
 }
 
 /**
@@ -334,9 +385,11 @@ export async function syncOrdersAction(): Promise<SyncResult> {
     let updated = 0;
     let failed = 0;
 
+    const logId = await startMigrationLog('orders');
+
     const credentials = await getCredentials();
     if (!credentials) {
-        return {
+        const result = {
             success: false,
             processed: 0,
             created: 0,
@@ -345,6 +398,8 @@ export async function syncOrdersAction(): Promise<SyncResult> {
             errors: [{ record: 'N/A', error: 'No credentials configured', timestamp: new Date().toISOString() }],
             duration: Date.now() - startTime,
         };
+        if (logId) await completeMigrationLog(logId, result);
+        return result;
     }
 
     const supabase = await createClient();
@@ -355,10 +410,25 @@ export async function syncOrdersAction(): Promise<SyncResult> {
     };
 
     const client = new ShopSiteClient(config);
-    const shopSiteOrders = await client.fetchOrders();
+    let shopSiteOrders = [];
+    try {
+        shopSiteOrders = await client.fetchOrders();
+    } catch (err) {
+        const result = {
+            success: false,
+            processed: 0,
+            created: 0,
+            updated: 0,
+            failed: 0,
+            errors: [{ record: 'N/A', error: err instanceof Error ? err.message : 'Failed to fetch orders', timestamp: new Date().toISOString() }],
+            duration: Date.now() - startTime,
+        };
+        if (logId) await completeMigrationLog(logId, result);
+        return result;
+    }
 
     if (shopSiteOrders.length === 0) {
-        return {
+        const result = {
             success: true,
             processed: 0,
             created: 0,
@@ -367,6 +437,8 @@ export async function syncOrdersAction(): Promise<SyncResult> {
             errors: [],
             duration: Date.now() - startTime,
         };
+        if (logId) await completeMigrationLog(logId, result);
+        return result;
     }
 
     // Build lookup maps for profiles and products
@@ -466,7 +538,7 @@ export async function syncOrdersAction(): Promise<SyncResult> {
     revalidatePath('/admin/orders');
     revalidatePath('/admin/migration');
 
-    return {
+    const result = {
         success: failed === 0,
         processed: shopSiteOrders.length,
         created,
@@ -475,6 +547,10 @@ export async function syncOrdersAction(): Promise<SyncResult> {
         errors,
         duration: Date.now() - startTime,
     };
+
+    if (logId) await completeMigrationLog(logId, result);
+
+    return result;
 }
 
 /**

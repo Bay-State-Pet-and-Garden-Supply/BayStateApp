@@ -19,7 +19,7 @@
 - [ ] Task: Conductor - User Manual Verification 'Customer & Order Synchronization' (Protocol in workflow.md)
 
 ## Phase 4: History & Diagnostics
-- [ ] Task: Set up `migration_logs` table for sync auditing
-- [ ] Task: Implement history view and error diagnostics in the dashboard
-- [ ] Task: Final polish of the "Sync Now" UI and credential management
+- [x] Task: Set up `migration_log` table for sync auditing
+- [x] Task: Implement history view and error diagnostics in the dashboard
+- [x] Task: Final polish of the "Sync Now" UI and credential management
 - [ ] Task: Conductor - User Manual Verification 'History & Diagnostics' (Protocol in workflow.md)

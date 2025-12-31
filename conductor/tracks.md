@@ -51,5 +51,5 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ### ShopSite Data Sync
 - **Location:** `tracks/shopsite_sync_20251230/`
-- **Status:** ✅ Complete
+- **Status:** [~] In Progress
 - **Description:** Build a tool in the Admin Portal to sync data from ShopSite.

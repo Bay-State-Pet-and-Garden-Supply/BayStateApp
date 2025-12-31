@@ -2,7 +2,7 @@
 
 ## Phase 1: Planning & Setup
 - [x] Create track directory and spec/plan files [2025-12-31]
-- [ ] Update `conductor/tracks.md` [ ]
+- [x] Update `conductor/tracks.md` [2025-12-31]
 - [x] Finalize implementation plan [2025-12-31]
 
 ## Phase 2: Implementation
