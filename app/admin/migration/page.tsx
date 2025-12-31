@@ -4,10 +4,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Database, RefreshCw, CheckCircle, AlertCircle, History, Clock } from 'lucide-react';
-import { getCredentials, saveCredentialsAction, syncProductsFormAction, syncCustomersFormAction, syncOrdersFormAction } from './actions';
+import { getCredentials, saveCredentialsAction } from './actions';
 import { getRecentMigrationLogs } from '@/lib/admin/migration/history';
 import { DownloadXmlButtons } from '@/components/admin/migration/download-xml-buttons';
 import { MigrationHistory } from '@/components/admin/migration/migration-history';
+import { SyncPanel } from '@/components/admin/migration/sync-panel';
 
 export default async function AdminMigrationPage() {
     const credentials = await getCredentials();
@@ -103,58 +104,7 @@ export default async function AdminMigrationPage() {
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="grid gap-4">
-                                {/* Products Sync */}
-                                <div className="flex items-center justify-between rounded-lg border p-3">
-                                    <div className="flex items-center gap-3">
-                                        <CheckCircle className="h-5 w-5 text-green-600" />
-                                        <div>
-                                            <p className="font-medium text-sm">Products</p>
-                                            <p className="text-xs text-muted-foreground">Catalog sync</p>
-                                        </div>
-                                    </div>
-                                    <form action={syncProductsFormAction}>
-                                        <Button type="submit" variant="outline" size="sm">
-                                            <RefreshCw className="mr-2 h-4 w-4" />
-                                            Sync
-                                        </Button>
-                                    </form>
-                                </div>
-
-                                {/* Customers Sync */}
-                                <div className="flex items-center justify-between rounded-lg border p-3">
-                                    <div className="flex items-center gap-3">
-                                        <CheckCircle className="h-5 w-5 text-green-600" />
-                                        <div>
-                                            <p className="font-medium text-sm">Customers</p>
-                                            <p className="text-xs text-muted-foreground">Profile sync</p>
-                                        </div>
-                                    </div>
-                                    <form action={syncCustomersFormAction}>
-                                        <Button type="submit" variant="outline" size="sm">
-                                            <RefreshCw className="mr-2 h-4 w-4" />
-                                            Sync
-                                        </Button>
-                                    </form>
-                                </div>
-
-                                {/* Orders Sync */}
-                                <div className="flex items-center justify-between rounded-lg border p-3">
-                                    <div className="flex items-center gap-3">
-                                        <CheckCircle className="h-5 w-5 text-green-600" />
-                                        <div>
-                                            <p className="font-medium text-sm">Orders</p>
-                                            <p className="text-xs text-muted-foreground">Historical sync</p>
-                                        </div>
-                                    </div>
-                                    <form action={syncOrdersFormAction}>
-                                        <Button type="submit" variant="outline" size="sm">
-                                            <RefreshCw className="mr-2 h-4 w-4" />
-                                            Sync
-                                        </Button>
-                                    </form>
-                                </div>
-                            </div>
+                            <SyncPanel />
 
                             {/* Download XML Section */}
                             <div className="pt-4 border-t">
