@@ -5,7 +5,7 @@ import { PipelineClient } from '@/components/admin/pipeline/PipelineClient';
 export default async function PipelinePage() {
     // Fetch initial data server-side
     const [{ products }, counts] = await Promise.all([
-        getProductsByStatus('staging', { limit: 50 }),
+        getProductsByStatus('staging', { limit: 200 }),
         getStatusCounts(),
     ]);
 

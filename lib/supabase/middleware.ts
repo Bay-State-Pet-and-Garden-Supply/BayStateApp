@@ -37,12 +37,49 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // Protect /account routes
+  if (request.nextUrl.pathname.startsWith('/account')) {
+    if (!user) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      return NextResponse.redirect(url)
+    }
+  }
+
   // Protect /admin routes
   if (request.nextUrl.pathname.startsWith('/admin') && !request.nextUrl.pathname.startsWith('/admin/login')) {
     if (!user) {
       const url = request.nextUrl.clone()
       url.pathname = '/admin/login'
       return NextResponse.redirect(url)
+    }
+
+    // Check role
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    const role = profile?.role || 'customer'
+
+    // 1. Non-admin/staff should not access any admin route
+    if (role !== 'admin' && role !== 'staff') {
+      const url = request.nextUrl.clone()
+      url.pathname = '/'
+      return NextResponse.redirect(url)
+    }
+
+    // 2. Staff restrictions
+    if (role === 'staff') {
+      const path = request.nextUrl.pathname
+      // Restricted areas for staff
+      const restricted = ['/admin/users', '/admin/settings']
+      if (restricted.some(r => path.startsWith(r))) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/admin'
+        return NextResponse.redirect(url)
+      }
     }
   }
 
