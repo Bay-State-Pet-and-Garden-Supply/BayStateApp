@@ -71,13 +71,14 @@ export async function completeMigrationLog(logId: string, result: SyncResult): P
 
 /**
  * Get recent migration logs for display.
+ * Limits errors to prevent payload size issues.
  */
 export async function getRecentMigrationLogs(limit: number = 10): Promise<MigrationLogEntry[]> {
     const supabase = await createClient();
 
     const { data, error } = await supabase
         .from('migration_log')
-        .select('*')
+        .select('id, sync_type, started_at, completed_at, status, processed, created, updated, failed, duration_ms, errors')
         .order('started_at', { ascending: false })
         .limit(limit);
 
@@ -86,5 +87,12 @@ export async function getRecentMigrationLogs(limit: number = 10): Promise<Migrat
         return [];
     }
 
-    return data || [];
+    // Truncate errors to prevent large payloads when displayed in UI
+    const MAX_DISPLAY_ERRORS = 10;
+    return (data || []).map(entry => ({
+        ...entry,
+        errors: Array.isArray(entry.errors) && entry.errors.length > MAX_DISPLAY_ERRORS
+            ? [...entry.errors.slice(0, MAX_DISPLAY_ERRORS), { record: '...', error: `And ${entry.errors.length - MAX_DISPLAY_ERRORS} more errors`, timestamp: new Date().toISOString() }]
+            : (entry.errors || []),
+    }));
 }
