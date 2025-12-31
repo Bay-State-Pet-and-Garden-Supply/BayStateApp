@@ -34,9 +34,9 @@
 - [x] Task: Verify account linking (checking if email exists) b54932e
 
 ### 2.3 Password Reset & Session Management
-- [ ] Task: Implement "Forgot Password" flow with email reset link
-- [ ] Task: Create password reset page
-- [ ] Task: Implement "Logout" functionality across all headers
+- [x] Task: Implement "Forgot Password" flow with email reset link 28e3765
+- [x] Task: Create password reset page 28e3765
+- [x] Task: Implement "Logout" functionality across all headers 28e3765
 
 ### 2.4 Phase Checkpoint
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Customer Authentication Flow' (Protocol in workflow.md)
