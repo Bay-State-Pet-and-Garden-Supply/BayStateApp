@@ -586,6 +586,7 @@ async function processOrders(shopSiteOrders: any[], logId?: string): Promise<Syn
                     .single();
 
                 if (orderError) {
+                    console.error(`[Sync] Failed to insert order ${shopSiteOrder.orderNumber}:`, orderError);
                     addError(shopSiteOrder.orderNumber, orderError.message);
                     failed++;
                     continue;
@@ -602,13 +603,16 @@ async function processOrders(shopSiteOrders: any[], logId?: string): Promise<Syn
                         .insert(orderItems);
 
                     if (itemsError) {
+                        console.error(`[Sync] Failed to insert items for ${shopSiteOrder.orderNumber}:`, itemsError);
                         addError(`${shopSiteOrder.orderNumber} items`, itemsError.message);
                     }
                 }
 
                 created++;
+                console.log(`[Sync] Created order ${shopSiteOrder.orderNumber}`); // Verbose
                 existingOrderNumbers.add(shopSiteOrder.orderNumber);
             } catch (err) {
+                console.error(`[Sync] Exception for order ${shopSiteOrder.orderNumber}:`, err);
                 addError(shopSiteOrder.orderNumber, err instanceof Error ? err.message : 'Unknown error');
                 failed++;
             }
