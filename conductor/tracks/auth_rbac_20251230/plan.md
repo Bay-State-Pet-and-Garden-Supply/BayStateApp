@@ -23,10 +23,10 @@
 ## Phase 2: Customer Authentication Flow [checkpoint: ]
 
 ### 2.1 Sign Up and Login UI
-- [ ] Task: Create UI components for Login and Sign Up forms (shadcn/ui)
-- [ ] Task: Write failing tests for form validation (email, password strength)
-- [ ] Task: Implement email/password authentication flow
-- [ ] Task: Create `/login` and `/signup` pages
+- [x] Task: Create UI components for Login and Sign Up forms (shadcn/ui) 95d00d4
+- [x] Task: Write failing tests for form validation (email, password strength) 95d00d4
+- [x] Task: Implement email/password authentication flow 95d00d4
+- [x] Task: Create `/login` and `/signup` pages 95d00d4
 
 ### 2.2 OAuth Integration
 - [ ] Task: Implement Google, Apple, and Facebook OAuth buttons
