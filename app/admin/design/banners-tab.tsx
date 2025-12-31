@@ -34,6 +34,13 @@ export function BannersTab({ initialSettings }: BannersTabProps) {
         setMessages(updated);
     };
 
+    const handleAction = async (formData: FormData) => {
+        const result = await updateCampaignBannerAction(formData);
+        if (!result.success) {
+            alert(result.error);
+        }
+    };
+
     return (
         <Card>
             <CardHeader>
@@ -50,7 +57,7 @@ export function BannersTab({ initialSettings }: BannersTabProps) {
                 </div>
             </CardHeader>
             <CardContent>
-                <form action={updateCampaignBannerAction} className="space-y-6">
+                <form action={handleAction} className="space-y-6">
                     <input type="hidden" name="messages" value={JSON.stringify(messages)} />
                     <input type="hidden" name="cycleInterval" value={Math.round(cycleInterval * 1000).toString()} />
 
