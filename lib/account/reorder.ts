@@ -43,8 +43,14 @@ export async function getFrequentlyBoughtProducts(limit = 6): Promise<FrequentPr
     const productCounts = new Map<string, { product: any; count: number }>()
 
     for (const item of data) {
-        const product = item.products
+        let product = item.products as any
         if (!product) continue
+
+        if (Array.isArray(product)) {
+            product = product[0]
+        }
+
+        if (!product || !product.id) continue
 
         const existing = productCounts.get(product.id)
         if (existing) {
