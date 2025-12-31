@@ -70,6 +70,28 @@ export async function completeMigrationLog(logId: string, result: SyncResult): P
 }
 
 /**
+ * Update migration progress (for long-running syncs).
+ */
+export async function updateMigrationProgress(logId: string, result: SyncResult): Promise<void> {
+    const supabase = await createClient();
+
+    const { error } = await supabase
+        .from('migration_log')
+        .update({
+            processed: result.processed,
+            created: result.created,
+            updated: result.updated,
+            failed: result.failed,
+            errors: result.errors,
+        })
+        .eq('id', logId);
+
+    if (error) {
+        console.error('Failed to update migration progress:', error);
+    }
+}
+
+/**
  * Get recent migration logs for display.
  * Limits errors to prevent payload size issues.
  */

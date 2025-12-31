@@ -7,7 +7,7 @@ import { transformShopSiteProduct, generateUniqueSlug } from '@/lib/admin/migrat
 import { transformShopSiteCustomer } from '@/lib/admin/migration/customer-sync';
 import { transformShopSiteOrder, batchOrders } from '@/lib/admin/migration/order-sync';
 import { SyncResult, MigrationError } from '@/lib/admin/migration/types';
-import { startMigrationLog, completeMigrationLog } from '@/lib/admin/migration/history';
+import { startMigrationLog, completeMigrationLog, updateMigrationProgress } from '@/lib/admin/migration/history';
 
 const MIGRATION_SETTINGS_KEY = 'shopsite_migration';
 
@@ -221,6 +221,19 @@ export async function syncProductsAction(): Promise<SyncResult> {
             addError(shopSiteProduct.sku, err instanceof Error ? err.message : 'Unknown error');
             failed++;
         }
+
+        // Update progress every 10 records
+        if ((created + updated + failed) % 10 === 0 && logId) {
+            await updateMigrationProgress(logId, {
+                success: true,
+                processed: shopSiteProducts.length,
+                created,
+                updated,
+                failed,
+                errors: [], // Don't send errors during progress updates to save bandwidth
+                duration: Date.now() - startTime,
+            });
+        }
     }
 
     revalidatePath('/admin/products');
@@ -365,6 +378,19 @@ export async function syncCustomersAction(): Promise<SyncResult> {
         } catch (err) {
             addError(shopSiteCustomer.email, err instanceof Error ? err.message : 'Unknown error');
             failed++;
+        }
+
+        // Update progress every 10 records
+        if ((created + updated + failed) % 10 === 0 && logId) {
+            await updateMigrationProgress(logId, {
+                success: true,
+                processed: shopSiteCustomers.length,
+                created,
+                updated,
+                failed,
+                errors: [],
+                duration: Date.now() - startTime,
+            });
         }
     }
 
@@ -554,6 +580,19 @@ export async function syncOrdersAction(): Promise<SyncResult> {
             } catch (err) {
                 addError(shopSiteOrder.orderNumber, err instanceof Error ? err.message : 'Unknown error');
                 failed++;
+            }
+
+            // Update progress every 10 records
+            if ((created + updated + failed) % 10 === 0 && logId) {
+                await updateMigrationProgress(logId, {
+                    success: true,
+                    processed: shopSiteOrders.length,
+                    created,
+                    updated,
+                    failed,
+                    errors: [],
+                    duration: Date.now() - startTime,
+                });
             }
         }
     }

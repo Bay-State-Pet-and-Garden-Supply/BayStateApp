@@ -7,6 +7,7 @@ import { Database, RefreshCw, CheckCircle, AlertCircle, History, Clock } from 'l
 import { getCredentials, saveCredentialsAction, syncProductsFormAction, syncCustomersFormAction, syncOrdersFormAction } from './actions';
 import { getRecentMigrationLogs } from '@/lib/admin/migration/history';
 import { DownloadXmlButtons } from '@/components/admin/migration/download-xml-buttons';
+import { MigrationHistory } from '@/components/admin/migration/migration-history';
 
 export default async function AdminMigrationPage() {
     const credentials = await getCredentials();
@@ -165,72 +166,10 @@ export default async function AdminMigrationPage() {
             </div>
 
             {/* Migration History */}
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100">
-                            <History className="h-5 w-5 text-purple-600" />
-                        </div>
-                        <div>
-                            <CardTitle>Sync History</CardTitle>
-                            <CardDescription>
-                                Recent data synchronization activities
-                            </CardDescription>
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    {migrationLogs.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-8 text-center">
-                            <Clock className="h-12 w-12 text-muted-foreground/20 mb-3" />
-                            <p className="text-muted-foreground">No sync history found</p>
-                            <p className="text-sm text-muted-foreground">Run a sync operation to see results here</p>
-                        </div>
-                    ) : (
-                        <div className="relative overflow-x-auto">
-                            <table className="w-full text-left text-sm">
-                                <thead className="text-xs uppercase bg-muted/50 text-muted-foreground">
-                                    <tr>
-                                        <th className="px-4 py-3">Type</th>
-                                        <th className="px-4 py-3">Status</th>
-                                        <th className="px-4 py-3">Results</th>
-                                        <th className="px-4 py-3">Duration</th>
-                                        <th className="px-4 py-3">Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y">
-                                    {migrationLogs.map((log) => (
-                                        <tr key={log.id}>
-                                            <td className="px-4 py-3 font-medium capitalize">{log.sync_type}</td>
-                                            <td className="px-4 py-3">
-                                                <Badge variant={
-                                                    log.status === 'completed' ? 'default' :
-                                                        log.status === 'running' ? 'secondary' : 'destructive'
-                                                }>
-                                                    {log.status}
-                                                </Badge>
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <div className="flex gap-3 text-xs">
-                                                    <span className="text-green-600">+{log.created}</span>
-                                                    <span className="text-blue-600">~{log.updated}</span>
-                                                    {log.failed > 0 && <span className="text-red-600">!{log.failed}</span>}
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-3 text-muted-foreground">
-                                                {log.duration_ms ? `${(log.duration_ms / 1000).toFixed(1)}s` : '-'}
-                                            </td>
-                                            <td className="px-4 py-3 text-muted-foreground">
-                                                {new Date(log.started_at).toLocaleString()}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
+            {/* Migration History */}
+            <div className="h-full">
+                <MigrationHistory initialLogs={migrationLogs} />
+            </div>
         </div>
     );
 }
