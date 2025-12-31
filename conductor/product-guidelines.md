@@ -24,7 +24,7 @@
 
 ## 4. Product & Service Integration
 **Strategy: Contextual Integration**
-- **Unified Discovery:** Services (e.g., Knife Sharpening, Propane Refill) and Products coexist in search results but are visually distinguished by "Action Callouts" (e.g., "Reserve" vs. "Add to Cart").
+- **Unified Discovery:** Services (e.g., Propane Refill) and products coexist in search results but are visually distinguished by "Action Callouts" (e.g., "Reserve" vs. "Add to Cart").
 - **Service Injection:**
     - **Logic:** Do not sequester services. Inject service cards directly into relevant product grids.
     - **Example:** In the "Grilling" category, a "Propane Refill" service card should appear naturally (e.g., as the 4th item) alongside grills and charcoal, reminding users of the service at the moment of intent.

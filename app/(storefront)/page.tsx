@@ -108,7 +108,7 @@ export default async function HomePage() {
       <section className="rounded-xl bg-zinc-900 p-8 text-center text-white">
         <h2 className="mb-4 text-2xl font-semibold">Local Services</h2>
         <p className="mx-auto mb-6 max-w-xl text-zinc-300">
-          Propane refills, knife sharpening, equipment rentals, and more.
+          Propane refills, equipment rentals, and more.
           Stop by or reserve online.
         </p>
         <Button

@@ -69,14 +69,6 @@ export function StorefrontFooter() {
               </li>
               <li>
                 <Link
-                  href="/services/knife-sharpening"
-                  className="text-sm text-zinc-600 hover:text-zinc-900"
-                >
-                  Knife Sharpening
-                </Link>
-              </li>
-              <li>
-                <Link
                   href="/services/rentals"
                   className="text-sm text-zinc-600 hover:text-zinc-900"
                 >
@@ -92,19 +84,35 @@ export function StorefrontFooter() {
               Contact
             </h4>
             <ul className="space-y-3 text-sm text-zinc-600">
-              <li>123 Main Street</li>
-              <li>Anytown, MA 01234</li>
+              <li>429 Winthrop Street</li>
+              <li>Taunton, MA 02780</li>
               <li>
-                <a href="tel:+15551234567" className="hover:text-zinc-900">
-                  (555) 123-4567
+                <a href="mailto:sales@baystatepet.com" className="hover:text-zinc-900">
+                  sales@baystatepet.com
+                </a>
+              </li>
+              <li>
+                <a href="tel:+15088213704" className="hover:text-zinc-900">
+                  (508) 821-3704
+                </a>
+              </li>
+              <li>
+                <a href="tel:+17742269845" className="hover:text-zinc-900">
+                  (774) 226-9845
                 </a>
               </li>
             </ul>
           </div>
         </div>
 
-        {/* Copyright */}
+        {/* Copyright & Extra Links */}
         <div className="mt-12 border-t pt-8 text-center text-sm text-zinc-500">
+          <div className="mb-4 flex flex-wrap justify-center gap-4">
+            <Link href="/shipping" className="hover:text-zinc-900">Shipping</Link>
+            <Link href="/returns" className="hover:text-zinc-900">Returns</Link>
+            <Link href="/privacy" className="hover:text-zinc-900">Privacy / Security</Link>
+            <Link href="/careers" className="hover:text-zinc-900">Career Opportunities</Link>
+          </div>
           <p>
             © {new Date().getFullYear()} Bay State Pet & Garden Supply. All
             rights reserved.

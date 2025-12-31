@@ -1,7 +1,7 @@
 # Track Spec: Services & Order Management
 
 ## Goal
-Complete the hybrid product/service model by building full services management and order tracking. This enables the business to handle local services (propane refills, knife sharpening, equipment rentals) as first-class citizens alongside products, and provides order management for both customers and admins.
+Complete the hybrid product/service model by building full services management and order tracking. This enables the business to handle local services (propane refills, equipment rentals) as first-class citizens alongside products, and provides order management for both customers and admins.
 
 ## Requirements
 - **Services CRUD:** Admin portal for adding/editing services with pricing, descriptions, and availability.

@@ -27,13 +27,19 @@ export default async function AboutPage() {
                     </CardHeader>
                     <CardContent className="prose prose-gray dark:prose-invert">
                         <p>
-                            Bay State Pet & Garden Supply has been serving our local community for decades.
-                            What started as a small family operation has grown into the go-to destination
-                            for pet supplies, garden tools, and farm products in the area.
+                            Bay State Pet & Garden Supply, Inc. has been a trusted source for all your animal
+                            and farm needs since 1997. Whether you have dogs, cats, farm or zoo animals,
+                            Bay State Pet & Garden Supply makes sure to carry all of the latest products and
+                            provide all the services for your every need.
                         </p>
                         <p>
-                            Through the years, we&apos;ve stayed true to our roots - offering quality products,
-                            honest advice, and the kind of personal service that only a local store can provide.
+                            Bay State Pet & Garden Supply has won numerous honors and awards for their superior
+                            customer service and continues to be at the forefront of their industry.
+                        </p>
+                        <p className="italic">
+                            &quot;We are constantly looking for products and services to improve the health and well-being
+                            of your pets&quot; Tom says &quot;We know that your pets are a big part of your family,
+                            so we want to make them a part of ours.&quot;
                         </p>
                     </CardContent>
                 </Card>

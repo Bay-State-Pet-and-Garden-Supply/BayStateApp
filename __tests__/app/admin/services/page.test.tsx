@@ -18,11 +18,11 @@ jest.mock('@/lib/supabase/server', () => ({
             },
             {
               id: '2',
-              name: 'Knife Sharpening',
-              slug: 'knife-sharpening',
-              description: 'Professional sharpening',
-              price: 5.00,
-              unit: 'knife',
+              name: 'Equipment Rentals',
+              slug: 'equipment-rentals',
+              description: 'Heavy duty equipment',
+              price: 50.00,
+              unit: 'day',
               is_active: false,
             },
           ],
@@ -52,7 +52,7 @@ describe('Admin Services Page', () => {
     const page = await AdminServicesPage();
     render(page);
     expect(screen.getByText('Propane Refill')).toBeInTheDocument();
-    expect(screen.getByText('Knife Sharpening')).toBeInTheDocument();
+    expect(screen.getByText('Equipment Rentals')).toBeInTheDocument();
   });
 
   it('shows active/inactive badges', async () => {

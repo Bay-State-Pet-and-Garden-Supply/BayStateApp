@@ -4,7 +4,7 @@ This file serves as the primary entry point for AI assistants (Gemini, Claude, e
 
 ## Project Overview
 
-**Bay State Pet & Garden Supply** is a high-performance, mobile-first PWA e-commerce platform that combines modern digital efficiency with the authentic feel of a local community store. The platform enables non-technical owners to manage a 300+ brand catalog of pet supplies, garden tools, and farm products, alongside specialized services like propane refills and knife sharpening.
+**Bay State Pet & Garden Supply** is a high-performance, mobile-first PWA e-commerce platform that combines modern digital efficiency with the authentic feel of a local community store. The platform enables non-technical owners to manage a 300+ brand catalog of pet supplies, garden tools, and farm products, alongside specialized services like propane refills.
 
 ### Core Mission
 Transform a local store into a self-sustaining digital platform with:

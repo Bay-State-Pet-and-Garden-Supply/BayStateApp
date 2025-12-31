@@ -54,9 +54,19 @@ export default async function ContactPage() {
                     <CardContent>
                         <address className="not-italic space-y-1">
                             <p className="font-medium">Bay State Pet & Garden Supply</p>
-                            <p className="text-muted-foreground">123 Main Street</p>
-                            <p className="text-muted-foreground">Anytown, MA 01234</p>
+                            <p className="text-muted-foreground">429 Winthrop Street</p>
+                            <p className="text-muted-foreground">Taunton, MA 02780</p>
                         </address>
+                        <div className="mt-4">
+                            <a
+                                href="https://maps.google.com/?q=429+Winthrop+Street+Taunton+MA+02780"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-blue-600 hover:underline"
+                            >
+                                Get Directions
+                            </a>
+                        </div>
                     </CardContent>
                 </Card>
 
@@ -65,19 +75,28 @@ export default async function ContactPage() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Phone className="h-5 w-5" />
-                            Phone
+                            Phone & Text
                         </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                        <a
-                            href="tel:+15551234567"
-                            className="text-lg font-medium hover:underline"
-                        >
-                            (555) 123-4567
-                        </a>
-                        <p className="text-sm text-muted-foreground mt-1">
-                            Call us for product availability or questions
-                        </p>
+                    <CardContent className="space-y-4">
+                        <div>
+                            <p className="text-sm font-medium text-muted-foreground mb-1">Call Us</p>
+                            <a
+                                href="tel:+15088213704"
+                                className="text-lg font-medium hover:underline block"
+                            >
+                                (508) 821-3704
+                            </a>
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-muted-foreground mb-1">Text Us</p>
+                            <a
+                                href="sms:+17742269845"
+                                className="text-lg font-medium hover:underline block"
+                            >
+                                (774) 226-9845
+                            </a>
+                        </div>
                     </CardContent>
                 </Card>
 
@@ -91,10 +110,10 @@ export default async function ContactPage() {
                     </CardHeader>
                     <CardContent>
                         <a
-                            href="mailto:info@baystatepetgarden.com"
+                            href="mailto:info@baystatepet.com"
                             className="font-medium hover:underline"
                         >
-                            info@baystatepetgarden.com
+                            info@baystatepet.com
                         </a>
                         <p className="text-sm text-muted-foreground mt-1">
                             We typically respond within 24 hours

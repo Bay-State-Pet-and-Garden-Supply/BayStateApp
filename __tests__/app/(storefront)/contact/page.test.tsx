@@ -28,6 +28,6 @@ describe('Contact Page', () => {
         render(Page);
 
         // Look for the phone number text
-        expect(screen.getByText('(555) 123-4567')).toBeInTheDocument();
+        expect(screen.getByText('(508) 821-3704')).toBeInTheDocument();
     });
 });

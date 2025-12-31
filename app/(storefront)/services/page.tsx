@@ -21,7 +21,7 @@ export default async function ServicesPage() {
           Local Services
         </h1>
         <p className="mx-auto max-w-2xl text-lg text-zinc-600">
-          From propane refills to knife sharpening, we offer a range of services
+          From propane refills to equipment rentals, we offer a range of services
           to help you get the job done. Stop by or reserve online.
         </p>
       </section>
@@ -33,9 +33,9 @@ export default async function ServicesPage() {
             {services.map((service) => {
               const formattedPrice = service.price
                 ? new Intl.NumberFormat('en-US', {
-                    style: 'currency',
-                    currency: 'USD',
-                  }).format(service.price)
+                  style: 'currency',
+                  currency: 'USD',
+                }).format(service.price)
                 : null;
 
               return (

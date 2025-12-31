@@ -17,14 +17,14 @@ describe('StorefrontFooter', () => {
   it('renders Services section with links', () => {
     render(<StorefrontFooter />);
     expect(screen.getByRole('link', { name: /propane refill/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /knife sharpening/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /equipment rentals/i })).toBeInTheDocument();
   });
 
   it('renders Contact section', () => {
     render(<StorefrontFooter />);
     expect(screen.getByText('Contact')).toBeInTheDocument();
-    expect(screen.getByText(/123 Main Street/i)).toBeInTheDocument();
+    expect(screen.getByText(/sales@baystatepet.com/i)).toBeInTheDocument();
+    expect(screen.getByText(/\(774\) 226-9845/i)).toBeInTheDocument();
   });
 
   it('renders copyright with current year', () => {

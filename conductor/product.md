@@ -14,7 +14,7 @@ To transform Bay State Pet & Garden Supply into a high-performance, self-sustain
 
 ## Target Users
 - **Local Customers:** Residents needing quick, reliable access to pet supplies, garden tools, and farm products from any device.
-- **Service Seekers:** Locals seeking specialized services such as propane refills, knife sharpening, and equipment rentals.
+- **Service Seekers:** Locals seeking specialized services such as propane refills and equipment rentals.
 - **Business Owners/Managers:** Non-technical staff who require "safety rails" to manage inventory, pricing, and marketing without technical friction.
 
 ## Core Features: The Customer Experience
