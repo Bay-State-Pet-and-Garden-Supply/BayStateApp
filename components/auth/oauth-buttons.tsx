@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from "@/components/ui/button"
+import { useSearchParams } from "next/navigation"
 import { loginWithOAuth } from "@/lib/auth/actions"
 
 /**
@@ -8,6 +9,9 @@ import { loginWithOAuth } from "@/lib/auth/actions"
  * Simplified to only show Google authentication.
  */
 export function OAuthButtons() {
+    const searchParams = useSearchParams()
+    const next = searchParams.get('next') || undefined
+
     return (
         <div className="flex flex-col gap-3">
             <div className="relative">
@@ -24,7 +28,7 @@ export function OAuthButtons() {
             <Button
                 variant="outline"
                 className="w-full flex items-center justify-center gap-2"
-                onClick={() => loginWithOAuth('google')}
+                onClick={() => loginWithOAuth('google', next)}
                 aria-label="Sign in with Google"
             >
                 <svg className="h-4 w-4" viewBox="0 0 24 24">

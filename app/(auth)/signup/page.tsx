@@ -1,3 +1,4 @@
+import React from "react"
 import Link from "next/link"
 import { SignupForm } from "@/components/auth/signup-form"
 import { OAuthButtons } from "@/components/auth/oauth-buttons"
@@ -16,7 +17,9 @@ export default function SignupPage() {
             </div>
             <SignupForm />
             <div className="mt-6">
-                <OAuthButtons />
+                <React.Suspense fallback={null}>
+                    <OAuthButtons />
+                </React.Suspense>
             </div>
         </div>
     )

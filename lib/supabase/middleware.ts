@@ -47,10 +47,11 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Protect /admin routes
-  if (request.nextUrl.pathname.startsWith('/admin') && !request.nextUrl.pathname.startsWith('/admin/login')) {
+  if (request.nextUrl.pathname.startsWith('/admin')) {
     if (!user) {
       const url = request.nextUrl.clone()
-      url.pathname = '/admin/login'
+      url.pathname = '/login'
+      url.searchParams.set('next', request.nextUrl.pathname)
       return NextResponse.redirect(url)
     }
 
@@ -66,9 +67,9 @@ export async function updateSession(request: NextRequest) {
     // 1. Non-admin/staff should not access any admin route
     if (role !== 'admin' && role !== 'staff') {
       const url = request.nextUrl.clone()
-      url.pathname = '/admin/login'
+      url.pathname = '/login'
       url.searchParams.set('error', 'unauthorized')
-      url.searchParams.set('message', `Role ${role} is not allowed`)
+      url.searchParams.set('message', `Role ${role} is not allowed to access the admin area`)
       return NextResponse.redirect(url)
     }
 

@@ -1,3 +1,4 @@
+import React from "react"
 import Link from "next/link"
 import { LoginForm } from "@/components/auth/login-form"
 import { OAuthButtons } from "@/components/auth/oauth-buttons"
@@ -14,10 +15,12 @@ export default function LoginPage() {
                     </Link>
                 </p>
             </div>
-            <LoginForm />
-            <div className="mt-6">
-                <OAuthButtons />
-            </div>
+            <React.Suspense fallback={<div className="h-[300px] flex items-center justify-center">Loading...</div>}>
+                <LoginForm />
+                <div className="mt-6">
+                    <OAuthButtons />
+                </div>
+            </React.Suspense>
         </div>
     )
 }

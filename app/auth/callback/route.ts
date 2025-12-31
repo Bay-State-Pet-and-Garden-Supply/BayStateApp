@@ -12,16 +12,33 @@ export async function GET(request: Request) {
         const { error } = await supabase.auth.exchangeCodeForSession(code)
 
         if (!error) {
-            const forwardedHost = request.headers.get('x-forwarded-host') // original origin before load balancer
+            // Smart redirect: if next is default /account, check for admin/staff roles
+            let finalNext = next
+            if (finalNext === '/account') {
+                const { data: { user } } = await supabase.auth.getUser()
+                if (user) {
+                    const { data: profile } = await supabase
+                        .from('profiles')
+                        .select('role')
+                        .eq('id', user.id)
+                        .single()
+
+                    const role = profile?.role || 'customer'
+                    if (role === 'admin' || role === 'staff') {
+                        finalNext = '/admin'
+                    }
+                }
+            }
+
+            const forwardedHost = request.headers.get('x-forwarded-host')
             const isLocalEnv = process.env.NODE_ENV === 'development'
 
             if (isLocalEnv) {
-                // we can be sure that there is no load balancer in between, so no need to watch for X-Forwarded-Host
-                return NextResponse.redirect(`${origin}${next}`)
+                return NextResponse.redirect(`${origin}${finalNext}`)
             } else if (forwardedHost) {
-                return NextResponse.redirect(`https://${forwardedHost}${next}`)
+                return NextResponse.redirect(`https://${forwardedHost}${finalNext}`)
             } else {
-                return NextResponse.redirect(`${origin}${next}`)
+                return NextResponse.redirect(`${origin}${finalNext}`)
             }
         }
     }

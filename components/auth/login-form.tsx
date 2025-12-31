@@ -15,6 +15,7 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { useSearchParams } from "next/navigation"
 import { loginAction } from "@/lib/auth/actions"
 
 const formSchema = z.object({
@@ -23,7 +24,12 @@ const formSchema = z.object({
 })
 
 export function LoginForm() {
-    const [error, setError] = useState<string | null>(null)
+    const searchParams = useSearchParams()
+    const next = searchParams.get('next') || undefined
+    const urlError = searchParams.get('error')
+    const urlMessage = searchParams.get('message')
+
+    const [error, setError] = useState<string | null>(urlError ? urlMessage || "Authentication error" : null)
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -35,7 +41,7 @@ export function LoginForm() {
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setError(null)
-        const result = await loginAction(values)
+        const result = await loginAction(values, next)
 
         if (result?.error) {
             setError(result.error)

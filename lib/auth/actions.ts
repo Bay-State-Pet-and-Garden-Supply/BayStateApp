@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase/server'
 
-export async function loginAction(values: { email: string, password: string }) {
+export async function loginAction(values: { email: string, password: string }, redirectTo?: string) {
     const supabase = await createClient()
 
     const { error } = await supabase.auth.signInWithPassword(values)
@@ -15,6 +15,27 @@ export async function loginAction(values: { email: string, password: string }) {
     }
 
     revalidatePath('/', 'layout')
+
+    // If explicit redirect provided, use it
+    if (redirectTo) {
+        redirect(redirectTo)
+    }
+
+    // Otherwise, redirect based on role
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single()
+
+        const role = profile?.role || 'customer'
+        if (role === 'admin' || role === 'staff') {
+            redirect('/admin')
+        }
+    }
+
     redirect('/account')
 }
 
@@ -58,19 +79,19 @@ export async function signupAction(values: { email: string, password: string, fu
     redirect('/login?message=check-email')
 }
 
-export async function loginWithOAuth(provider: 'google' | 'apple' | 'facebook') {
+export async function loginWithOAuth(provider: 'google' | 'apple' | 'facebook', next?: string) {
     const supabase = await createClient()
 
-    // Get site URL from env or default to generic localhost
-    // Note: Vercel sets VERCEL_URL but logic for correct proto needed. 
-    // Supabase also allows relative URLs in redirectTo if configured? 
-    // Safer to use production URL if set.
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    const callbackUrl = new URL(`${siteUrl}/auth/callback`)
+    if (next) {
+        callbackUrl.searchParams.set('next', next)
+    }
 
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-            redirectTo: `${siteUrl}/auth/callback`,
+            redirectTo: callbackUrl.toString(),
         },
     })
 

@@ -12,14 +12,14 @@ export default async function AdminLayout({
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect('/admin/login')
+    redirect('/login?next=/admin')
   }
 
   const role = await getUserRole(user.id)
 
   // Only admin and staff can access admin panel
   if (role !== 'admin' && role !== 'staff') {
-    redirect('/admin/login?error=unauthorized')
+    redirect('/login?error=unauthorized')
   }
 
   return (
