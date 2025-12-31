@@ -68,14 +68,14 @@
 ## Phase 4: Recurring Buyer Features (Quick Buy) [checkpoint: ]
 
 ### 4.1 Purchase History Analysis
-- [ ] Task: Create `lib/account/reorder.ts` to fetch frequently ordered items
-- [ ] Task: Write failing test for "Frequently Bought" logic
-- [ ] Task: Implement logic to surface items appearing in multiple orders
+- [x] Task: Create `lib/account/reorder.ts` to fetch frequently ordered items e2b9260
+- [x] Task: Write failing test for "Frequently Bought" logic e2b9260
+- [x] Task: Implement logic to surface items appearing in multiple orders e2b9260
 
 ### 4.2 Quick Buy UI
-- [ ] Task: Create `BuyAgainSection` component for the dashboard
-- [ ] Task: Implement 1-click "Add to Cart" for reorder items
-- [ ] Task: Integrate section into main `/account` dashboard view
+- [x] Task: Create `BuyAgainSection` component for the dashboard e2b9260
+- [x] Task: Implement 1-click "Add to Cart" for reorder items e2b9260
+- [x] Task: Integrate section into main `/account` dashboard view e2b9260
 
 ### 4.3 Phase Checkpoint
 - [ ] Task: Conductor - User Manual Verification 'Phase 4: Recurring Buyer Features (Quick Buy)' (Protocol in workflow.md)

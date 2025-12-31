@@ -1,13 +1,30 @@
 import { AdminSidebar } from '@/components/admin/sidebar'
+import { createClient } from '@/lib/supabase/server'
+import { getUserRole } from '@/lib/auth/roles'
+import { redirect } from 'next/navigation'
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect('/admin/login')
+  }
+
+  const role = await getUserRole(user.id)
+
+  // Only admin and staff can access admin panel
+  if (role !== 'admin' && role !== 'staff') {
+    redirect('/admin/login?error=unauthorized')
+  }
+
   return (
     <div className="flex h-screen bg-gray-100">
-      <AdminSidebar />
+      <AdminSidebar userRole={role as 'admin' | 'staff'} />
       <main className="flex-1 overflow-y-auto p-8">
         {children}
       </main>
