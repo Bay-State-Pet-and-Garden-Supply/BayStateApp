@@ -1,6 +1,6 @@
 # Implementation Plan: User Authentication & RBAC
 
-## Phase 1: Database Schema & Authentication Middleware [checkpoint: ]
+## Phase 1: Database Schema & Authentication Middleware [checkpoint: e356511]
 
 ### 1.1 Profiles and Roles Schema
 - [x] Task: Create migration `create_profiles_and_roles` for `profiles` table (linked to `auth.users`) 7624fd5
@@ -16,7 +16,7 @@
 - [x] Task: Verify that `staff` cannot access `/admin/settings` or `/admin/users` 7624fd5
 
 ### 1.3 Phase Checkpoint
-- [ ] Task: Conductor - User Manual Verification 'Phase 1: Database Schema & Authentication Middleware' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 1: Database Schema & Authentication Middleware' (Protocol in workflow.md)
 
 ---
 
