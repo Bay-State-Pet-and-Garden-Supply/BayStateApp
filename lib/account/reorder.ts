@@ -21,16 +21,18 @@ export async function getFrequentlyBoughtProducts(limit = 6): Promise<FrequentPr
 
     if (!user) return []
 
-    // Query: Count how many times each product appears in user's orders
-    // Join order_items -> orders -> products
+    // Query: Get all product items in user's orders
     const { data, error } = await supabase
         .from('order_items')
         .select(`
-            product_id,
-            orders!inner (user_id),
-            products!inner (id, name, slug, price, images)
+            item_id,
+            item_name,
+            item_slug,
+            unit_price,
+            orders!inner (user_id)
         `)
         .eq('orders.user_id', user.id)
+        .eq('item_type', 'product')
 
     if (error) {
         console.error('Error fetching order history:', error)
@@ -40,41 +42,55 @@ export async function getFrequentlyBoughtProducts(limit = 6): Promise<FrequentPr
     if (!data || data.length === 0) return []
 
     // Aggregate: Count occurrences per product
-    const productCounts = new Map<string, { product: any; count: number }>()
+    const productCounts = new Map<string, {
+        id: string;
+        name: string;
+        slug: string;
+        price: number;
+        count: number
+    }>()
 
     for (const item of data) {
-        let product = item.products as any
-        if (!product) continue
-
-        if (Array.isArray(product)) {
-            product = product[0]
-        }
-
-        if (!product || !product.id) continue
-
-        const existing = productCounts.get(product.id)
+        const itemId = item.item_id
+        const existing = productCounts.get(itemId)
         if (existing) {
             existing.count++
         } else {
-            productCounts.set(product.id, { product, count: 1 })
+            productCounts.set(itemId, {
+                id: itemId,
+                name: item.item_name,
+                slug: item.item_slug,
+                price: parseFloat(item.unit_price as any),
+                count: 1
+            })
         }
     }
 
-    // Filter: Only products ordered more than once, sorted by frequency
-    const frequentProducts = Array.from(productCounts.values())
+    // Filter: Products ordered more than once, sorted by frequency
+    const qualifiedEntries = Array.from(productCounts.values())
         .filter(entry => entry.count > 1)
         .sort((a, b) => b.count - a.count)
         .slice(0, limit)
-        .map(entry => ({
-            id: entry.product.id,
-            name: entry.product.name,
-            slug: entry.product.slug,
-            price: entry.product.price,
-            images: entry.product.images || [],
-            order_count: entry.count
-        }))
 
-    return frequentProducts
+    if (qualifiedEntries.length === 0) return []
+
+    // Fetch images for these products
+    const productIds = qualifiedEntries.map(e => e.id)
+    const { data: productsData } = await supabase
+        .from('products')
+        .select('id, images')
+        .in('id', productIds)
+
+    const imageMap = new Map(productsData?.map(p => [p.id, p.images]) || [])
+
+    return qualifiedEntries.map(entry => ({
+        id: entry.id,
+        name: entry.name,
+        slug: entry.slug,
+        price: entry.price,
+        images: (imageMap.get(entry.id) as string[]) || [],
+        order_count: entry.count
+    }))
 }
 
 /**
