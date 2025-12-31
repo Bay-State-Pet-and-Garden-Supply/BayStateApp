@@ -27,18 +27,19 @@ This file tracks all major tracks for the project. Each track has its own detail
 - **Checkpoint:** `9f88e15`
 - **Description:** Add PWA capabilities, brand management, static pages, and final polish
 
----
-
-## [x] Track: Migrate BayStateTools to Admin Panel
-*Link: [./conductor/tracks/tools_migration_20251230/](./conductor/tracks/tools_migration_20251230/)*
+### Migrate BayStateTools to Admin Panel
 - **Location:** `tracks/tools_migration_20251230/`
 - **Status:** ✅ Complete
 - **Description:** Migrate pipeline, quality, analytics, and database tools from BayStateTools into BayStateApp admin panel
 
+### User Authentication & RBAC
+- **Location:** `archive/auth_rbac_20251230/`
+- **Status:** ✅ Complete
+- **Checkpoint:** `9e20346`
+- **Description:** Implement user authentication with RBAC, customer dashboards, and reorder features.
+
 ---
 
-## [~] Track: User Authentication & RBAC
-*Link: [./conductor/tracks/auth_rbac_20251230/](./conductor/tracks/auth_rbac_20251230/)*
-- **Location:** `tracks/auth_rbac_20251230/`
-- **Status:** 🔄 In Progress
-- **Description:** Implement user authentication with RBAC, customer dashboards, and reorder features.
+## Active Tracks
+
+*No active tracks. Use `/newTrack` to start a new one.*

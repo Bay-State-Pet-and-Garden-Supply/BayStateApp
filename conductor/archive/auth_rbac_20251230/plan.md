@@ -39,7 +39,7 @@
 - [x] Task: Implement "Logout" functionality across all headers 28e3765
 
 ### 2.4 Phase Checkpoint
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Customer Authentication Flow' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 2: Customer Authentication Flow' (Protocol in workflow.md)
 
 ---
 
@@ -61,7 +61,7 @@
 - [x] Task: Implement "Add to Wishlist" buttons in product cards and account view b05e994
 
 ### 3.4 Phase Checkpoint
-- [ ] Task: Conductor - User Manual Verification 'Phase 3: Customer Dashboard & Account Management' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 3: Customer Dashboard & Account Management' (Protocol in workflow.md)
 
 ---
 
@@ -78,7 +78,7 @@
 - [x] Task: Integrate section into main `/account` dashboard view e2b9260
 
 ### 4.3 Phase Checkpoint
-- [ ] Task: Conductor - User Manual Verification 'Phase 4: Recurring Buyer Features (Quick Buy)' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 4: Recurring Buyer Features (Quick Buy)' (Protocol in workflow.md)
 
 ---
 
@@ -94,4 +94,4 @@
 - [x] Add view for specific user's order history within admin panel c036412
 
 ### 5.3 Phase Checkpoint
-- [ ] Task: Conductor - User Manual Verification 'Phase 5: Admin User Management' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 5: Admin User Management' (Protocol in workflow.md)
