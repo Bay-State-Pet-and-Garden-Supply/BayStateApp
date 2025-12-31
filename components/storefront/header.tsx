@@ -8,11 +8,14 @@ import { useSearch } from '@/components/storefront/search-provider';
 import { useCartStore } from '@/lib/cart-store';
 import { CartDrawer } from '@/components/storefront/cart-drawer';
 
+import { User } from '@supabase/supabase-js';
+import { UserMenu } from '@/components/auth/user-menu';
+
 /**
  * StorefrontHeader - Main navigation header for the customer-facing storefront.
  * Features mobile-first design with 44px+ touch targets.
  */
-export function StorefrontHeader() {
+export function StorefrontHeader({ user }: { user: User | null }) {
   const { openSearch } = useSearch();
   const itemCount = useCartStore((state) => state.getItemCount());
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -76,6 +79,10 @@ export function StorefrontHeader() {
                 {itemCount}
               </span>
             </Button>
+
+            {/* User Menu */}
+            <UserMenu user={user} />
+
             <Button
               variant="ghost"
               size="icon"

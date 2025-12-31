@@ -7,6 +7,8 @@ import { StickyCart } from '@/components/storefront/sticky-cart';
 import { getProducts, getActiveServices, getBrands } from '@/lib/data';
 import { getCampaignBanner } from '@/lib/settings';
 
+import { createClient } from '@/lib/supabase/server';
+
 /**
  * StorefrontLayout - Layout wrapper for all customer-facing pages.
  * Includes header, footer, and mobile bottom navigation.
@@ -16,8 +18,11 @@ export default async function StorefrontLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Fetch search data and campaign settings
-  const [{ products }, services, brands, campaignBanner] = await Promise.all([
+  const supabase = await createClient();
+
+  // Fetch search data, campaign settings, and user session
+  const [{ data: { user } }, { products }, services, brands, campaignBanner] = await Promise.all([
+    supabase.auth.getUser(),
     getProducts({ limit: 100 }),
     getActiveServices(),
     getBrands(),
@@ -77,7 +82,7 @@ export default async function StorefrontLayout({
             variant={campaignBanner.variant}
           />
         )}
-        <StorefrontHeader />
+        <StorefrontHeader user={user} />
         <main className="flex-1 pb-20 md:pb-0">{children}</main>
         <StorefrontFooter />
         <StickyCart />
