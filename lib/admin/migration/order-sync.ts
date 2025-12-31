@@ -22,6 +22,8 @@ export function transformShopSiteOrder(
         tax: number;
         shipping: number;
         total: number;
+        customer_name: string;
+        customer_email: string;
         created_at: string;
         is_legacy_import: boolean;
         shopsite_transaction_id?: string;
@@ -62,6 +64,8 @@ export function transformShopSiteOrder(
             tax: order.tax,
             shipping: order.shippingTotal,
             total: order.grandTotal,
+            customer_name: order.billingAddress?.fullName || 'Guest',
+            customer_email: order.customerEmail || '',
             created_at: order.orderDate || new Date().toISOString(),
             is_legacy_import: true,
             shopsite_transaction_id: order.transactionId,
