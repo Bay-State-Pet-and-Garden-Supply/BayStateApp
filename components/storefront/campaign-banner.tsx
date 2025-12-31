@@ -11,9 +11,9 @@ interface CampaignBannerProps {
 }
 
 const variantStyles = {
-  info: 'bg-zinc-900 text-white',
-  promo: 'bg-amber-500 text-zinc-900',
-  seasonal: 'bg-green-600 text-white',
+  info: 'bg-primary text-primary-foreground',
+  promo: 'bg-primary text-primary-foreground',
+  seasonal: 'bg-primary text-primary-foreground',
 };
 
 /**

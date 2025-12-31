@@ -68,7 +68,7 @@ export default async function StorefrontLayout({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <div className="flex min-h-screen flex-col w-full overflow-x-hidden">
+      <div className="flex min-h-screen flex-col w-full">
         {campaignBanner.enabled && (
           <CampaignBanner
             message={campaignBanner.message}

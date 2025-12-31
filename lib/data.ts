@@ -35,12 +35,15 @@ export interface Service {
 
 /**
  * Fetches featured products for the homepage.
+ * Queries the products_published view which projects data from the ingestion pipeline.
  */
 export async function getFeaturedProducts(limit = 6): Promise<Product[]> {
   const supabase = await createClient();
+
+  // Query from the published products view
   const { data, error } = await supabase
-    .from('products')
-    .select('*, brand:brands(*)')
+    .from('products_published')
+    .select('*')
     .eq('is_featured', true)
     .eq('stock_status', 'in_stock')
     .order('created_at', { ascending: false })
@@ -51,7 +54,42 @@ export async function getFeaturedProducts(limit = 6): Promise<Product[]> {
     return [];
   }
 
-  return data || [];
+  // Transform the data to match the Product interface
+  const products: Product[] = (data || []).map((row) => ({
+    id: row.id,
+    brand_id: row.brand_id,
+    name: row.name,
+    slug: row.slug,
+    description: row.description,
+    price: Number(row.price),
+    stock_status: row.stock_status as Product['stock_status'],
+    images: Array.isArray(row.images) ? row.images : [],
+    is_featured: row.is_featured,
+    created_at: row.created_at,
+  }));
+
+  // If brand_id exists, fetch the brand details
+  const brandIds = products
+    .map((p) => p.brand_id)
+    .filter((id): id is string => id !== null);
+
+  if (brandIds.length > 0) {
+    const { data: brands } = await supabase
+      .from('brands')
+      .select('*')
+      .in('id', brandIds);
+
+    if (brands) {
+      const brandMap = new Map(brands.map((b) => [b.id, b]));
+      products.forEach((p) => {
+        if (p.brand_id && brandMap.has(p.brand_id)) {
+          p.brand = brandMap.get(p.brand_id);
+        }
+      });
+    }
+  }
+
+  return products;
 }
 
 /**
@@ -93,6 +131,7 @@ export async function getBrands(): Promise<Brand[]> {
 
 /**
  * Fetches products by category/filter.
+ * Queries the products_published view which projects data from the ingestion pipeline.
  */
 export async function getProducts(options?: {
   brandId?: string;
@@ -101,9 +140,11 @@ export async function getProducts(options?: {
   offset?: number;
 }): Promise<{ products: Product[]; count: number }> {
   const supabase = await createClient();
+
+  // Start with products_published view
   let query = supabase
-    .from('products')
-    .select('*, brand:brands(*)', { count: 'exact' });
+    .from('products_published')
+    .select('*', { count: 'exact' });
 
   if (options?.brandId) {
     query = query.eq('brand_id', options.brandId);
@@ -128,5 +169,86 @@ export async function getProducts(options?: {
     return { products: [], count: 0 };
   }
 
-  return { products: data || [], count: count || 0 };
+  // Transform data to Product interface
+  const products: Product[] = (data || []).map((row) => ({
+    id: row.id,
+    brand_id: row.brand_id,
+    name: row.name,
+    slug: row.slug,
+    description: row.description,
+    price: Number(row.price),
+    stock_status: row.stock_status as Product['stock_status'],
+    images: Array.isArray(row.images) ? row.images : [],
+    is_featured: row.is_featured,
+    created_at: row.created_at,
+  }));
+
+  // Fetch brand details for products that have brand_id
+  const brandIds = products
+    .map((p) => p.brand_id)
+    .filter((id): id is string => id !== null);
+
+  if (brandIds.length > 0) {
+    const { data: brands } = await supabase
+      .from('brands')
+      .select('*')
+      .in('id', brandIds);
+
+    if (brands) {
+      const brandMap = new Map(brands.map((b) => [b.id, b]));
+      products.forEach((p) => {
+        if (p.brand_id && brandMap.has(p.brand_id)) {
+          p.brand = brandMap.get(p.brand_id);
+        }
+      });
+    }
+  }
+
+  return { products, count: count || 0 };
+}
+
+/**
+ * Fetches a single product by slug.
+ */
+export async function getProductBySlug(slug: string): Promise<Product | null> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('products_published')
+    .select('*')
+    .eq('slug', slug)
+    .single();
+
+  if (error || !data) {
+    console.error('Error fetching product by slug:', error);
+    return null;
+  }
+
+  const product: Product = {
+    id: data.id,
+    brand_id: data.brand_id,
+    name: data.name,
+    slug: data.slug,
+    description: data.description,
+    price: Number(data.price),
+    stock_status: data.stock_status as Product['stock_status'],
+    images: Array.isArray(data.images) ? data.images : [],
+    is_featured: data.is_featured,
+    created_at: data.created_at,
+  };
+
+  // Fetch brand if exists
+  if (product.brand_id) {
+    const { data: brand } = await supabase
+      .from('brands')
+      .select('*')
+      .eq('id', product.brand_id)
+      .single();
+
+    if (brand) {
+      product.brand = brand;
+    }
+  }
+
+  return product;
 }
