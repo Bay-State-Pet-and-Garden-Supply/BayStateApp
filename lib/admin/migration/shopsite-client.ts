@@ -12,16 +12,12 @@ import {
     ShopSiteCustomer,
     ShopSiteConfigSchema,
     ConnectionTestResult,
+    ShopSiteConfig,
 } from './types';
 
 export { ShopSiteConfigSchema };
 export type { ShopSiteConfig } from './types';
 
-export interface ShopSiteConfig {
-    storeUrl: string;
-    merchantId: string;
-    password: string;
-}
 
 /**
  * Client for interacting with ShopSite APIs.
