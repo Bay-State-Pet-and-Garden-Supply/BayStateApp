@@ -11,3 +11,12 @@ export interface Address {
     is_default: boolean;
     created_at: string;
 }
+
+export interface ProductSummary {
+    id: string;
+    name: string;
+    slug: string;
+    price: number;
+    images: string[];
+    stock_status: string;
+}
