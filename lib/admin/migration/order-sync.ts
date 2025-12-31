@@ -33,7 +33,8 @@ export function transformShopSiteOrder(
         shopsite_data?: any;
     };
     items: Array<{
-        product_id: string | null;
+        item_id: string | null;
+        item_type: string;
         quantity: number;
         unit_price: number;
         legacy_sku: string;
@@ -49,7 +50,8 @@ export function transformShopSiteOrder(
 
     // Transform order items
     const items = order.items.map((item: ShopSiteOrderItem) => ({
-        product_id: productIdMap.get(item.sku) || null,
+        item_id: productIdMap.get(item.sku) || null,
+        item_type: 'product',
         quantity: item.quantity,
         unit_price: item.price,
         legacy_sku: item.sku,
