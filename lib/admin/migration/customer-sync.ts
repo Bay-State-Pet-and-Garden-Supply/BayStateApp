@@ -23,5 +23,6 @@ export function transformShopSiteCustomer(customer: ShopSiteCustomer): {
         full_name: fullName,
         legacy_shopsite_id: customer.email, // Use email as the legacy ID
         is_legacy_import: true,
+        shopsite_data: customer.rawXml ? { raw_xml: customer.rawXml } : {},
     };
 }

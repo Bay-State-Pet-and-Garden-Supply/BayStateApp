@@ -4,11 +4,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Database, RefreshCw, CheckCircle, AlertCircle, History, Clock } from 'lucide-react';
-import { getCredentials, saveCredentialsAction } from './actions';
+import { getCredentials, saveCredentialsAction, syncProductsFormAction, syncCustomersFormAction, syncOrdersFormAction } from './actions';
 import { getRecentMigrationLogs } from '@/lib/admin/migration/history';
 import { DownloadXmlButtons } from '@/components/admin/migration/download-xml-buttons';
 import { MigrationHistory } from '@/components/admin/migration/migration-history';
-import { SyncPanel } from '@/components/admin/migration/sync-panel';
+
 
 export default async function AdminMigrationPage() {
     const credentials = await getCredentials();
@@ -104,7 +104,26 @@ export default async function AdminMigrationPage() {
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <SyncPanel />
+                            <div className="space-y-4">
+                                <form action={syncProductsFormAction}>
+                                    <Button className="w-full justify-between" variant="outline">
+                                        <span>Sync Products</span>
+                                        <RefreshCw className="h-4 w-4 ml-2" />
+                                    </Button>
+                                </form>
+                                <form action={syncCustomersFormAction}>
+                                    <Button className="w-full justify-between" variant="outline">
+                                        <span>Sync Customers</span>
+                                        <RefreshCw className="h-4 w-4 ml-2" />
+                                    </Button>
+                                </form>
+                                <form action={syncOrdersFormAction}>
+                                    <Button className="w-full justify-between" variant="outline">
+                                        <span>Sync Orders</span>
+                                        <RefreshCw className="h-4 w-4 ml-2" />
+                                    </Button>
+                                </form>
+                            </div>
 
                             {/* Download XML Section */}
                             <div className="pt-4 border-t">

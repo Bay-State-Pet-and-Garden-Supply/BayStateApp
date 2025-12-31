@@ -68,6 +68,17 @@ export function CommandBar({ searchIndex, isOpen, onClose }: CommandBarProps) {
     setSelectedIndex(0);
   }, [query, searchIndex]);
 
+  const navigateToResult = useCallback((result: SearchResult) => {
+    const paths = {
+      product: `/products/${result.slug}`,
+      service: `/services/${result.slug}`,
+      brand: `/products?brand=${result.slug}`,
+    };
+    router.push(paths[result.type]);
+    onClose();
+    setQuery('');
+  }, [router, onClose]);
+
   // Handle keyboard navigation
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -91,19 +102,8 @@ export function CommandBar({ searchIndex, isOpen, onClose }: CommandBarProps) {
           break;
       }
     },
-    [results, selectedIndex, onClose]
+    [results, selectedIndex, onClose, navigateToResult]
   );
-
-  const navigateToResult = (result: SearchResult) => {
-    const paths = {
-      product: `/products/${result.slug}`,
-      service: `/services/${result.slug}`,
-      brand: `/products?brand=${result.slug}`,
-    };
-    router.push(paths[result.type]);
-    onClose();
-    setQuery('');
-  };
 
   if (!isOpen) {
     return null;

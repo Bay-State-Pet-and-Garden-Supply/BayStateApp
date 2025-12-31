@@ -24,6 +24,11 @@ export function transformShopSiteOrder(
         total: number;
         created_at: string;
         is_legacy_import: boolean;
+        shopsite_transaction_id?: string;
+        billing_address?: any;
+        shipping_address?: any;
+        payment_details?: any;
+        shopsite_data?: any;
     };
     items: Array<{
         product_id: string | null;
@@ -59,6 +64,16 @@ export function transformShopSiteOrder(
             total: order.grandTotal,
             created_at: order.orderDate || new Date().toISOString(),
             is_legacy_import: true,
+            shopsite_transaction_id: order.transactionId,
+            billing_address: order.billingAddress,
+            shipping_address: order.shippingAddress,
+            payment_details: {
+                method: order.paymentMethod,
+                grandTotal: order.grandTotal,
+                tax: order.tax,
+                shipping: order.shippingTotal,
+            },
+            shopsite_data: order.rawXml ? { raw_xml: order.rawXml } : {},
         },
         items,
     };

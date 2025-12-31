@@ -15,8 +15,17 @@ import {
     ShopSiteConfig,
 } from './types';
 
+export interface OrderDownloadOptions {
+    version?: string;
+    startOrder?: string;
+    endOrder?: string;
+    startDate?: string; // mm/dd/yyyy
+    endDate?: string;   // mm/dd/yyyy
+    pay?: boolean;
+}
+
 export { ShopSiteConfigSchema };
-export type { ShopSiteConfig } from './types';
+export type { ShopSiteConfig, AddressInfo } from './types';
 
 
 /**
@@ -94,12 +103,13 @@ export class ShopSiteClient {
     async fetchProducts(): Promise<ShopSiteProduct[]> {
         try {
             const response = await fetch(
-                this.buildUrl('action=download&type=products', 'db_xml.cgi'),
+                this.buildUrl('clientApp=1&dbname=products', 'db_xml.cgi'),
                 {
                     method: 'GET',
                     headers: {
                         'Authorization': this.authHeader,
                     },
+                    cache: 'no-store',
                 }
             );
 
@@ -119,17 +129,26 @@ export class ShopSiteClient {
     /**
      * Fetch all orders from ShopSite Order Download API.
      */
-    async fetchOrders(): Promise<ShopSiteOrder[]> {
+    async fetchOrders(options: OrderDownloadOptions = {}): Promise<ShopSiteOrder[]> {
         try {
-            // Revert to using db_xml.cgi for orders as well
-            // Based on docs, db_xml.cgi handles order downloads too
+            // Build query parameters
+            const params = new URLSearchParams();
+            params.append('version', options.version || '15.0');
+
+            if (options.startOrder) params.append('startorder', options.startOrder);
+            if (options.endOrder) params.append('endorder', options.endOrder);
+            if (options.startDate) params.append('startdate', options.startDate);
+            if (options.endDate) params.append('enddate', options.endDate);
+            if (options.pay) params.append('pay', 'yes');
+
             const response = await fetch(
-                this.buildUrl('action=download&type=orders', 'db_xml.cgi'),
+                this.buildUrl(params.toString(), 'db_xml.cgi'),
                 {
                     method: 'GET',
                     headers: {
                         'Authorization': this.authHeader,
                     },
+                    cache: 'no-store',
                 }
             );
 
@@ -157,12 +176,13 @@ export class ShopSiteClient {
     async fetchCustomers(): Promise<ShopSiteCustomer[]> {
         try {
             const response = await fetch(
-                this.buildUrl('action=download&type=customers', 'db_xml.cgi'),
+                this.buildUrl('clientApp=1&dbname=registration', 'db_xml.cgi'),
                 {
                     method: 'GET',
                     headers: {
                         'Authorization': this.authHeader,
                     },
+                    cache: 'no-store',
                 }
             );
 
@@ -197,6 +217,9 @@ export class ShopSiteClient {
             const description = this.extractXmlValue(productXml, 'description');
             const quantityOnHand = parseInt(this.extractXmlValue(productXml, 'quantity_on_hand') || '0', 10);
             const imageUrl = this.extractXmlValue(productXml, 'graphic');
+            const weight = parseFloat(this.extractXmlValue(productXml, 'Weight') || '0');
+            const taxable = this.extractXmlValue(productXml, 'Taxable') === 'Yes';
+            const productType = this.extractXmlValue(productXml, 'ProdType');
 
             if (sku && name) {
                 products.push({
@@ -206,6 +229,10 @@ export class ShopSiteClient {
                     description,
                     quantityOnHand,
                     imageUrl,
+                    weight,
+                    taxable,
+                    productType,
+                    rawXml: productXml,
                 });
             }
         }
@@ -232,13 +259,33 @@ export class ShopSiteClient {
 
             // Extract order-level fields (PascalCase per DTD)
             const orderNumber = this.extractXmlValue(orderXml, 'OrderNumber');
+            const transactionId = this.extractXmlValue(orderXml, 'ShopSiteTransactionID');
             const orderDate = this.extractXmlValue(orderXml, 'OrderDate');
 
-            // Extract customer email from Billing section
+            // Extract customer email and address from Billing section
             const billingMatch = orderXml.match(/<Billing>([\s\S]*?)<\/Billing>/i);
             const customerEmail = billingMatch
                 ? this.extractXmlValue(billingMatch[1], 'Email') || ''
                 : '';
+
+            const billingAddress = billingMatch ? this.parseAddressXml(billingMatch[1]) : undefined;
+
+            // Extract Shipping address
+            const shippingMatch = orderXml.match(/<Shipping>([\s\S]*?)<\/Shipping>/i);
+            const shippingAddress = shippingMatch ? this.parseAddressXml(shippingMatch[1]) : undefined;
+
+            // Extract Payment Method
+            const paymentMatch = orderXml.match(/<Payment>([\s\S]*?)<\/Payment>/i);
+            let paymentMethod = '';
+            if (paymentMatch) {
+                // Try to find first tag inside Payment that isn't empty self-closing if possible, or just take the tag name
+                // Simple heuristic: check for common ones
+                if (paymentMatch[1].includes('<CreditCard>')) paymentMethod = 'CreditCard';
+                else if (paymentMatch[1].includes('<PayPalExpress>')) paymentMethod = 'PayPalExpress';
+                else if (paymentMatch[1].includes('<Check>')) paymentMethod = 'Check';
+                else if (paymentMatch[1].includes('<PurchaseOrder>')) paymentMethod = 'PurchaseOrder';
+                else paymentMethod = 'Other';
+            }
 
             // Extract totals from Totals section
             const totalsMatch = orderXml.match(/<Totals>([\s\S]*?)<\/Totals>/i);
@@ -251,15 +298,14 @@ export class ShopSiteClient {
                 if (taxMatch) {
                     tax = parseFloat(this.extractXmlValue(taxMatch[1], 'TaxAmount') || '0');
                 }
-                const shippingMatch = totalsMatch[1].match(/<ShippingTotal>([\s\S]*?)<\/ShippingTotal>/i);
-                if (shippingMatch) {
-                    shippingTotal = parseFloat(this.extractXmlValue(shippingMatch[1], 'Total') || '0');
+                const shippingTotalMatch = totalsMatch[1].match(/<ShippingTotal>([\s\S]*?)<\/ShippingTotal>/i);
+                if (shippingTotalMatch) {
+                    shippingTotal = parseFloat(this.extractXmlValue(shippingTotalMatch[1], 'Total') || '0');
                 }
             }
 
             // Parse order items from Shipping/Products/Product
             const items: ShopSiteOrderItem[] = [];
-            const shippingMatch = orderXml.match(/<Shipping>([\s\S]*?)<\/Shipping>/i);
             if (shippingMatch) {
                 const productsMatch = shippingMatch[1].match(/<Products>([\s\S]*?)<\/Products>/i);
                 if (productsMatch) {
@@ -289,12 +335,17 @@ export class ShopSiteClient {
             if (orderNumber) {
                 orders.push({
                     orderNumber,
+                    transactionId,
                     orderDate,
                     grandTotal,
                     tax,
                     shippingTotal,
                     customerEmail,
+                    billingAddress,
+                    shippingAddress,
+                    paymentMethod,
                     items,
+                    rawXml: orderXml,
                 });
             }
         }
@@ -327,6 +378,7 @@ export class ShopSiteClient {
                     billingCity,
                     billingState,
                     billingZip,
+                    rawXml: customerXml,
                 });
             }
         }
@@ -342,5 +394,45 @@ export class ShopSiteClient {
         const regex = new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`, 'i');
         const match = xml.match(regex);
         return match ? match[1].trim() : '';
+    }
+
+    /**
+     * Parse AddressInfo from a Billing or Shipping XML block
+     */
+    private parseAddressXml(xml: string): AddressInfo {
+        const fullName = this.extractXmlValue(xml, 'FullName');
+        const company = this.extractXmlValue(xml, 'Company');
+        const phone = this.extractXmlValue(xml, 'Phone');
+
+        // Address block is nested
+        const addressMatch = xml.match(/<Address>([\s\S]*?)<\/Address>/i);
+        let street1 = '';
+        let street2 = '';
+        let city = '';
+        let state = '';
+        let zip = '';
+        let country = '';
+
+        if (addressMatch) {
+            const addrXml = addressMatch[1];
+            street1 = this.extractXmlValue(addrXml, 'Street1');
+            street2 = this.extractXmlValue(addrXml, 'Street2');
+            city = this.extractXmlValue(addrXml, 'City');
+            state = this.extractXmlValue(addrXml, 'State');
+            zip = this.extractXmlValue(addrXml, 'Code');
+            country = this.extractXmlValue(addrXml, 'Country');
+        }
+
+        return {
+            fullName,
+            company,
+            phone,
+            street1,
+            street2,
+            city,
+            state,
+            zip,
+            country
+        };
     }
 }

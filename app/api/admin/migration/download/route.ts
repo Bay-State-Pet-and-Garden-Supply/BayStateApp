@@ -54,8 +54,28 @@ export async function GET(request: NextRequest) {
     // Build auth header
     const authHeader = 'Basic ' + Buffer.from(`${merchantId}:${password}`).toString('base64');
 
+    // Build correct query string based on type
+    let queryString = '';
+    switch (type) {
+        case 'products':
+            queryString = 'clientApp=1&dbname=products';
+            break;
+        case 'orders':
+            // XML Order Download API
+            queryString = 'version=15.0';
+            break;
+        case 'customers':
+            queryString = 'clientApp=1&dbname=registration';
+            break;
+        default:
+            return NextResponse.json(
+                { error: 'Invalid type' },
+                { status: 400 }
+            );
+    }
+
     try {
-        const response = await fetch(`${baseUrl}/db_xml.cgi?action=download&type=${type}`, {
+        const response = await fetch(`${baseUrl}/db_xml.cgi?${queryString}`, {
             headers: { 'Authorization': authHeader },
         });
 

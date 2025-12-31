@@ -47,6 +47,10 @@ export function transformShopSiteProduct(product: ShopSiteProduct): {
         stock_status: product.quantityOnHand > 0 ? 'in_stock' : 'out_of_stock',
         images: product.imageUrl ? [product.imageUrl] : [],
         legacy_shopsite_id: product.sku,
+        weight: product.weight,
+        taxable: product.taxable ?? true,
+        shopsite_product_type: product.productType,
+        shopsite_data: product.rawXml ? { raw_xml: product.rawXml } : {},
     };
 }
 

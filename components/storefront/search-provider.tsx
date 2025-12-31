@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import Fuse from 'fuse.js';
 import { CommandBar } from '@/components/storefront/command-bar';
 
@@ -34,11 +34,10 @@ interface SearchProviderProps {
  */
 export function SearchProvider({ children, initialData }: SearchProviderProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchIndex, setSearchIndex] = useState<Fuse<unknown> | null>(null);
 
   // Build search index from initial data
-  useEffect(() => {
-    if (!initialData) return;
+  const searchIndex = useMemo(() => {
+    if (!initialData) return null;
 
     const searchableItems = [
       ...(initialData.products || []).map((p) => ({
@@ -68,7 +67,7 @@ export function SearchProvider({ children, initialData }: SearchProviderProps) {
       })),
     ];
 
-    const index = new Fuse(searchableItems, {
+    return new Fuse(searchableItems, {
       keys: [
         { name: 'name', weight: 2 },
         { name: 'description', weight: 1 },
@@ -79,8 +78,6 @@ export function SearchProvider({ children, initialData }: SearchProviderProps) {
       includeScore: true,
       minMatchCharLength: 2,
     });
-
-    setSearchIndex(index);
   }, [initialData]);
 
   // Handle keyboard shortcut (Cmd+K or Ctrl+K)

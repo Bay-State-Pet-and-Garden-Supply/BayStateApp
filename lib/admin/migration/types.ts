@@ -29,6 +29,11 @@ export interface ShopSiteProduct {
     description: string;
     quantityOnHand: number;
     imageUrl: string;
+    weight?: number;
+    taxable?: boolean;
+    cost?: number; // shopsite_cost
+    productType?: string; // shopsite_product_type
+    rawXml?: any; // To store in shopsite_data
 }
 
 export interface ShopSiteOrderItem {
@@ -37,14 +42,31 @@ export interface ShopSiteOrderItem {
     price: number;
 }
 
+export interface AddressInfo {
+    fullName: string;
+    company?: string;
+    phone?: string;
+    street1: string;
+    street2?: string;
+    city: string;
+    state: string;
+    zip: string;
+    country: string;
+}
+
 export interface ShopSiteOrder {
     orderNumber: string;
+    transactionId?: string; // ShopSiteTransactionID
     orderDate: string;
     grandTotal: number;
     tax: number;
     shippingTotal: number;
     customerEmail: string;
+    billingAddress?: AddressInfo;
+    shippingAddress?: AddressInfo;
+    paymentMethod?: string; // From Payment section
     items: ShopSiteOrderItem[];
+    rawXml?: any; // To store in shopsite_data
 }
 
 export interface ShopSiteCustomer {
@@ -55,6 +77,7 @@ export interface ShopSiteCustomer {
     billingCity: string;
     billingState: string;
     billingZip: string;
+    rawXml?: any; // To store in shopsite_data
 }
 
 // ============================================================================
