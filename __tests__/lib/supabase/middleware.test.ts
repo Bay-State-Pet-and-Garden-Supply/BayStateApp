@@ -53,9 +53,11 @@ describe('Middleware Auth Logic', () => {
         const req = createReq('/admin/dashboard');
         const res = await updateSession(req);
 
-        // Should redirect OUT of admin
+        // Should redirect to /admin/login with error params
         expect(res.status).toBe(307);
-        expect(res.headers.get('location')).toBe('http://localhost/');
+        const location = new URL(res.headers.get('location') || '');
+        expect(location.pathname).toBe('/admin/login');
+        expect(location.searchParams.get('error')).toBe('unauthorized');
     });
 
     it('redirects staff role from /admin/users to /admin/orders (or dashboard?)', async () => {
