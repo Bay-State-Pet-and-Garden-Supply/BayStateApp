@@ -20,17 +20,36 @@ describe('Data Fetching Functions', () => {
   const mockLimit = jest.fn();
   const mockRange = jest.fn();
   const mockIn = jest.fn();
+  const mockGte = jest.fn();
+  const mockLte = jest.fn();
+  const mockIlike = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // Chain mock
-    mockLimit.mockReturnThis();
-    mockRange.mockReturnThis();
+    // Chain mock - ensure range returns a promise with data
+    mockRange.mockResolvedValue({ data: [], error: null, count: 0 });
+    mockLimit.mockResolvedValue({ data: [], error: null });
     mockIn.mockResolvedValue({ data: [], error: null });
-    mockOrder.mockReturnValue({ limit: mockLimit, range: mockRange, data: [], error: null });
-    mockEq.mockReturnValue({ eq: mockEq, order: mockOrder, data: [], error: null });
-    mockSelect.mockReturnValue({ eq: mockEq, order: mockOrder, in: mockIn, data: [], error: null, count: 0 });
+    mockGte.mockReturnValue({ lte: mockLte, order: mockOrder });
+    mockLte.mockReturnValue({ order: mockOrder });
+    mockIlike.mockReturnValue({ order: mockOrder });
+    mockOrder.mockReturnValue({ limit: mockLimit, range: mockRange });
+    mockEq.mockReturnValue({
+      eq: mockEq,
+      order: mockOrder,
+      gte: mockGte,
+      lte: mockLte,
+      ilike: mockIlike,
+    });
+    mockSelect.mockReturnValue({
+      eq: mockEq,
+      order: mockOrder,
+      in: mockIn,
+      gte: mockGte,
+      lte: mockLte,
+      ilike: mockIlike,
+    });
     mockFrom.mockReturnValue({ select: mockSelect });
 
     mockCreateClient.mockResolvedValue({
@@ -39,30 +58,30 @@ describe('Data Fetching Functions', () => {
   });
 
   describe('getFeaturedProducts', () => {
-    it('queries products table with featured filter', async () => {
-      mockLimit.mockResolvedValue({ data: [], error: null });
-
+    it('queries products_published view with featured and stock filters', async () => {
+      // getFeaturedProducts now delegates to getFilteredProducts which uses range()
       await getFeaturedProducts();
 
       expect(mockFrom).toHaveBeenCalledWith('products_published');
-      expect(mockSelect).toHaveBeenCalledWith('*');
+      expect(mockSelect).toHaveBeenCalledWith('*', { count: 'exact' });
       expect(mockEq).toHaveBeenCalledWith('is_featured', true);
+      expect(mockEq).toHaveBeenCalledWith('stock_status', 'in_stock');
     });
 
     it('returns empty array on error', async () => {
-      mockLimit.mockResolvedValue({ data: null, error: { message: 'Test error' } });
+      mockRange.mockResolvedValue({ data: null, error: { message: 'Test error' }, count: 0 });
 
       const result = await getFeaturedProducts();
 
       expect(result).toEqual([]);
     });
 
-    it('respects limit parameter', async () => {
-      mockLimit.mockResolvedValue({ data: [], error: null });
-
+    it('respects limit parameter via pagination', async () => {
       await getFeaturedProducts(3);
 
-      expect(mockLimit).toHaveBeenCalledWith(3);
+      // getFilteredProducts uses range(offset, offset + limit - 1)
+      // With offset=0 and limit=3, it should call range(0, 2)
+      expect(mockRange).toHaveBeenCalledWith(0, 2);
     });
   });
 
@@ -104,23 +123,42 @@ describe('Data Fetching Functions', () => {
   });
 
   describe('getProducts', () => {
-    it('queries products with optional filters', async () => {
-      mockRange.mockResolvedValue({ data: [], error: null, count: 0 });
-
+    it('queries products_published view with optional filters', async () => {
       await getProducts({ brandId: 'test-id', stockStatus: 'in_stock', limit: 10, offset: 0 });
 
       expect(mockFrom).toHaveBeenCalledWith('products_published');
       expect(mockEq).toHaveBeenCalledWith('brand_id', 'test-id');
+      expect(mockEq).toHaveBeenCalledWith('stock_status', 'in_stock');
     });
 
     it('returns products and count', async () => {
-      const mockProducts = [{ id: '1', name: 'Test Product' }];
-      mockOrder.mockResolvedValue({ data: mockProducts, error: null, count: 1 });
+      const mockProducts = [{
+        id: '1',
+        name: 'Test Product',
+        slug: 'test-product',
+        description: 'Test',
+        price: 10,
+        images: [],
+        stock_status: 'in_stock',
+        brand_id: null,
+        is_featured: false,
+        created_at: '2024-01-01',
+      }];
+      mockRange.mockResolvedValue({ data: mockProducts, error: null, count: 1 });
 
       const result = await getProducts();
 
       expect(result).toHaveProperty('products');
       expect(result).toHaveProperty('count');
+      expect(result.products).toHaveLength(1);
+      expect(result.count).toBe(1);
+    });
+
+    it('applies pagination with range', async () => {
+      await getProducts({ limit: 10, offset: 20 });
+
+      // range(offset, offset + limit - 1)
+      expect(mockRange).toHaveBeenCalledWith(20, 29);
     });
   });
 });

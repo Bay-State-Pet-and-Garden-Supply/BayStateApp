@@ -43,11 +43,11 @@ describe('Products Data Functions', () => {
   });
 
   describe('getProductBySlug', () => {
-    it('queries products table with slug filter', async () => {
+    it('queries products_published view with slug filter', async () => {
       await getProductBySlug('test-product');
 
-      expect(mockFrom).toHaveBeenCalledWith('products');
-      expect(mockSelect).toHaveBeenCalledWith('*, brand:brands(*)');
+      expect(mockFrom).toHaveBeenCalledWith('products_published');
+      expect(mockSelect).toHaveBeenCalledWith('*');
       expect(mockEq).toHaveBeenCalledWith('slug', 'test-product');
     });
 
@@ -59,25 +59,38 @@ describe('Products Data Functions', () => {
       expect(result).toBeNull();
     });
 
-    it('returns product when found', async () => {
-      const mockProduct = { id: '1', name: 'Test Product', slug: 'test-product' };
+    it('returns transformed product when found', async () => {
+      const mockProduct = {
+        id: 'sku-123',
+        name: 'Test Product',
+        slug: 'test-product',
+        description: 'A test product',
+        price: 19.99,
+        images: [],
+        stock_status: 'in_stock',
+        brand_id: null,
+        is_featured: false,
+        created_at: '2024-01-01',
+      };
       mockSingle.mockResolvedValue({ data: mockProduct, error: null });
 
       const result = await getProductBySlug('test-product');
 
-      expect(result).toEqual(mockProduct);
+      expect(result).not.toBeNull();
+      expect(result?.id).toBe('sku-123');
+      expect(result?.name).toBe('Test Product');
     });
   });
 
   describe('getFilteredProducts', () => {
-    it('queries products with filters', async () => {
+    it('queries products_published view with filters', async () => {
       await getFilteredProducts({
         stockStatus: 'in_stock',
         minPrice: 10,
         maxPrice: 100,
       });
 
-      expect(mockFrom).toHaveBeenCalledWith('products');
+      expect(mockFrom).toHaveBeenCalledWith('products_published');
     });
 
     it('returns empty array on error', async () => {
