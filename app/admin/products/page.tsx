@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Plus, Package, ExternalLink, Eye } from 'lucide-react';
+import { Plus, Package, ExternalLink, Pencil } from 'lucide-react';
 
 interface PublishedProduct {
   id: string;
@@ -138,8 +138,8 @@ export default async function AdminProductsPage() {
 
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" className="flex-1" asChild>
-                      <Link href={`/admin/pipeline?sku=${product.sku}`}>
-                        <Eye className="mr-1 h-3 w-3" /> Edit
+                      <Link href={`/admin/products/${product.id}/edit`}>
+                        <Pencil className="mr-1 h-3 w-3" /> Edit
                       </Link>
                     </Button>
                     <Button variant="ghost" size="sm" asChild>
