@@ -10,11 +10,11 @@ interface PipelineStatusTabsProps {
 }
 
 const statusConfig: Record<PipelineStatus, { label: string; color: string }> = {
-    staging: { label: 'Staging', color: 'bg-gray-500' },
-    scraped: { label: 'Scraped', color: 'bg-blue-500' },
-    consolidated: { label: 'Consolidated', color: 'bg-yellow-500' },
-    approved: { label: 'Approved', color: 'bg-green-500' },
-    published: { label: 'Published', color: 'bg-emerald-600' },
+    staging: { label: 'Imported', color: 'bg-gray-500' },
+    scraped: { label: 'Enhanced', color: 'bg-blue-500' },
+    consolidated: { label: 'Ready for Review', color: 'bg-yellow-500' },
+    approved: { label: 'Verified', color: 'bg-green-500' },
+    published: { label: 'Live', color: 'bg-emerald-600' },
 };
 
 export function PipelineStatusTabs({ counts, activeStatus, onStatusChange }: PipelineStatusTabsProps) {
@@ -33,8 +33,8 @@ export function PipelineStatusTabs({ counts, activeStatus, onStatusChange }: Pip
                         key={status}
                         onClick={() => onStatusChange(status)}
                         className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${isActive
-                                ? 'bg-gray-900 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-gray-900 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                     >
                         <span className={`h-2 w-2 rounded-full ${config.color}`} />

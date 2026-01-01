@@ -36,8 +36,52 @@ export async function updateProfileAction(values: z.infer<typeof profileSchema>)
         return { error: error.message }
     }
 
-    revalidatePath('/account') // Update sidebar/header name if used
-    revalidatePath('/account') // Update sidebar/header name if used
+    revalidatePath('/account')
+    revalidatePath('/account/profile')
+    return { success: true }
+}
+
+/**
+ * Creates a missing profile for the current user.
+ * This handles legacy users who were created before the profile trigger was added.
+ * Should only be called when a user explicitly requests to create their profile.
+ */
+export async function createMissingProfileAction() {
+    const supabase = await createClient()
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+
+    if (userError || !user) {
+        return { error: 'Unauthorized' }
+    }
+
+    // Check if profile already exists
+    const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', user.id)
+        .single()
+
+    if (existingProfile) {
+        // Profile already exists, nothing to do
+        return { success: true, message: 'Profile already exists' }
+    }
+
+    // Create the missing profile
+    const { error } = await supabase
+        .from('profiles')
+        .insert({
+            id: user.id,
+            full_name: user.user_metadata?.full_name || user.user_metadata?.name || '',
+            email: user.email,
+            role: 'customer'
+        })
+
+    if (error) {
+        console.error('Error creating missing profile:', error)
+        return { error: 'Failed to create profile. Please try again.' }
+    }
+
+    revalidatePath('/account')
     revalidatePath('/account/profile')
     return { success: true }
 }

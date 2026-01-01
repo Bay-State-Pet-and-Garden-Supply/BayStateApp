@@ -6,10 +6,11 @@ import { ShopSiteClient, ShopSiteConfig } from '@/lib/admin/migration/shopsite-c
 import { transformShopSiteProduct, generateUniqueSlug } from '@/lib/admin/migration/product-sync';
 import { transformShopSiteCustomer } from '@/lib/admin/migration/customer-sync';
 import { transformShopSiteOrder, batchOrders } from '@/lib/admin/migration/order-sync';
-import { SyncResult, MigrationError } from '@/lib/admin/migration/types';
+import { SyncResult, MigrationError, ShopSiteProduct, ShopSiteCustomer, ShopSiteOrder } from '@/lib/admin/migration/types';
 import { startMigrationLog, completeMigrationLog, updateMigrationProgress } from '@/lib/admin/migration/history';
 
 const MIGRATION_SETTINGS_KEY = 'shopsite_migration';
+const TEST_LIMIT = 1000;
 
 interface MigrationCredentials {
     storeUrl: string;
@@ -98,27 +99,6 @@ export async function testConnectionAction() {
  */
 export async function syncProductsAction(): Promise<SyncResult> {
     const startTime = Date.now();
-    const MAX_ERRORS = 50;
-    const errors: MigrationError[] = [];
-    let created = 0;
-    let updated = 0;
-    let failed = 0;
-
-    const addError = (record: string, message: string) => {
-        if (errors.length < MAX_ERRORS) {
-            errors.push({
-                record,
-                error: message,
-                timestamp: new Date().toISOString(),
-            });
-        } else if (errors.length === MAX_ERRORS) {
-            errors.push({
-                record: '...',
-                error: 'Too many errors, truncating log',
-                timestamp: new Date().toISOString(),
-            });
-        }
-    };
 
     const logId = await startMigrationLog('products');
 
@@ -147,7 +127,7 @@ export async function syncProductsAction(): Promise<SyncResult> {
     const client = new ShopSiteClient(config);
     let shopSiteProducts = [];
     try {
-        shopSiteProducts = await client.fetchProducts();
+        shopSiteProducts = await client.fetchProducts(TEST_LIMIT);
     } catch (err) {
         const result = {
             success: false,
@@ -169,7 +149,7 @@ export async function syncProductsAction(): Promise<SyncResult> {
 /**
  * Shared logic for processing ShopSite products.
  */
-async function processProducts(shopSiteProducts: any[], logId?: string): Promise<SyncResult> {
+async function processProducts(shopSiteProducts: ShopSiteProduct[], logId?: string): Promise<SyncResult> {
     const startTime = Date.now();
     const MAX_ERRORS = 50;
     const errors: MigrationError[] = [];
@@ -209,10 +189,81 @@ async function processProducts(shopSiteProducts: any[], logId?: string): Promise
     const existingSlugs = new Set((existingProducts || []).map((p: { slug: string }) => p.slug));
     const existingSkus = new Set((existingProducts || []).map((p: { sku: string }) => p.sku).filter(Boolean));
 
+    // ------------------------------------------------------------------------
+    // Step 1: Pre-process Brands and Categories
+    // ------------------------------------------------------------------------
+    const brandNames = new Set<string>();
+    const categoryNames = new Set<string>();
+
+    for (const p of shopSiteProducts) {
+        if (p.brandName?.trim()) brandNames.add(p.brandName.trim());
+        if (p.categoryName?.trim()) {
+            // Split pipe-delimited categories if any
+            p.categoryName.split('|').forEach((c: string) => categoryNames.add(c.trim()));
+        }
+    }
+
+    const brandMap = new Map<string, string>();     // name -> uuid
+    const categoryMap = new Map<string, string>();  // name -> uuid
+
+    // Upsert Brands
+    if (brandNames.size > 0) {
+        for (const name of Array.from(brandNames)) {
+            const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+            // First try to select
+            const { data: existing } = await supabase.from('brands').select('id').eq('slug', slug).single();
+
+            if (existing) {
+                brandMap.set(name, existing.id);
+            } else {
+                const { data: created } = await supabase.from('brands').insert({
+                    name,
+                    slug
+                }).select('id').single();
+                if (created) brandMap.set(name, created.id);
+            }
+        }
+    }
+
+    // Upsert Categories
+    if (categoryNames.size > 0) {
+        for (const name of Array.from(categoryNames)) {
+            const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+            // First try to select
+            const { data: existing } = await supabase.from('categories').select('id').eq('slug', slug).single();
+
+            if (existing) {
+                categoryMap.set(name, existing.id);
+            } else {
+                const { data: created } = await supabase.from('categories').insert({
+                    name,
+                    slug,
+                    display_order: 0
+                }).select('id').single();
+                if (created) categoryMap.set(name, created.id);
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Step 2: Transform and Upsert Products
+    // ------------------------------------------------------------------------
+
+    // Store category links to insert after products
+    const productCategoryLinks: { product_id: string, category_id: string }[] = [];
+
     // Transform and upsert each product
     for (const shopSiteProduct of shopSiteProducts) {
         try {
             const transformed = transformShopSiteProduct(shopSiteProduct);
+
+            // Lookup Brand
+            if (shopSiteProduct.brandName) {
+                const brandId = brandMap.get(shopSiteProduct.brandName.trim());
+                if (brandId) {
+                    transformed.brand_id = brandId;
+                }
+            }
 
             // Check if product exists by SKU
             const isUpdate = existingSkus.has(shopSiteProduct.sku);
@@ -223,16 +274,31 @@ async function processProducts(shopSiteProducts: any[], logId?: string): Promise
                 existingSlugs.add(transformed.slug);
             }
 
-            const { error } = await supabase
+            const { data: upserted, error } = await supabase
                 .from('products')
                 .upsert(transformed, {
                     onConflict: 'sku',
-                });
+                })
+                .select('id')
+                .single();
 
             if (error) {
                 addError(shopSiteProduct.sku, error.message);
                 failed++;
             } else {
+                if (upserted && shopSiteProduct.categoryName) {
+                    const cats = shopSiteProduct.categoryName.split('|');
+                    for (const c of cats) {
+                        const catId = categoryMap.get(c.trim());
+                        if (catId) {
+                            productCategoryLinks.push({
+                                product_id: upserted.id,
+                                category_id: catId
+                            });
+                        }
+                    }
+                }
+
                 if (isUpdate) {
                     updated++;
                 } else {
@@ -256,6 +322,26 @@ async function processProducts(shopSiteProducts: any[], logId?: string): Promise
                 errors: [],
                 duration: Date.now() - startTime,
             });
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Step 3: Insert Product-Category Links
+    // ------------------------------------------------------------------------
+    if (productCategoryLinks.length > 0) {
+        // Process in batches of 1000 to avoid request size limits
+        const BATCH_SIZE = 1000;
+        for (let i = 0; i < productCategoryLinks.length; i += BATCH_SIZE) {
+            const batch = productCategoryLinks.slice(i, i + BATCH_SIZE);
+            const { error: linkError } = await supabase
+                .from('product_categories')
+                .upsert(batch, { onConflict: 'product_id, category_id' });
+
+            if (linkError) {
+                console.error('Error inserting product categories:', linkError);
+                // We don't fail the whole sync for this, but log it
+                addError('CATEGORY_LINKS', `Failed to link ${batch.length} categories: ${linkError.message}`);
+            }
         }
     }
 
@@ -315,7 +401,7 @@ export async function syncCustomersAction(): Promise<SyncResult> {
     const client = new ShopSiteClient(config);
     let shopSiteCustomers = [];
     try {
-        shopSiteCustomers = await client.fetchCustomers();
+        shopSiteCustomers = await client.fetchCustomers(TEST_LIMIT);
     } catch (err) {
         const result = {
             success: false,
@@ -337,7 +423,7 @@ export async function syncCustomersAction(): Promise<SyncResult> {
 /**
  * Shared logic for processing ShopSite customers.
  */
-async function processCustomers(shopSiteCustomers: any[], logId?: string): Promise<SyncResult> {
+async function processCustomers(shopSiteCustomers: ShopSiteCustomer[], logId?: string): Promise<SyncResult> {
     const startTime = Date.now();
     const MAX_ERRORS = 50;
     const errors: MigrationError[] = [];
@@ -374,7 +460,7 @@ async function processCustomers(shopSiteCustomers: any[], logId?: string): Promi
         .from('profiles')
         .select('email');
 
-    const existingEmails = new Set((existingProfiles || []).map((p: any) => p.email?.toLowerCase()));
+    const existingEmails = new Set((existingProfiles || []).map((p: { email?: string }) => p.email?.toLowerCase()));
 
     for (const shopSiteCustomer of shopSiteCustomers) {
         try {
@@ -471,7 +557,7 @@ export async function syncOrdersAction(): Promise<SyncResult> {
     const client = new ShopSiteClient(config);
     let shopSiteOrders = [];
     try {
-        shopSiteOrders = await client.fetchOrders();
+        shopSiteOrders = await client.fetchOrders({ limit: TEST_LIMIT });
     } catch (err) {
         const result = {
             success: false,
@@ -493,7 +579,7 @@ export async function syncOrdersAction(): Promise<SyncResult> {
 /**
  * Shared logic for processing ShopSite orders.
  */
-async function processOrders(shopSiteOrders: any[], logId?: string): Promise<SyncResult> {
+async function processOrders(shopSiteOrders: ShopSiteOrder[], logId?: string): Promise<SyncResult> {
     const startTime = Date.now();
     const MAX_ERRORS = 50;
     const errors: MigrationError[] = [];
@@ -536,12 +622,12 @@ async function processOrders(shopSiteOrders: any[], logId?: string): Promise<Syn
     if (productsError) console.error('[Sync] Error fetching products:', productsError);
 
     const profileIdMap = new Map<string, string>();
-    (profiles || []).forEach((p: any) => {
+    (profiles || []).forEach((p: { id: string; email?: string }) => {
         if (p.email) profileIdMap.set(p.email.toLowerCase(), p.id);
     });
 
     const productIdMap = new Map<string, string>();
-    (products || []).forEach((p: any) => {
+    (products || []).forEach((p: { id: string; sku?: string }) => {
         if (p.sku) productIdMap.set(p.sku, p.id);
     });
 
@@ -554,7 +640,7 @@ async function processOrders(shopSiteOrders: any[], logId?: string): Promise<Syn
 
     const existingOrderNumbers = new Set(
         (existingOrders || [])
-            .map((o: any) => o.legacy_order_number)
+            .map((o: { legacy_order_number?: string }) => o.legacy_order_number)
             .filter(Boolean)
     );
 
@@ -568,10 +654,7 @@ async function processOrders(shopSiteOrders: any[], logId?: string): Promise<Syn
 
         for (const shopSiteOrder of batch) {
             try {
-                if (existingOrderNumbers.has(shopSiteOrder.orderNumber)) {
-                    updated++;
-                    continue;
-                }
+                // Removed manual check - rely on Upsert
 
                 const { order: orderData, items } = transformShopSiteOrder(
                     shopSiteOrder,
@@ -579,38 +662,54 @@ async function processOrders(shopSiteOrders: any[], logId?: string): Promise<Syn
                     productIdMap
                 );
 
+                // Upsert order to handle both new and existing
                 const { data: newOrder, error: orderError } = await supabase
                     .from('orders')
-                    .insert(orderData)
+                    .upsert(orderData, { onConflict: 'legacy_order_number' })
                     .select('id')
                     .single();
 
                 if (orderError) {
-                    console.error(`[Sync] Failed to insert order ${shopSiteOrder.orderNumber}:`, orderError);
+                    console.error(`[Sync] Failed to upsert order ${shopSiteOrder.orderNumber}:`, orderError);
                     addError(shopSiteOrder.orderNumber, orderError.message);
                     failed++;
                     continue;
                 }
 
-                if (items.length > 0 && newOrder) {
-                    const orderItems = items.map(item => ({
-                        ...item,
-                        order_id: newOrder.id,
-                    }));
+                if (newOrder) {
+                    // Update stats
+                    if (existingOrderNumbers.has(shopSiteOrder.orderNumber)) {
+                        updated++;
+                    } else {
+                        created++;
+                        existingOrderNumbers.add(shopSiteOrder.orderNumber);
+                    }
 
-                    const { error: itemsError } = await supabase
-                        .from('order_items')
-                        .insert(orderItems);
+                    // Handle Items: Delete existing and re-insert to ensure sync
+                    if (items.length > 0) {
+                        // 1. Clear existing items
+                        await supabase
+                            .from('order_items')
+                            .delete()
+                            .eq('order_id', newOrder.id);
 
-                    if (itemsError) {
-                        console.error(`[Sync] Failed to insert items for ${shopSiteOrder.orderNumber}:`, itemsError);
-                        addError(`${shopSiteOrder.orderNumber} items`, itemsError.message);
+                        // 2. Insert fresh items
+                        const orderItems = items.map(item => ({
+                            ...item,
+                            order_id: newOrder.id,
+                        }));
+
+                        const { error: itemsError } = await supabase
+                            .from('order_items')
+                            .insert(orderItems);
+
+                        if (itemsError) {
+                            console.error(`[Sync] Failed to insert items for ${shopSiteOrder.orderNumber}:`, itemsError);
+                            addError(`${shopSiteOrder.orderNumber} items`, itemsError.message);
+                        }
                     }
                 }
 
-                created++;
-                console.log(`[Sync] Created order ${shopSiteOrder.orderNumber}`); // Verbose
-                existingOrderNumbers.add(shopSiteOrder.orderNumber);
             } catch (err) {
                 console.error(`[Sync] Exception for order ${shopSiteOrder.orderNumber}:`, err);
                 addError(shopSiteOrder.orderNumber, err instanceof Error ? err.message : 'Unknown error');
@@ -665,22 +764,21 @@ export async function syncUploadedXmlAction(formData: FormData): Promise<SyncRes
 
     // We reuse the parsing logic from ShopSiteClient
     // but without needing a configuration since we have the XML directly
-    // @ts-ignore - Partial config is fine for parsing only
     const client = new ShopSiteClient({ storeUrl: 'http://local', merchantId: 'local', password: 'local' });
 
     let result: SyncResult;
 
     switch (type) {
         case 'products':
-            const products = (client as any).parseProductsXml(xmlText);
+            const products = (client as unknown as { parseProductsXml(xml: string): ShopSiteProduct[] }).parseProductsXml(xmlText);
             result = await processProducts(products, logId ?? undefined);
             break;
         case 'orders':
-            const orders = (client as any).parseOrdersXml(xmlText);
+            const orders = (client as unknown as { parseOrdersXml(xml: string): ShopSiteOrder[] }).parseOrdersXml(xmlText);
             result = await processOrders(orders, logId ?? undefined);
             break;
         case 'customers':
-            const customers = (client as any).parseCustomersXml(xmlText);
+            const customers = (client as unknown as { parseCustomersXml(xml: string): ShopSiteCustomer[] }).parseCustomersXml(xmlText);
             result = await processCustomers(customers, logId ?? undefined);
             break;
         default:

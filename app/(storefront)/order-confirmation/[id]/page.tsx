@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { CheckCircle, Package, Clock, MapPin, Mail } from 'lucide-react';
+import { CheckCircle, Clock, MapPin, Mail } from 'lucide-react';
 import { getOrderById } from '@/lib/orders';
+import { createClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -16,6 +17,17 @@ export default async function OrderConfirmationPage({
   const order = await getOrderById(id);
 
   if (!order) {
+    notFound();
+  }
+
+  // SECURITY: Verify order ownership for authenticated users
+  // Guest orders (no user_id) are accessible via the order ID in URL
+  // Authenticated users can only view their own orders
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (order.user_id && user?.id !== order.user_id) {
+    // Order belongs to a different user
     notFound();
   }
 
@@ -89,7 +101,7 @@ export default async function OrderConfirmationPage({
         <Card className="mb-8 text-left">
           <CardContent className="p-6">
             <h2 className="mb-4 text-lg font-semibold text-zinc-900">
-              What's Next?
+              What&apos;s Next?
             </h2>
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
@@ -97,7 +109,7 @@ export default async function OrderConfirmationPage({
                 <div>
                   <p className="font-medium text-zinc-900">Confirmation Email</p>
                   <p className="text-sm text-zinc-600">
-                    We've sent a confirmation to {order.customer_email}
+                    We&apos;ve sent a confirmation to {order.customer_email}
                   </p>
                 </div>
               </li>
@@ -106,7 +118,7 @@ export default async function OrderConfirmationPage({
                 <div>
                   <p className="font-medium text-zinc-900">Order Processing</p>
                   <p className="text-sm text-zinc-600">
-                    We'll prepare your order and email you when it's ready
+                    We&apos;ll prepare your order and email you when it&apos;s ready
                   </p>
                 </div>
               </li>

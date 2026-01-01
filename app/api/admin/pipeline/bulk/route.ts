@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { bulkUpdateStatus, type PipelineStatus } from '@/lib/pipeline';
+import { requireAdminAuth } from '@/lib/admin/api-auth';
 
 export async function POST(request: NextRequest) {
+    const auth = await requireAdminAuth();
+    if (!auth.authorized) return auth.response;
+
     try {
         const body = await request.json();
         const { skus, newStatus } = body as { skus: string[]; newStatus: PipelineStatus };

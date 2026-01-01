@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Menu, Search, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSearch } from '@/components/storefront/search-provider';
@@ -26,11 +27,13 @@ export function StorefrontHeader({ user, userRole }: { user: User | null, userRo
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3">
-            <div className="h-10 w-10 overflow-hidden rounded-md border border-zinc-200">
-              <img
+            <div className="h-10 w-10 overflow-hidden rounded-md border border-zinc-200 relative">
+              <Image
                 src="/logo.png"
                 alt="Bay State Pet & Garden Supply Logo"
-                className="h-full w-full object-cover"
+                fill
+                sizes="40px"
+                className="object-cover"
               />
             </div>
             <div className="flex flex-col">

@@ -23,6 +23,7 @@ export interface OrderDownloadOptions {
     startDate?: string; // mm/dd/yyyy
     endDate?: string;   // mm/dd/yyyy
     pay?: boolean;
+    limit?: number;
 }
 
 export { ShopSiteConfigSchema };
@@ -143,7 +144,7 @@ export class ShopSiteClient {
     /**
      * Fetch all products from ShopSite db_xml.cgi endpoint.
      */
-    async fetchProducts(): Promise<ShopSiteProduct[]> {
+    async fetchProducts(limit?: number): Promise<ShopSiteProduct[]> {
         try {
             // Added version=14.0 as per legacy guide
             const response = await fetch(
@@ -162,12 +163,59 @@ export class ShopSiteClient {
                 return [];
             }
 
-            // Decode as utf-8 with replacement as per guide
-            const buffer = await response.arrayBuffer();
-            const decoder = new TextDecoder('utf-8', { fatal: false });
-            const xmlText = ShopSiteClient.sanitizeXml(decoder.decode(buffer));
+            // Implement manual streaming to abort download early if limit is set
+            let rawText = '';
 
-            return this.parseProductsXml(xmlText);
+            if (limit && response.body) {
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder('utf-8', { fatal: false });
+                const productCount = 0;
+
+                try {
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+
+                        const chunk = decoder.decode(value, { stream: true });
+                        rawText += chunk;
+
+                        // Count occurrences of </Product> to estimate count
+                        // Since a chunk might cut a tag in half, this is approximate but safe
+                        // (we might download 1 extra product but that's fine)
+                        const matches = rawText.match(/<\/Product>/gi);
+                        if (matches && matches.length >= limit) {
+                            console.log(`Limit of ${limit} reached. Aborting download.`);
+                            await reader.cancel('Limit reached');
+                            break;
+                        }
+                    }
+                } catch (e) {
+                    // Ignore cancel errors
+                    if (e !== 'Limit reached') console.error('Stream read error:', e);
+                }
+
+                // Ensure the XML is terminated properly if we cut it off
+                // Check if we cut off inside a tag or mid-stream
+                if (!rawText.trim().endsWith('</ShopSiteProducts>')) {
+                    // Try to find the last complete </Product>
+                    const lastProductEnd = rawText.lastIndexOf('</Product>');
+                    if (lastProductEnd !== -1) {
+                        rawText = rawText.substring(0, lastProductEnd + 10);
+                        rawText += '</ShopSiteProducts>';
+                    } else {
+                        // Fallback: just append the closing tag to whatever we have
+                        rawText += '</ShopSiteProducts>';
+                    }
+                }
+            } else {
+                // Determine if we need to fall back to full download
+                const buffer = await response.arrayBuffer();
+                const decoder = new TextDecoder('utf-8', { fatal: false });
+                rawText = decoder.decode(buffer);
+            }
+
+            const xmlText = ShopSiteClient.sanitizeXml(rawText);
+            return this.parseProductsXml(xmlText, limit);
         } catch (error) {
             console.error('Error fetching products:', error);
             return [];
@@ -190,6 +238,7 @@ export class ShopSiteClient {
             if (options.endOrder) params.append('endorder', options.endOrder);
             if (options.startDate) params.append('startdate', options.startDate);
             if (options.endDate) params.append('enddate', options.endDate);
+            if (options.limit) params.append('maxorder', options.limit.toString());
 
             const response = await fetch(
                 this.buildUrl(params.toString(), 'db_xml.cgi'),
@@ -234,7 +283,7 @@ export class ShopSiteClient {
     /**
      * Fetch all registered customers from ShopSite.
      */
-    async fetchCustomers(): Promise<ShopSiteCustomer[]> {
+    async fetchCustomers(limit?: number): Promise<ShopSiteCustomer[]> {
         try {
             const response = await fetch(
                 this.buildUrl('clientApp=1&dbname=registration', 'db_xml.cgi'),
@@ -253,7 +302,7 @@ export class ShopSiteClient {
             }
 
             const xmlText = ShopSiteClient.sanitizeXml(await response.text());
-            return this.parseCustomersXml(xmlText);
+            return this.parseCustomersXml(xmlText, limit);
         } catch (error) {
             console.error('Error fetching customers:', error);
             return [];
@@ -264,7 +313,7 @@ export class ShopSiteClient {
     // XML Parsing Methods
     // ============================================================================
 
-    private parseProductsXml(xmlText: string): ShopSiteProduct[] {
+    private parseProductsXml(xmlText: string, limit?: number): ShopSiteProduct[] {
         const products: ShopSiteProduct[] = [];
 
         // Support both <product> and <Product> tags
@@ -286,7 +335,13 @@ export class ShopSiteClient {
             const sku = this.extractXmlValue(productXml, 'sku') || this.extractXmlValue(productXml, 'SKU');
             const name = this.extractXmlValue(productXml, 'name') || this.extractXmlValue(productXml, 'Name');
 
-            // Skip products without SKU or name
+            // Brand from custom ProductFields (moved up for filtering)
+            const brandName = this.extractXmlValue(productXml, 'ProductField16') ||
+                this.extractXmlValue(productXml, 'Brand') ||
+                this.extractXmlValue(productXml, 'brand');
+
+            // Skip products without SKU or Name
+            // Brand is optional; downstream sync will handle missing brand.
             if (!sku || !name) {
                 continue;
             }
@@ -307,6 +362,9 @@ export class ShopSiteClient {
             const lowStockRaw = this.extractXmlValue(productXml, 'LowStockThreshold');
             const lowStockThreshold = lowStockRaw ? parseInt(lowStockRaw, 10) : undefined;
 
+            const outOfStockLimitRaw = this.extractXmlValue(productXml, 'OutOfStockLimit');
+            const outOfStockLimit = outOfStockLimitRaw ? parseInt(outOfStockLimitRaw, 10) : undefined;
+
             // Image - primary graphic
             let imageUrl = this.extractXmlValue(productXml, 'Graphic') || this.extractXmlValue(productXml, 'graphic');
             if (imageUrl === 'none') imageUrl = '';
@@ -323,9 +381,10 @@ export class ShopSiteClient {
             // Physical properties
             const weight = parseFloat(this.extractXmlValue(productXml, 'Weight') || this.extractXmlValue(productXml, 'weight') || '0');
             const taxableRaw = this.extractXmlValue(productXml, 'Taxable') || this.extractXmlValue(productXml, 'taxable');
-            const taxable = taxableRaw?.toLowerCase() === 'checked' || taxableRaw?.toLowerCase() === 'yes';
+            const taxableNormalized = taxableRaw?.trim().toLowerCase();
+            const taxable = taxableNormalized === 'checked' || taxableNormalized === 'yes' || taxableNormalized === 'true' || taxableNormalized === '1';
 
-            const productType = this.extractXmlValue(productXml, 'ProductType') ||
+            const fulfillmentType = this.extractXmlValue(productXml, 'ProductType') ||
                 this.extractXmlValue(productXml, 'ProdType') ||
                 this.extractXmlValue(productXml, 'prod_type');
 
@@ -333,7 +392,10 @@ export class ShopSiteClient {
             const productId = this.extractXmlValue(productXml, 'ProductID');
             const productGuid = this.extractXmlValue(productXml, 'ProductGUID');
             const gtin = this.extractXmlValue(productXml, 'GTIN') || this.extractXmlValue(productXml, 'gtin');
-            const brand = this.extractXmlValue(productXml, 'Brand') || this.extractXmlValue(productXml, 'brand');
+
+            // Brand extraction moved up
+            const categoryName = this.extractXmlValue(productXml, 'ProductField24');
+            const productTypeName = this.extractXmlValue(productXml, 'ProductField25');
 
             // Availability and status
             const availability = this.extractXmlValue(productXml, 'Availability') || this.extractXmlValue(productXml, 'availability');
@@ -342,6 +404,20 @@ export class ShopSiteClient {
             const fileName = this.extractXmlValue(productXml, 'FileName');
             const moreInfoText = this.extractXmlValue(productXml, 'MoreInformationText');
             const searchKeywords = this.extractXmlValue(productXml, 'SearchKeywords');
+            const googleProductCategory = this.extractXmlValue(productXml, 'GoogleProductCategory');
+
+            // Categorization from ProductOnPages
+            const shopsitePages: string[] = [];
+            const pagesBlock = this.extractXmlValue(productXml, 'ProductOnPages');
+            if (pagesBlock) {
+                const pageMatches = pagesBlock.match(/<Name>([\s\S]*?)<\/Name>/gi);
+                if (pageMatches) {
+                    for (const pageNameTag of pageMatches) {
+                        const name = pageNameTag.replace(/<\/?Name>/gi, '').trim();
+                        if (name) shopsitePages.push(name);
+                    }
+                }
+            }
 
             // Ordering controls
             const minQtyRaw = this.extractXmlValue(productXml, 'MinimumQuantity');
@@ -359,19 +435,29 @@ export class ShopSiteClient {
                 additionalImages: additionalImages.length > 0 ? additionalImages : undefined,
                 weight,
                 taxable,
-                productType,
+                fulfillmentType,
                 productId,
                 productGuid,
                 gtin,
-                brand,
+                brandName,
+                categoryName,
+                productTypeName,
                 isDisabled,
                 availability,
                 fileName,
                 moreInfoText,
                 searchKeywords,
                 minimumQuantity,
+                outOfStockLimit,
+                googleProductCategory,
+                shopsitePages,
                 rawXml: productXml,
             });
+
+            // Respect limit if specified
+            if (limit && products.length >= limit) {
+                break;
+            }
         }
 
         return products;
@@ -492,7 +578,7 @@ export class ShopSiteClient {
         return orders;
     }
 
-    private parseCustomersXml(xmlText: string): ShopSiteCustomer[] {
+    private parseCustomersXml(xmlText: string, limit?: number): ShopSiteCustomer[] {
         const customers: ShopSiteCustomer[] = [];
 
         const customerMatches = xmlText.match(/<customer>([\s\S]*?)<\/customer>/gi);
@@ -518,10 +604,39 @@ export class ShopSiteClient {
                     billingZip,
                     rawXml: customerXml,
                 });
+
+                // Respect limit if specified
+                if (limit && customers.length >= limit) {
+                    break;
+                }
             }
         }
 
         return customers;
+    }
+
+    /**
+     * Decode XML/HTML entities
+     */
+    private decodeXmlEntities(str: string): string {
+        if (!str) return str;
+
+        return str
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"')
+            .replace(/&apos;/g, "'")
+            .replace(/&nbsp;/g, ' ')
+            .replace(/&copy;/g, '©')
+            .replace(/&reg;/g, '®')
+            .replace(/&trade;/g, '™')
+            .replace(/&ndash;/g, '–')
+            .replace(/&mdash;/g, '—')
+            .replace(/&pound;/g, '£')
+            .replace(/&euro;/g, '€')
+            .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(dec))
+            .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
     }
 
     /**
@@ -538,7 +653,7 @@ export class ShopSiteClient {
             value = value.substring(9, value.length - 3);
         }
 
-        return value;
+        return this.decodeXmlEntities(value);
     }
 
     /**

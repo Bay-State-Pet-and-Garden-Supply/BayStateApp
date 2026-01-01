@@ -1,6 +1,5 @@
 
 import * as fs from 'fs';
-import * as path from 'path';
 
 // Mock types
 interface ShopSiteOrder {
@@ -10,7 +9,7 @@ interface ShopSiteOrder {
     tax: number;
     shippingTotal: number;
     customerEmail?: string | null;
-    items: any[];
+    items: { sku: string; quantity: number; price: number }[];
 }
 
 function extractXmlValue(xml: string, tagName: string): string | null {
@@ -77,7 +76,7 @@ function parseOrdersXml(xmlText: string): ShopSiteOrder[] {
         }
 
         // Parse order items from Shipping/Products/Product
-        const items: any[] = [];
+        const items: { sku: string; quantity: number; price: number }[] = [];
         const shippingMatch = orderXml.match(/<Shipping>([\s\S]*?)<\/Shipping>/i);
         if (shippingMatch) {
             const productsMatch = shippingMatch[1].match(/<Products>([\s\S]*?)<\/Products>/i);

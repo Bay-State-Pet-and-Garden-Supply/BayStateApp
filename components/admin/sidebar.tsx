@@ -5,7 +5,7 @@ import {
   ShoppingCart,
   Home,
   Settings,
-  GitBranch,
+  PackagePlus,
   BarChart3,
   Database,
   Tag,
@@ -13,6 +13,7 @@ import {
   Palette,
   RefreshCw,
   LogOut,
+  FolderTree,
 } from 'lucide-react';
 
 interface NavItem {
@@ -38,6 +39,7 @@ const navSections: NavSection[] = [
     title: 'Store',
     items: [
       { href: '/admin/products', label: 'Products', icon: <Package className="h-5 w-5" /> },
+      { href: '/admin/categories', label: 'Categories', icon: <FolderTree className="h-5 w-5" /> },
       { href: '/admin/brands', label: 'Brands', icon: <Tag className="h-5 w-5" /> },
       { href: '/admin/services', label: 'Services', icon: <Wrench className="h-5 w-5" /> },
       { href: '/admin/orders', label: 'Orders', icon: <ShoppingCart className="h-5 w-5" /> },
@@ -50,9 +52,9 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    title: 'Pipeline',
+    title: 'New Products',
     items: [
-      { href: '/admin/pipeline', label: 'Product Pipeline', icon: <GitBranch className="h-5 w-5" /> },
+      { href: '/admin/pipeline', label: 'Product Intake', icon: <PackagePlus className="h-5 w-5" /> },
     ],
   },
   {
@@ -128,7 +130,7 @@ export function AdminSidebar({ userRole = 'staff' }: AdminSidebarProps) {
             <LogOut className="h-4 w-4 rotate-180" />
             <span>Exit</span>
           </Link>
-          
+
           <div className="flex items-center space-x-2 text-xs">
             <span className="text-gray-500">Role:</span>
             <span className={`px-2 py-0.5 rounded ${isAdmin ? 'bg-purple-900/50 text-purple-300' : 'bg-gray-800 text-gray-400'}`}>

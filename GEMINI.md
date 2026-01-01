@@ -122,3 +122,4 @@ CI=true npm test     # Run tests (single execution)
 - **Design Guidelines:** `conductor/product-guidelines.md`
 - **Tech Stack:** `conductor/tech-stack.md`
 - **Code Styles:** `conductor/code_styleguides/`
+- **ShopSite API Docs:** `docs/shopsite-xml-api.md`

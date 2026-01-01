@@ -1,4 +1,4 @@
-import { Database, Package, ShoppingCart, Tag, Wrench, GitBranch } from 'lucide-react';
+import { Database, Package, ShoppingCart, Tag, Wrench, PackagePlus } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 
@@ -64,11 +64,11 @@ export default async function DataExplorerPage() {
         },
         {
             name: 'pipeline',
-            displayName: 'Pipeline',
-            icon: <GitBranch className="h-6 w-6" />,
+            displayName: 'Intake Queue',
+            icon: <PackagePlus className="h-6 w-6" />,
             count: pipelineCount || 0,
             href: '/admin/data/pipeline',
-            description: 'Product ingestion data (all statuses)',
+            description: 'Raw product intake data and processing history',
         },
     ];
 
@@ -121,7 +121,7 @@ export default async function DataExplorerPage() {
                         </p>
                     </div>
                     <div>
-                        <p className="text-sm text-gray-600">Pipeline Queue</p>
+                        <p className="text-sm text-gray-600">Intake Queue</p>
                         <p className="text-2xl font-bold">{pipelineCount || 0}</p>
                     </div>
                 </div>

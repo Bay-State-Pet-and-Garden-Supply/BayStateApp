@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { getFilteredProducts, getProductBySlug } from '@/lib/products';
+import { getFilteredProducts } from '@/lib/products';
 import { getBrands } from '@/lib/data';
 import { ProductCard } from '@/components/storefront/product-card';
 import { ProductFilters } from '@/components/storefront/product-filters';
@@ -39,6 +39,18 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
   const totalPages = Math.ceil(count / limit);
 
+  // Build pagination URL preserving all current filters
+  const buildPageUrl = (pageNum: number) => {
+    const searchParamsObj = new URLSearchParams();
+    if (params.brand) searchParamsObj.set('brand', params.brand);
+    if (params.stock) searchParamsObj.set('stock', params.stock);
+    if (params.minPrice) searchParamsObj.set('minPrice', params.minPrice);
+    if (params.maxPrice) searchParamsObj.set('maxPrice', params.maxPrice);
+    if (params.search) searchParamsObj.set('search', params.search);
+    searchParamsObj.set('page', String(pageNum));
+    return `/products?${searchParamsObj.toString()}`;
+  };
+
   return (
     <div className="w-full px-4 py-8">
       <div className="mb-8">
@@ -69,7 +81,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                 <div className="mt-8 flex items-center justify-center gap-2">
                   {page > 1 && (
                     <Link
-                      href={`/products?page=${page - 1}`}
+                      href={buildPageUrl(page - 1)}
                       className="rounded-lg border px-4 py-2 text-sm hover:bg-zinc-50"
                     >
                       Previous
@@ -80,7 +92,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                   </span>
                   {page < totalPages && (
                     <Link
-                      href={`/products?page=${page + 1}`}
+                      href={buildPageUrl(page + 1)}
                       className="rounded-lg border px-4 py-2 text-sm hover:bg-zinc-50"
                     >
                       Next

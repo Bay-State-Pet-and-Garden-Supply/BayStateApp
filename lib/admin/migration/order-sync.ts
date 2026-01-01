@@ -4,7 +4,7 @@
  * Handles transformation and sync of orders from ShopSite to Supabase.
  */
 
-import { ShopSiteOrder, ShopSiteOrderItem } from './types';
+import { ShopSiteOrder, ShopSiteOrderItem, AddressInfo } from './types';
 
 /**
  * Transform a ShopSite order into the Supabase orders table format.
@@ -27,10 +27,10 @@ export function transformShopSiteOrder(
         created_at: string;
         is_legacy_import: boolean;
         shopsite_transaction_id?: string;
-        billing_address?: any;
-        shipping_address?: any;
-        payment_details?: any;
-        shopsite_data?: any;
+        billing_address?: AddressInfo;
+        shipping_address?: AddressInfo;
+        payment_details: { method?: string; grandTotal: number; tax: number; shipping: number };
+        shopsite_data: { raw_xml: unknown } | Record<string, never>;
     };
     items: Array<{
         item_id: string | null;

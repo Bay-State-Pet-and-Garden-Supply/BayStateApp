@@ -55,7 +55,7 @@ export default function CheckoutPage() {
       const { order } = await response.json();
       clearCart();
       router.push(`/order-confirmation/${order.id}`);
-    } catch (err) {
+    } catch {
       setError('There was a problem placing your order. Please try again.');
       setIsSubmitting(false);
     }
@@ -207,7 +207,7 @@ export default function CheckoutPage() {
                 <p className="font-medium">Pickup Only</p>
                 <p className="mt-1 text-blue-600">
                   Orders are available for pickup at our store.
-                  We'll email you when your order is ready.
+                  We&apos;ll email you when your order is ready.
                 </p>
               </div>
             </CardContent>

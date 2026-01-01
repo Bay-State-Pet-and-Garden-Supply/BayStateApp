@@ -1,12 +1,49 @@
 import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
+import { type Metadata } from 'next';
 import { getProductBySlug } from '@/lib/products';
 import { Badge } from '@/components/ui/badge';
 import { AddToCartButton } from '@/components/storefront/add-to-cart-button';
 
 interface ProductDetailPageProps {
   params: Promise<{ slug: string }>;
+}
+
+/**
+ * Generate dynamic metadata for SEO.
+ */
+export async function generateMetadata({ params }: ProductDetailPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await getProductBySlug(slug);
+
+  if (!product) {
+    return {
+      title: 'Product Not Found | Bay State Pet & Garden',
+    };
+  }
+
+  const description = product.description
+    ? product.description.slice(0, 160)
+    : `Shop ${product.name} at Bay State Pet & Garden Supply.`;
+
+  return {
+    title: `${product.name} | Bay State Pet & Garden`,
+    description,
+    openGraph: {
+      title: product.name,
+      description,
+      images: product.images?.[0] ? [{ url: product.images[0] }] : undefined,
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: product.name,
+      description,
+      images: product.images?.[0] ? [product.images[0]] : undefined,
+    },
+  };
 }
 
 /**
@@ -53,33 +90,53 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
       <div className="grid gap-8 lg:grid-cols-2">
         {/* Product Images */}
         <div className="space-y-4">
-          <div className="aspect-square overflow-hidden rounded-xl bg-zinc-100">
-            {product.images && product.images.length > 0 ? (
-              <img
-                src={product.images[0]}
-                alt={product.name}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-zinc-400">
-                No image available
-              </div>
-            )}
+          <div className="aspect-square overflow-hidden rounded-xl bg-zinc-100 relative">
+            {(() => {
+              const rawImageSrc = product.images?.[0]?.trim();
+              const hasValidImage =
+                Boolean(rawImageSrc) &&
+                (rawImageSrc.startsWith('/') || rawImageSrc.startsWith('http'));
+
+              if (!hasValidImage) {
+                return (
+                  <div className="flex h-full w-full items-center justify-center text-zinc-400">
+                    No image available
+                  </div>
+                );
+              }
+
+              return (
+                <Image
+                  src={rawImageSrc}
+                  alt={product.name}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-cover"
+                  priority
+                />
+              );
+            })()}
           </div>
           {product.images && product.images.length > 1 && (
             <div className="grid grid-cols-4 gap-2">
-              {product.images.slice(1, 5).map((image, index) => (
-                <div
-                  key={index}
-                  className="aspect-square overflow-hidden rounded-lg bg-zinc-100"
-                >
-                  <img
-                    src={image}
-                    alt={`${product.name} ${index + 2}`}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-              ))}
+              {product.images
+                .slice(1, 5)
+                .map((image) => image.trim())
+                .filter((image) => image.startsWith('/') || image.startsWith('http'))
+                .map((image, index) => (
+                  <div
+                    key={index}
+                    className="aspect-square overflow-hidden rounded-lg bg-zinc-100 relative"
+                  >
+                    <Image
+                      src={image}
+                      alt={`${product.name} ${index + 2}`}
+                      fill
+                      sizes="(max-width: 1024px) 25vw, 12.5vw"
+                      className="object-cover"
+                    />
+                  </div>
+                ))}
             </div>
           )}
         </div>

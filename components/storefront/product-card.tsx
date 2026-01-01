@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { type Product } from '@/lib/data';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +19,9 @@ export function ProductCard({ product }: ProductCardProps) {
     currency: 'USD',
   }).format(product.price);
 
+  const imageSrc = product.images?.[0]?.trim();
+  const hasValidImage = Boolean(imageSrc) && (imageSrc.startsWith('/') || imageSrc.startsWith('http'));
+
   return (
     <div className="group relative h-full">
       <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -28,11 +32,13 @@ export function ProductCard({ product }: ProductCardProps) {
           <CardContent className="flex h-full flex-col p-4">
             {/* Product Image */}
             <div className="mb-4 aspect-square overflow-hidden rounded-lg bg-zinc-100 relative">
-              {product.images && product.images.length > 0 ? (
-                <img
-                  src={product.images[0]}
+              {hasValidImage ? (
+                <Image
+                  src={imageSrc}
                   alt={product.name}
-                  className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                  fill
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  className="object-cover transition-transform group-hover:scale-105"
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-zinc-400">

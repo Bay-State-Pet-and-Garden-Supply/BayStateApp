@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, X, ArrowRight, Package, Wrench, Tag } from 'lucide-react';
 import Fuse from 'fuse.js';
@@ -31,10 +31,30 @@ const typeLabels = {
  */
 export function CommandBar({ searchIndex, isOpen, onClose }: CommandBarProps) {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchResult[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  // Derive search results using useMemo instead of useEffect + setState
+  const results = useMemo<SearchResult[]>(() => {
+    if (!searchIndex || query.length < 2) {
+      return [];
+    }
+
+    const searchResults = searchIndex.search(query, { limit: 8 });
+    return searchResults.map((r) => {
+      const item = r.item as SearchResult;
+      return {
+        type: item.type,
+        id: item.id,
+        name: item.name,
+        slug: item.slug,
+        description: item.description,
+        price: item.price,
+        imageUrl: item.imageUrl,
+      };
+    });
+  }, [query, searchIndex]);
 
   // Focus input when opened
   useEffect(() => {
@@ -43,30 +63,8 @@ export function CommandBar({ searchIndex, isOpen, onClose }: CommandBarProps) {
     }
   }, [isOpen]);
 
-  // Perform search on query change
-  useEffect(() => {
-    if (!searchIndex || query.length < 2) {
-      setResults([]);
-      return;
-    }
-
-    const searchResults = searchIndex.search(query, { limit: 8 });
-    setResults(
-      searchResults.map((r) => {
-        const item = r.item as SearchResult;
-        return {
-          type: item.type,
-          id: item.id,
-          name: item.name,
-          slug: item.slug,
-          description: item.description,
-          price: item.price,
-          imageUrl: item.imageUrl,
-        };
-      })
-    );
-    setSelectedIndex(0);
-  }, [query, searchIndex]);
+  // Ensure selectedIndex stays within bounds - clamped value computed during render
+  const boundedSelectedIndex = Math.min(selectedIndex, Math.max(0, results.length - 1));
 
   const navigateToResult = useCallback((result: SearchResult) => {
     const paths = {
@@ -93,8 +91,8 @@ export function CommandBar({ searchIndex, isOpen, onClose }: CommandBarProps) {
           break;
         case 'Enter':
           e.preventDefault();
-          if (results[selectedIndex]) {
-            navigateToResult(results[selectedIndex]);
+          if (results[boundedSelectedIndex]) {
+            navigateToResult(results[boundedSelectedIndex]);
           }
           break;
         case 'Escape':
@@ -102,7 +100,7 @@ export function CommandBar({ searchIndex, isOpen, onClose }: CommandBarProps) {
           break;
       }
     },
-    [results, selectedIndex, onClose, navigateToResult]
+    [results, boundedSelectedIndex, onClose, navigateToResult]
   );
 
   if (!isOpen) {
@@ -141,14 +139,13 @@ export function CommandBar({ searchIndex, isOpen, onClose }: CommandBarProps) {
           <ul className="max-h-[60vh] overflow-y-auto p-2">
             {results.map((result, index) => {
               const Icon = typeIcons[result.type];
-              const isSelected = index === selectedIndex;
+              const isSelected = index === boundedSelectedIndex;
 
               return (
                 <li key={`${result.type}-${result.id}`}>
                   <button
-                    className={`flex w-full items-center gap-4 rounded-lg px-4 py-3 text-left transition-colors ${
-                      isSelected ? 'bg-zinc-100' : 'hover:bg-zinc-50'
-                    }`}
+                    className={`flex w-full items-center gap-4 rounded-lg px-4 py-3 text-left transition-colors ${isSelected ? 'bg-zinc-100' : 'hover:bg-zinc-50'
+                      }`}
                     onClick={() => navigateToResult(result)}
                     onMouseEnter={() => setSelectedIndex(index)}
                   >
@@ -186,7 +183,7 @@ export function CommandBar({ searchIndex, isOpen, onClose }: CommandBarProps) {
         {/* Empty state */}
         {query.length >= 2 && results.length === 0 && (
           <div className="p-8 text-center">
-            <p className="text-zinc-500">No results found for "{query}"</p>
+            <p className="text-zinc-500">No results found for &quot;{query}&quot;</p>
             <p className="mt-2 text-sm text-zinc-400">
               Try a different search term
             </p>

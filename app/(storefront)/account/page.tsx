@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { BuyAgainSection } from '@/components/account/buy-again-section'
 import Link from 'next/link'
-import { Package, User, MapPin, Clock } from 'lucide-react'
+import { Package, User, MapPin } from 'lucide-react'
 
 export default async function AccountPage() {
     const supabase = await createClient()
@@ -59,7 +59,7 @@ export default async function AccountPage() {
                     <CardContent className="pt-4">
                         {recentOrders.length > 0 ? (
                             <div className="space-y-3">
-                                {recentOrders.slice(0, 3).map((order: any) => (
+                                {recentOrders.slice(0, 3).map((order) => (
                                     <div key={order.id} className="flex items-center justify-between text-sm">
                                         <div>
                                             <span className="font-medium">#{order.order_number}</span>

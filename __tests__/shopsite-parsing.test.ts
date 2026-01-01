@@ -95,7 +95,7 @@ describe('ShopSite XML Parsing', () => {
                 price: 4.99,
                 saleAmount: 3.99,
                 gtin: '071859002217',
-                brand: 'Kaytee',
+                brandName: 'Kaytee',
                 weight: 1.02,
                 taxable: true,
                 availability: 'in stock',
@@ -104,6 +104,35 @@ describe('ShopSite XML Parsing', () => {
                 productGuid: 'eda0c8b0-cb3b-11e5-a172-0025908f7730',
                 moreInfoText: 'Full description here',
                 description: 'Short description',
+            });
+        });
+
+        it('should parse inventory and categorization data', () => {
+            const xml = `
+                <Product>
+                    <SKU>CAT-TEST-001</SKU>
+                    <Name>Categorized Product</Name>
+                    <QuantityOnHand>42</QuantityOnHand>
+                    <OutOfStockLimit>2</OutOfStockLimit>
+                    <GoogleProductCategory>Pet Supplies &gt; Dog Supplies</GoogleProductCategory>
+                    <ProductOnPages>
+                        <PageLink>
+                            <Name>Dog Food</Name>
+                        </PageLink>
+                        <PageLink>
+                            <Name>Premium Brands</Name>
+                        </PageLink>
+                    </ProductOnPages>
+                </Product>
+            `;
+            const products = (client as any).parseProductsXml(xml);
+            expect(products).toHaveLength(1);
+            expect(products[0]).toMatchObject({
+                sku: 'CAT-TEST-001',
+                quantityOnHand: 42,
+                outOfStockLimit: 2,
+                googleProductCategory: 'Pet Supplies > Dog Supplies',
+                shopsitePages: ['Dog Food', 'Premium Brands'],
             });
         });
 

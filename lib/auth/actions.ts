@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase/server'
+import { getSafeRedirectUrl, isValidRedirectUrl } from '@/lib/auth/redirect-validation'
 
 export async function loginAction(values: { email: string, password: string }, redirectTo?: string) {
     const supabase = await createClient()
@@ -16,13 +17,8 @@ export async function loginAction(values: { email: string, password: string }, r
 
     revalidatePath('/', 'layout')
 
-    // If explicit redirect provided, use it
-    if (redirectTo) {
-        redirect(redirectTo)
-    }
-
-    // Otherwise, redirect to account
-    redirect('/account')
+    // SECURITY: Validate redirect URL to prevent open redirect attacks
+    redirect(getSafeRedirectUrl(redirectTo))
 }
 
 export async function signupAction(values: { email: string, password: string, fullName: string }) {
@@ -70,7 +66,9 @@ export async function loginWithOAuth(provider: 'google' | 'apple' | 'facebook', 
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
     const callbackUrl = new URL(`${siteUrl}/auth/callback`)
-    if (next) {
+    
+    // SECURITY: Validate next URL before passing to callback
+    if (isValidRedirectUrl(next)) {
         callbackUrl.searchParams.set('next', next)
     }
 

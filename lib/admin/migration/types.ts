@@ -35,12 +35,15 @@ export interface ShopSiteProduct {
     weight?: number;
     taxable?: boolean;
     cost?: number;                    // shopsite_cost
-    productType?: string;             // <ProductType> e.g., "Tangible"
+    fulfillmentType?: string;         // <ProductType> e.g., "Tangible", "Digital", "Service"
     // ShopSite-specific identifiers
     productId?: string;               // <ProductID> - ShopSite internal ID
     productGuid?: string;             // <ProductGUID> - ShopSite UUID
     gtin?: string;                    // <GTIN> - barcode (UPC/EAN)
-    brand?: string;                   // <Brand>
+    // Brand and Category from ProductFields
+    brandName?: string;               // <ProductField16> or <Brand>
+    categoryName?: string;            // <ProductField24> - Department/Category
+    productTypeName?: string;         // <ProductField25> - Subcategory/Product Type
     // Status fields
     isDisabled?: boolean;             // <ProductDisabled> === 'checked'
     availability?: string;            // <Availability> ('in stock', 'out of stock', etc.)
@@ -48,8 +51,11 @@ export interface ShopSiteProduct {
     fileName?: string;                // <FileName> - legacy URL slug
     moreInfoText?: string;            // <MoreInformationText> - HTML product details
     searchKeywords?: string;          // <SearchKeywords>
-    // Ordering controls
+    // Inventory and Categorization
+    outOfStockLimit?: number;         // <OutOfStockLimit>
     minimumQuantity?: number;         // <MinimumQuantity>
+    googleProductCategory?: string;   // <GoogleProductCategory>
+    shopsitePages?: string[];         // <ProductOnPages>
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rawXml?: any;                     // To store in shopsite_data
 }

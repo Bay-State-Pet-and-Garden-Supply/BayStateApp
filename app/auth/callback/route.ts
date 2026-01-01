@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getSafeRedirectUrl } from '@/lib/auth/redirect-validation'
 
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url)
     const code = searchParams.get('code')
-    // if "next" is in param, use it
-    const next = searchParams.get('next') ?? '/account'
+    // SECURITY: Validate the next parameter to prevent open redirect attacks
+    const next = getSafeRedirectUrl(searchParams.get('next'))
 
     if (code) {
         const supabase = await createClient()

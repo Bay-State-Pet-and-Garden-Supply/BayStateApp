@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { ChevronLeft } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from "@/components/ui/badge"
+import { createClient } from '@/lib/supabase/server'
 
 interface Props {
     params: Promise<{
@@ -21,6 +22,15 @@ export default async function OrderDetailsPage({ params }: Props) {
     const order = await getOrderById(id)
 
     if (!order) {
+        notFound()
+    }
+
+    // SECURITY: Verify order ownership - users can only view their own orders
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user || order.user_id !== user.id) {
+        // Not authenticated or order belongs to a different user
         notFound()
     }
 

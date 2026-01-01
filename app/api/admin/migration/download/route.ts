@@ -6,11 +6,17 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { ShopSiteClient } from '@/lib/admin/migration/shopsite-client';
+import { ShopSiteClient, type ShopSiteConfig } from '@/lib/admin/migration/shopsite-client';
+import { requireAdminOnlyAuth } from '@/lib/admin/api-auth';
 
 const MIGRATION_SETTINGS_KEY = 'shopsite_migration';
+const TEST_LIMIT = 100;
 
 export async function GET(request: NextRequest) {
+    // Migration data download requires admin-only access (not staff)
+    const auth = await requireAdminOnlyAuth();
+    if (!auth.authorized) return auth.response;
+
     const searchParams = request.nextUrl.searchParams;
     const type = searchParams.get('type');
 
@@ -37,75 +43,35 @@ export async function GET(request: NextRequest) {
         );
     }
 
-    const { storeUrl, merchantId, password } = data.value as {
-        storeUrl: string;
-        merchantId: string;
-        password: string;
-    };
-
-    // Normalize URL
-    let baseUrl = storeUrl.replace(/\/$/, '');
-    if (baseUrl.endsWith('.cgi')) {
-        const lastSlash = baseUrl.lastIndexOf('/');
-        if (lastSlash !== -1) {
-            baseUrl = baseUrl.substring(0, lastSlash);
-        }
-    }
-
-    // Build auth header
-    const authHeader = 'Basic ' + Buffer.from(`${merchantId}:${password}`).toString('base64');
-
-    // Build correct query string based on type
-    let queryString = '';
-    switch (type) {
-        case 'products':
-            queryString = 'clientApp=1&dbname=products&version=14.0';
-            break;
-        case 'orders':
-            // XML Order Download API
-            queryString = 'clientApp=1&dbname=orders&version=14.0&pay=yes';
-            break;
-        case 'customers':
-            queryString = 'clientApp=1&dbname=registration';
-            break;
-        default:
-            return NextResponse.json(
-                { error: 'Invalid type' },
-                { status: 400 }
-            );
-    }
+    const credentials = data.value as ShopSiteConfig;
+    const client = new ShopSiteClient(credentials);
 
     try {
-        const response = await fetch(`${baseUrl}/db_xml.cgi?${queryString}`, {
-            headers: { 'Authorization': authHeader },
-            cache: 'no-store',
-        });
+        let xmlContent = '';
+        let header = '';
+        let footer = '';
 
-        if (!response.ok) {
-            return NextResponse.json(
-                { error: `ShopSite returned ${response.status}: ${response.statusText}` },
-                { status: 502 }
-            );
+        if (type === 'products') {
+            header = '<?xml version="1.0" encoding="utf-8" ?>\n<ShopSiteProducts>';
+            footer = '</ShopSiteProducts>';
+            const products = await client.fetchProducts(TEST_LIMIT);
+            xmlContent = products.map(p => p.rawXml).join('\n');
+        } else if (type === 'orders') {
+            header = '<?xml version="1.0" encoding="utf-8" ?>\n<ShopSiteOrders>';
+            footer = '</ShopSiteOrders>';
+            const orders = await client.fetchOrders({ limit: TEST_LIMIT });
+            xmlContent = orders.map(o => o.rawXml).join('\n');
+        } else if (type === 'customers') {
+            header = '<?xml version="1.0" encoding="utf-8" ?>\n<customers>';
+            footer = '</customers>';
+            const customers = await client.fetchCustomers(TEST_LIMIT);
+            xmlContent = customers.map(c => c.rawXml).join('\n');
         }
 
-        // Decode as utf-8 with replacement (ShopSite often returns ISO-8859-1 but we want to force valid UTF-8 for the app)
-        const buffer = await response.arrayBuffer();
-        const decoder = new TextDecoder('utf-8', { fatal: false });
-        let xmlContent = decoder.decode(buffer);
-
-        // For orders, ShopSite often prepends a custom Content-type header in the body
-        if (type === 'orders' && xmlContent.startsWith('Content-type:')) {
-            const headerEnd = xmlContent.indexOf('\n\n');
-            if (headerEnd !== -1) {
-                xmlContent = xmlContent.substring(headerEnd + 2);
-            }
-        }
-
-        // Sanitize XML to fix ampersands and HTML entities
-        xmlContent = ShopSiteClient.sanitizeXml(xmlContent);
+        const fullXml = `${header}\n${xmlContent}\n${footer}`;
 
         // Return as downloadable XML file
-        return new NextResponse(xmlContent, {
+        return new NextResponse(fullXml, {
             headers: {
                 'Content-Type': 'application/xml',
                 'Content-Disposition': `attachment; filename="shopsite-${type}-${new Date().toISOString().split('T')[0]}.xml"`,

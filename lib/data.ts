@@ -5,7 +5,7 @@ export interface Brand {
   name: string;
   slug: string;
   logo_url: string | null;
-  created_at: string;
+  created_at?: string;
 }
 
 export interface Product {
@@ -34,13 +34,43 @@ export interface Service {
 }
 
 /**
+ * Transforms a row from products_published view to Product interface.
+ * The view now includes brand data directly, eliminating N+1 queries.
+ */
+function transformProductRow(row: Record<string, unknown>): Product {
+  const product: Product = {
+    id: row.id as string,
+    brand_id: row.brand_id as string | null,
+    name: row.name as string,
+    slug: row.slug as string,
+    description: row.description as string | null,
+    price: Number(row.price),
+    stock_status: row.stock_status as Product['stock_status'],
+    images: Array.isArray(row.images) ? row.images : [],
+    is_featured: row.is_featured as boolean,
+    created_at: row.created_at as string,
+  };
+
+  // Brand data is now included directly in the view
+  if (row.brand_id && row.brand_name) {
+    product.brand = {
+      id: row.brand_id as string,
+      name: row.brand_name as string,
+      slug: row.brand_slug as string,
+      logo_url: row.brand_logo_url as string | null,
+    };
+  }
+
+  return product;
+}
+
+/**
  * Fetches featured products for the homepage.
- * Queries the products_published view which projects data from the ingestion pipeline.
+ * Queries the products_published view which includes brand data.
  */
 export async function getFeaturedProducts(limit = 6): Promise<Product[]> {
   const supabase = await createClient();
 
-  // Query from the published products view
   const { data, error } = await supabase
     .from('products_published')
     .select('*')
@@ -54,42 +84,7 @@ export async function getFeaturedProducts(limit = 6): Promise<Product[]> {
     return [];
   }
 
-  // Transform the data to match the Product interface
-  const products: Product[] = (data || []).map((row) => ({
-    id: row.id,
-    brand_id: row.brand_id,
-    name: row.name,
-    slug: row.slug,
-    description: row.description,
-    price: Number(row.price),
-    stock_status: row.stock_status as Product['stock_status'],
-    images: Array.isArray(row.images) ? row.images : [],
-    is_featured: row.is_featured,
-    created_at: row.created_at,
-  }));
-
-  // If brand_id exists, fetch the brand details
-  const brandIds = products
-    .map((p) => p.brand_id)
-    .filter((id): id is string => id !== null);
-
-  if (brandIds.length > 0) {
-    const { data: brands } = await supabase
-      .from('brands')
-      .select('*')
-      .in('id', brandIds);
-
-    if (brands) {
-      const brandMap = new Map(brands.map((b) => [b.id, b]));
-      products.forEach((p) => {
-        if (p.brand_id && brandMap.has(p.brand_id)) {
-          p.brand = brandMap.get(p.brand_id);
-        }
-      });
-    }
-  }
-
-  return products;
+  return (data || []).map(transformProductRow);
 }
 
 /**
@@ -131,7 +126,7 @@ export async function getBrands(): Promise<Brand[]> {
 
 /**
  * Fetches products by category/filter.
- * Queries the products_published view which projects data from the ingestion pipeline.
+ * Queries the products_published view which includes brand data.
  */
 export async function getProducts(options?: {
   brandId?: string;
@@ -141,7 +136,6 @@ export async function getProducts(options?: {
 }): Promise<{ products: Product[]; count: number }> {
   const supabase = await createClient();
 
-  // Start with products_published view
   let query = supabase
     .from('products_published')
     .select('*', { count: 'exact' });
@@ -169,46 +163,15 @@ export async function getProducts(options?: {
     return { products: [], count: 0 };
   }
 
-  // Transform data to Product interface
-  const products: Product[] = (data || []).map((row) => ({
-    id: row.id,
-    brand_id: row.brand_id,
-    name: row.name,
-    slug: row.slug,
-    description: row.description,
-    price: Number(row.price),
-    stock_status: row.stock_status as Product['stock_status'],
-    images: Array.isArray(row.images) ? row.images : [],
-    is_featured: row.is_featured,
-    created_at: row.created_at,
-  }));
-
-  // Fetch brand details for products that have brand_id
-  const brandIds = products
-    .map((p) => p.brand_id)
-    .filter((id): id is string => id !== null);
-
-  if (brandIds.length > 0) {
-    const { data: brands } = await supabase
-      .from('brands')
-      .select('*')
-      .in('id', brandIds);
-
-    if (brands) {
-      const brandMap = new Map(brands.map((b) => [b.id, b]));
-      products.forEach((p) => {
-        if (p.brand_id && brandMap.has(p.brand_id)) {
-          p.brand = brandMap.get(p.brand_id);
-        }
-      });
-    }
-  }
-
-  return { products, count: count || 0 };
+  return {
+    products: (data || []).map(transformProductRow),
+    count: count || 0,
+  };
 }
 
 /**
  * Fetches a single product by slug.
+ * Queries the products_published view which includes brand data.
  */
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   const supabase = await createClient();
@@ -224,31 +187,5 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     return null;
   }
 
-  const product: Product = {
-    id: data.id,
-    brand_id: data.brand_id,
-    name: data.name,
-    slug: data.slug,
-    description: data.description,
-    price: Number(data.price),
-    stock_status: data.stock_status as Product['stock_status'],
-    images: Array.isArray(data.images) ? data.images : [],
-    is_featured: data.is_featured,
-    created_at: data.created_at,
-  };
-
-  // Fetch brand if exists
-  if (product.brand_id) {
-    const { data: brand } = await supabase
-      .from('brands')
-      .select('*')
-      .eq('id', product.brand_id)
-      .single();
-
-    if (brand) {
-      product.brand = brand;
-    }
-  }
-
-  return product;
+  return transformProductRow(data);
 }

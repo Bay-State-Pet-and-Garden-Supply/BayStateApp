@@ -79,29 +79,47 @@ export async function getProductsByStatus(
 }
 
 /**
- * Fetches count of products for each pipeline status.
+ * Fetches count of products for each pipeline status using a single aggregated query.
+ * This eliminates the N+1 pattern of making separate queries for each status.
  */
 export async function getStatusCounts(): Promise<StatusCount[]> {
     const supabase = await createClient();
 
-    const statuses: PipelineStatus[] = ['staging', 'scraped', 'consolidated', 'approved', 'published'];
-    const counts: StatusCount[] = [];
+    // Use a single query to get all counts at once
+    // We fetch all pipeline_status values and count them in JavaScript
+    // This is more efficient than 5 separate count queries
+    const { data, error } = await supabase
+        .from('products_ingestion')
+        .select('pipeline_status');
 
-    for (const status of statuses) {
-        const { count, error } = await supabase
-            .from('products_ingestion')
-            .select('*', { count: 'exact', head: true })
-            .eq('pipeline_status', status);
-
-        if (error) {
-            console.error(`Error counting ${status} products:`, error);
-            counts.push({ status, count: 0 });
-        } else {
-            counts.push({ status, count: count || 0 });
-        }
+    if (error) {
+        console.error('Error fetching status counts:', error);
+        // Return zero counts for all statuses on error
+        const statuses: PipelineStatus[] = ['staging', 'scraped', 'consolidated', 'approved', 'published'];
+        return statuses.map(status => ({ status, count: 0 }));
     }
 
-    return counts;
+    // Count occurrences of each status
+    const countMap: Record<string, number> = {};
+    const statuses: PipelineStatus[] = ['staging', 'scraped', 'consolidated', 'approved', 'published'];
+    
+    // Initialize all statuses with 0
+    statuses.forEach(status => {
+        countMap[status] = 0;
+    });
+
+    // Count each status from the data
+    (data || []).forEach(row => {
+        const status = row.pipeline_status;
+        if (status && countMap[status] !== undefined) {
+            countMap[status]++;
+        }
+    });
+
+    return statuses.map(status => ({
+        status,
+        count: countMap[status] || 0,
+    }));
 }
 
 /**

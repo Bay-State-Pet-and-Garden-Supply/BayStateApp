@@ -28,6 +28,12 @@ describe('ProductCard', () => {
     expect(screen.getByText('Test Product')).toBeInTheDocument();
   });
 
+  it('shows fallback when image URL is invalid', () => {
+    const productWithInvalidImage = { ...mockProduct, images: ['not-a-url'] };
+    render(<ProductCard product={productWithInvalidImage} />);
+    expect(screen.getByText('No image')).toBeInTheDocument();
+  });
+
   it('renders formatted price', () => {
     render(<ProductCard product={mockProduct} />);
     expect(screen.getByText('$29.99')).toBeInTheDocument();

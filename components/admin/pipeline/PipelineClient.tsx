@@ -4,8 +4,17 @@ import { useState, useTransition } from 'react';
 import type { PipelineProduct, PipelineStatus, StatusCount } from '@/lib/pipeline';
 import { PipelineStatusTabs } from './PipelineStatusTabs';
 import { PipelineProductCard } from './PipelineProductCard';
+import { PipelineProductDetail } from './PipelineProductDetail';
 import { BulkActionsToolbar } from './BulkActionsToolbar';
 import { Search, RefreshCw } from 'lucide-react';
+
+const statusLabels: Record<PipelineStatus, string> = {
+    staging: 'Imported',
+    scraped: 'Enhanced',
+    consolidated: 'Ready for Review',
+    approved: 'Verified',
+    published: 'Live',
+};
 
 interface PipelineClientProps {
     initialProducts: PipelineProduct[];
@@ -20,6 +29,7 @@ export function PipelineClient({ initialProducts, initialCounts, initialStatus }
     const [selectedSkus, setSelectedSkus] = useState<Set<string>>(new Set());
     const [search, setSearch] = useState('');
     const [isPending, startTransition] = useTransition();
+    const [viewingSku, setViewingSku] = useState<string | null>(null);
 
     const handleStatusChange = async (status: PipelineStatus) => {
         setActiveStatus(status);
@@ -100,8 +110,16 @@ export function PipelineClient({ initialProducts, initialCounts, initialStatus }
     };
 
     const handleView = (sku: string) => {
-        // TODO: Open detail modal
-        console.log('View product:', sku);
+        setViewingSku(sku);
+    };
+
+    const handleCloseModal = () => {
+        setViewingSku(null);
+    };
+
+    const handleSaveModal = () => {
+        // Refresh data after save
+        handleRefresh();
     };
 
     const handleRefresh = () => {
@@ -179,7 +197,7 @@ export function PipelineClient({ initialProducts, initialCounts, initialStatus }
                 </div>
             ) : products.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-12 text-center">
-                    <p className="text-gray-600">No products in {activeStatus} status.</p>
+                    <p className="text-gray-600">No products in &quot;{statusLabels[activeStatus]}&quot; stage.</p>
                 </div>
             ) : (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -219,6 +237,15 @@ export function PipelineClient({ initialProducts, initialCounts, initialStatus }
                         </button>
                     )}
                 </div>
+            )}
+
+            {/* Product Detail Modal */}
+            {viewingSku && (
+                <PipelineProductDetail
+                    sku={viewingSku}
+                    onClose={handleCloseModal}
+                    onSave={handleSaveModal}
+                />
             )}
         </div>
     );

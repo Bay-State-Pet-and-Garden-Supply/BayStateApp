@@ -1,14 +1,15 @@
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Database, RefreshCw, CheckCircle, AlertCircle, History, Clock } from 'lucide-react';
+import { Database, RefreshCw } from 'lucide-react';
 import { getCredentials, saveCredentialsAction, syncProductsFormAction, syncCustomersFormAction, syncOrdersFormAction } from './actions';
 import { getRecentMigrationLogs } from '@/lib/admin/migration/history';
-import { ManualXmlUpload } from '@/components/admin/migration/manual-xml-upload';
 import { DownloadXmlButtons } from '@/components/admin/migration/download-xml-buttons';
 import { MigrationHistory } from '@/components/admin/migration/migration-history';
+import { SyncButton } from '@/components/admin/migration/sync-button';
 
 export default async function AdminMigrationPage() {
     const credentials = await getCredentials();
@@ -88,7 +89,7 @@ export default async function AdminMigrationPage() {
                 </Card>
 
                 {/* Sync Operations */}
-                {hasCredentials && (
+                {hasCredentials ? (
                     <Card className="h-full">
                         <CardHeader>
                             <div className="flex items-center gap-3">
@@ -106,22 +107,13 @@ export default async function AdminMigrationPage() {
                         <CardContent className="space-y-4">
                             <div className="space-y-4">
                                 <form action={syncProductsFormAction}>
-                                    <Button className="w-full justify-between" variant="outline">
-                                        <span>Sync Products</span>
-                                        <RefreshCw className="h-4 w-4 ml-2" />
-                                    </Button>
+                                    <SyncButton label="Sync Products" />
                                 </form>
                                 <form action={syncCustomersFormAction}>
-                                    <Button className="w-full justify-between" variant="outline">
-                                        <span>Sync Customers</span>
-                                        <RefreshCw className="h-4 w-4 ml-2" />
-                                    </Button>
+                                    <SyncButton label="Sync Customers" />
                                 </form>
                                 <form action={syncOrdersFormAction}>
-                                    <Button className="w-full justify-between" variant="outline">
-                                        <span>Sync Orders</span>
-                                        <RefreshCw className="h-4 w-4 ml-2" />
-                                    </Button>
+                                    <SyncButton label="Sync Orders" />
                                 </form>
                             </div>
 
@@ -131,10 +123,14 @@ export default async function AdminMigrationPage() {
                             </div>
                         </CardContent>
                     </Card>
+                ) : (
+                    <Card className="h-full border-dashed flex items-center justify-center p-6 text-center text-muted-foreground">
+                        <div className="space-y-2">
+                            <Database className="h-8 w-8 mx-auto opacity-50" />
+                            <p>Configure connection to enable sync</p>
+                        </div>
+                    </Card>
                 )}
-
-                {/* Manual Upload */}
-                <ManualXmlUpload />
             </div>
 
             {/* Migration History */}

@@ -49,14 +49,22 @@ export function transformShopSiteProduct(product: ShopSiteProduct): any {
         stockStatus = 'pre_order';
     }
 
+    // Infer GTIN from SKU if missing and SKU looks like a barcode (12-14 digits)
+    let gtin = product.gtin || null;
+    if (!gtin && product.sku && /^\d{12,14}$/.test(product.sku)) {
+        gtin = product.sku;
+    }
+
     return {
         // Core fields
         sku: product.sku,
         name: product.name,
         slug: buildProductSlug(product.name),
         price: product.price,
-        sale_price: product.saleAmount || null,
+        sale_price: product.saleAmount ?? null,
+        cost: product.cost ?? null,
         description: product.description || null,
+        long_description: product.moreInfoText || null,
         stock_status: stockStatus,
         images,
 
@@ -64,28 +72,31 @@ export function transformShopSiteProduct(product: ShopSiteProduct): any {
         weight: product.weight || null,
         taxable: product.taxable ?? true,
 
-        // ShopSite identifiers
-        gtin: product.gtin || null,
-        shopsite_product_id: product.productId || null,
-        shopsite_guid: product.productGuid || null,
-        shopsite_product_type: product.productType || null,
+        // Categorization & SEO
+        gtin,
+        product_type: product.productTypeName || null,
+        fulfillment_type: product.fulfillmentType?.toLowerCase() || 'tangible',
+        search_keywords: product.searchKeywords || null,
+        google_product_category: product.googleProductCategory || null,
 
-        // Status
+        // Availability and Status
         is_disabled: product.isDisabled ?? false,
         availability: product.availability || null,
 
-        // Inventory controls
-        minimum_quantity: product.minimumQuantity || 1,
+        // Inventory management
+        quantity_on_hand: product.quantityOnHand || 0,
         low_stock_threshold: product.lowStockThreshold || null,
+        out_of_stock_limit: product.outOfStockLimit || 0,
+        minimum_quantity: product.minimumQuantity || 1,
 
-        // SEO and legacy
-        legacy_filename: product.fileName || null,
-        search_keywords: product.searchKeywords || null,
-
-        // Extended data as JSONB
+        // ShopSite specific data (stashed in JSONB)
         shopsite_data: {
-            more_info_text: product.moreInfoText || null,
-            brand: product.brand || null,
+            shopsite_id: product.productId || null,
+            shopsite_guid: product.productGuid || null,
+            legacy_filename: product.fileName || null,
+            brand_name: product.brandName || null,
+            category_name: product.categoryName || null,
+            shopsite_pages: product.shopsitePages || [],
             raw_xml: product.rawXml || null,
         },
     };

@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getProductsByStatus, type PipelineStatus } from '@/lib/pipeline';
+import { requireAdminAuth } from '@/lib/admin/api-auth';
 
 export async function GET(request: NextRequest) {
+    const auth = await requireAdminAuth();
+    if (!auth.authorized) return auth.response;
+
     const searchParams = request.nextUrl.searchParams;
     const status = (searchParams.get('status') || 'staging') as PipelineStatus;
     const search = searchParams.get('search') || '';

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, Wrench, Clock, DollarSign } from 'lucide-react';
+import { ArrowRight, Wrench, DollarSign } from 'lucide-react';
 import { getAllActiveServices } from '@/lib/services';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -109,7 +109,7 @@ export default async function ServicesPage() {
       <section className="mt-12 rounded-xl bg-blue-600 p-8 text-center text-white">
         <h2 className="mb-4 text-2xl font-semibold">Need Something Custom?</h2>
         <p className="mx-auto mb-6 max-w-xl text-blue-100">
-          Don't see what you're looking for? Give us a call and we'll see how
+          Don&apos;t see what you&apos;re looking for? Give us a call and we&apos;ll see how
           we can help.
         </p>
         <Button size="lg" variant="secondary" className="h-12 px-8" asChild>

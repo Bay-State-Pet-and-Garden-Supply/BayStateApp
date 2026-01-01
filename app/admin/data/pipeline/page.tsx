@@ -1,4 +1,4 @@
-import { GitBranch, ArrowLeft } from 'lucide-react';
+import { PackagePlus, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import type { PipelineProduct } from '@/lib/pipeline';
@@ -24,10 +24,10 @@ export default async function PipelineDataPage() {
             </div>
 
             <div className="mb-8 flex items-center gap-3">
-                <GitBranch className="h-8 w-8 text-indigo-600" />
+                <PackagePlus className="h-8 w-8 text-indigo-600" />
                 <div>
-                    <h1 className="text-3xl font-bold">Pipeline Data</h1>
-                    <p className="text-gray-600">{count || 0} products in ingestion pipeline</p>
+                    <h1 className="text-3xl font-bold">Raw Intake Data</h1>
+                    <p className="text-gray-600">{count || 0} products currently in the intake system</p>
                 </div>
             </div>
 
@@ -60,10 +60,10 @@ export default async function PipelineDataPage() {
                                     </td>
                                     <td className="px-4 py-3">
                                         <span className={`rounded px-2 py-0.5 text-xs font-medium ${p.pipeline_status === 'published' ? 'bg-green-100 text-green-700' :
-                                                p.pipeline_status === 'approved' ? 'bg-emerald-100 text-emerald-700' :
-                                                    p.pipeline_status === 'consolidated' ? 'bg-yellow-100 text-yellow-700' :
-                                                        p.pipeline_status === 'scraped' ? 'bg-blue-100 text-blue-700' :
-                                                            'bg-gray-100 text-gray-700'
+                                            p.pipeline_status === 'approved' ? 'bg-emerald-100 text-emerald-700' :
+                                                p.pipeline_status === 'consolidated' ? 'bg-yellow-100 text-yellow-700' :
+                                                    p.pipeline_status === 'scraped' ? 'bg-blue-100 text-blue-700' :
+                                                        'bg-gray-100 text-gray-700'
                                             }`}>
                                             {p.pipeline_status}
                                         </span>

@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { Address } from './types'
+import { Address, ProductSummary } from './types'
 import { Order } from '@/lib/orders'
 
 export async function getAddresses(): Promise<Address[]> {
@@ -22,7 +22,7 @@ export async function getAddresses(): Promise<Address[]> {
     return data as Address[]
 }
 
-export async function getWishlist() {
+export async function getWishlist(): Promise<ProductSummary[]> {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return []
@@ -43,7 +43,10 @@ export async function getWishlist() {
         return []
     }
 
-    return data.map((item: any) => item.products).filter(Boolean)
+    // Supabase returns products as a single object for many-to-one relations
+    return data
+        .map((item) => item.products as unknown as ProductSummary)
+        .filter((p): p is ProductSummary => p !== null && p !== undefined)
 }
 
 export async function getOrders(): Promise<Order[]> {

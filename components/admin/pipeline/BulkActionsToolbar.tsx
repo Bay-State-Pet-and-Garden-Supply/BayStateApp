@@ -27,6 +27,13 @@ const nextStatusMap: Record<PipelineStatus, { action: string; nextStatus: Pipeli
     published: [],
 };
 
+const actionLabels: Record<string, string> = {
+    consolidate: 'Prepare for Review',
+    approve: 'Verify Data',
+    publish: 'Make Live',
+    reject: 'Move Back',
+};
+
 export function BulkActionsToolbar({ selectedCount, currentStatus, onAction, onClearSelection }: BulkActionsToolbarProps) {
     if (selectedCount === 0) return null;
 
@@ -46,13 +53,13 @@ export function BulkActionsToolbar({ selectedCount, currentStatus, onAction, onC
                         key={action}
                         onClick={() => onAction(action as 'approve' | 'publish' | 'reject' | 'consolidate')}
                         className={`rounded px-3 py-1.5 text-sm font-medium transition-colors ${action === 'reject'
-                                ? 'bg-red-600 hover:bg-red-700'
-                                : action === 'publish'
-                                    ? 'bg-green-600 hover:bg-green-700'
-                                    : 'bg-blue-600 hover:bg-blue-700'
+                            ? 'bg-red-600 hover:bg-red-700'
+                            : action === 'publish'
+                                ? 'bg-green-600 hover:bg-green-700'
+                                : 'bg-blue-600 hover:bg-blue-700'
                             }`}
                     >
-                        {action.charAt(0).toUpperCase() + action.slice(1)}
+                        {actionLabels[action] || action.charAt(0).toUpperCase() + action.slice(1)}
                     </button>
                 ))}
 

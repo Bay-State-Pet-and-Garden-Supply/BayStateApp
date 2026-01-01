@@ -54,16 +54,54 @@ async function main() {
     }
 
     // Download products
-    console.log('📦 Downloading products XML...');
+    console.log('📦 Downloading products XML (Limit: 100 items)...');
     try {
         const productsRes = await fetch(`${baseUrl}/db_xml.cgi?action=download&type=products`, {
             headers: { 'Authorization': authHeader },
         });
-        if (productsRes.ok) {
-            const productsXml = await productsRes.text();
+
+        if (productsRes.ok && productsRes.body) {
             const productsPath = path.join(outputDir, 'products.xml');
-            fs.writeFileSync(productsPath, productsXml);
-            console.log(`   ✅ Saved to ${productsPath} (${(productsXml.length / 1024).toFixed(1)} KB)`);
+            const fileStream = fs.createWriteStream(productsPath);
+
+            // Use streaming to limit download size
+            const reader = productsRes.body.getReader();
+            const decoder = new TextDecoder();
+            let content = '';
+            const productCount = 0;
+            const limit = 100; // Hardcoded limit for testing efficiency
+
+            try {
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value, { stream: true });
+                    content += chunk;
+
+                    // Count products
+                    const matches = content.match(/<\/Product>/gi);
+                    if (matches && matches.length >= limit) {
+                        console.log(`   🛑 Limit of ${limit} products reached. Stopping download.`);
+                        await reader.cancel();
+                        break;
+                    }
+                }
+            } catch (e) {
+                // Ignore cancel errors
+            } finally {
+                // Ensure valid XML termination
+                if (!content.trim().endsWith('</ShopSiteProducts>')) {
+                    const lastProductEnd = content.lastIndexOf('</Product>');
+                    if (lastProductEnd !== -1) {
+                        content = content.substring(0, lastProductEnd + 10);
+                        content += '\n</ShopSiteProducts>';
+                    }
+                }
+
+                fs.writeFileSync(productsPath, content);
+                console.log(`   ✅ Saved to ${productsPath} (${(content.length / 1024).toFixed(1)} KB)`);
+            }
         } else {
             console.log(`   ❌ Failed: ${productsRes.status} ${productsRes.statusText}`);
         }

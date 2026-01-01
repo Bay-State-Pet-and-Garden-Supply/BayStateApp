@@ -54,7 +54,7 @@ export async function getFrequentlyBoughtProducts(limit = 6): Promise<FrequentPr
     }>()
 
     for (const order of data) {
-        const items = order.order_items as any[]
+        const items = order.order_items as Array<{ item_id: string; item_name: string; item_slug: string; unit_price: string | number; item_type: string }>
         for (const item of items) {
             const itemId = item.item_id
             const existing = productCounts.get(itemId)
@@ -65,7 +65,7 @@ export async function getFrequentlyBoughtProducts(limit = 6): Promise<FrequentPr
                     id: itemId,
                     name: item.item_name,
                     slug: item.item_slug,
-                    price: parseFloat(item.unit_price as any),
+                    price: parseFloat(String(item.unit_price)),
                     count: 1
                 })
             }

@@ -9,7 +9,7 @@ export async function updateRoleAction(userId: string, role: string) {
         return { success: false, error: 'Invalid role' }
     }
 
-    const res = await updateUserRole(userId, role as any)
+    const res = await updateUserRole(userId, role as 'admin' | 'staff' | 'customer')
 
     if (res.success) {
         revalidatePath('/admin/users')

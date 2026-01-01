@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { CheckCircle, AlertCircle, Loader2, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
@@ -52,80 +53,69 @@ export function MigrationHistory({ initialLogs }: MigrationHistoryProps) {
     return (
         <Card className="h-full">
             <CardHeader>
-                <CardTitle>Sync History</CardTitle>
-                <CardDescription>Real-time log of migration tasks</CardDescription>
+                <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                        Sync History
+                        <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                        </span>
+                    </CardTitle>
+                </div>
+                <CardDescription>Log of past synchronization tasks</CardDescription>
             </CardHeader>
             <CardContent>
-                <ScrollArea className="h-[400px] pr-4">
-                    <div className="space-y-4">
-                        {logs.length === 0 && (
-                            <p className="text-center text-sm text-muted-foreground py-8">
-                                No sync history found.
-                            </p>
-                        )}
-                        {logs.map((log) => (
-                            <div
-                                key={log.id}
-                                className="border rounded-lg p-4 space-y-3"
-                            >
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <Badge variant="outline" className="capitalize">
-                                            {log.sync_type}
-                                        </Badge>
-                                        <span className="text-xs text-muted-foreground">
+                <ScrollArea className="h-[400px]">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Type</TableHead>
+                                <TableHead>Date</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead className="text-right">Processed</TableHead>
+                                <TableHead className="text-right">Created</TableHead>
+                                <TableHead className="text-right">Updated</TableHead>
+                                <TableHead className="text-right">Failed</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {logs.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                                        No history record found. Run a sync to get started.
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                logs.map((log) => (
+                                    <TableRow key={log.id}>
+                                        <TableCell>
+                                            <Badge variant="outline" className="capitalize font-normal text-xs">
+                                                {log.sync_type}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
                                             {formatDistanceToNow(new Date(log.started_at), { addSuffix: true })}
-                                        </span>
-                                    </div>
-                                    <StatusBadge status={log.status} />
-                                </div>
-
-                                <div className="grid grid-cols-4 gap-2 text-sm">
-                                    <div className="flex flex-col">
-                                        <span className="text-xs text-muted-foreground">Processed</span>
-                                        <span className="font-medium">{log.processed}</span>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-xs text-muted-foreground">Created</span>
-                                        <span className="font-medium text-green-600">+{log.created}</span>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-xs text-muted-foreground">Updated</span>
-                                        <span className="font-medium text-blue-600">~{log.updated}</span>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-xs text-muted-foreground">Failed</span>
-                                        <span className="font-medium text-red-600">!{log.failed}</span>
-                                    </div>
-                                </div>
-
-                                {log.status === 'running' && (
-                                    <div className="w-full bg-secondary h-2 rounded-full overflow-hidden">
-                                        <div
-                                            className="bg-primary h-full animate-progress"
-                                            style={{ width: '100%' }} // Indeterminate progress for now
-                                        />
-                                    </div>
-                                )}
-
-                                {log.errors && log.errors.length > 0 && (
-                                    <div className="bg-red-50 text-red-900 rounded p-2 text-xs space-y-1">
-                                        <p className="font-semibold flex items-center gap-1">
-                                            <AlertCircle className="h-3 w-3" />
-                                            Errors ({log.errors.length})
-                                        </p>
-                                        <ul className="list-disc list-inside space-y-1 max-h-24 overflow-y-auto">
-                                            {log.errors.map((err, i) => (
-                                                <li key={i} className="truncate">
-                                                    <span className="font-medium">{err.record}:</span> {err.error}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <StatusBadge status={log.status} />
+                                            {log.errors && log.errors.length > 0 && (
+                                                <div className="mt-1 text-xs text-red-500 font-medium flex items-center gap-1">
+                                                    <AlertCircle className="w-3 h-3" />
+                                                    {log.errors.length} errors
+                                                </div>
+                                            )}
+                                        </TableCell>
+                                        <TableCell className="text-right text-xs font-mono">{log.processed}</TableCell>
+                                        <TableCell className="text-right text-xs font-mono text-green-600">+{log.created}</TableCell>
+                                        <TableCell className="text-right text-xs font-mono text-blue-600">~{log.updated}</TableCell>
+                                        <TableCell className="text-right text-xs font-mono text-red-600">
+                                            {log.failed > 0 && `!${log.failed}`}
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
                 </ScrollArea>
             </CardContent>
         </Card>
@@ -136,26 +126,23 @@ function StatusBadge({ status }: { status: string }) {
     switch (status) {
         case 'completed':
             return (
-                <Badge variant="default" className="bg-green-600 hover:bg-green-600">
-                    <CheckCircle className="w-3 h-3 mr-1" />
-                    Completed
-                </Badge>
+                <div className="flex items-center text-green-600 text-xs font-medium">
+                    <CheckCircle className="w-3 h-3 mr-1" /> Completed
+                </div>
             );
         case 'failed':
             return (
-                <Badge variant="destructive">
-                    <XCircle className="w-3 h-3 mr-1" />
-                    Failed
-                </Badge>
+                <div className="flex items-center text-red-600 text-xs font-medium">
+                    <XCircle className="w-3 h-3 mr-1" /> Failed
+                </div>
             );
         case 'running':
             return (
-                <Badge variant="secondary" className="animate-pulse">
-                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                    Running
-                </Badge>
+                <div className="flex items-center text-blue-600 text-xs font-medium animate-pulse">
+                    <Loader2 className="w-3 h-3 mr-1 animate-spin" /> Running
+                </div>
             );
         default:
-            return <Badge variant="outline">{status}</Badge>;
+            return <div className="text-xs text-muted-foreground capitalize">{status}</div>;
     }
 }

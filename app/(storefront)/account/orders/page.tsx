@@ -24,7 +24,7 @@ export default async function OrdersPage() {
                 <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-12 text-center">
                     <Package className="h-12 w-12 text-muted-foreground mb-4" />
                     <h2 className="text-lg font-medium mb-2">No orders yet</h2>
-                    <p className="text-muted-foreground mb-6">You haven't placed any orders yet.</p>
+                    <p className="text-muted-foreground mb-6">You haven&apos;t placed any orders yet.</p>
                     <Button asChild>
                         <Link href="/products">Start Shopping</Link>
                     </Button>

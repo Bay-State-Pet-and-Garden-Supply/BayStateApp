@@ -10,7 +10,14 @@ import { ShopSiteCustomer } from './types';
  * Transform a ShopSite customer into the Supabase profiles table format.
  * Note: These are "legacy" profiles without auth users - customers will need to reset passwords.
  */
-export function transformShopSiteCustomer(customer: ShopSiteCustomer): any {
+interface TransformedCustomer {
+    email: string;
+    full_name: string;
+    legacy_customer_id: string;
+    shopsite_data: Record<string, unknown>;
+}
+
+export function transformShopSiteCustomer(customer: ShopSiteCustomer): TransformedCustomer {
     const fullName = [customer.firstName, customer.lastName].filter(Boolean).join(' ') || 'ShopSite Customer';
 
     return {
