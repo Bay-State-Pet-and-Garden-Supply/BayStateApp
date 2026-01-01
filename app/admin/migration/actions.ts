@@ -259,7 +259,7 @@ async function processProducts(shopSiteProducts: ShopSiteProduct[], logId?: stri
 
     // Store category links to insert after products
     const productCategoryLinks: { product_id: string, category_id: string }[] = [];
-    
+
     // Store pet type links and attributes to insert after products
     const productPetTypeLinks: { product_id: string, pet_type_id: string, confidence: string }[] = [];
     const productPetAttributes: {
@@ -324,7 +324,7 @@ async function processProducts(shopSiteProducts: ShopSiteProduct[], logId?: stri
 
                 if (upserted) {
                     const inference = inferPetTypes(shopSiteProduct);
-                    
+
                     for (const petTypeName of inference.petTypes) {
                         const petTypeId = petTypeMap.get(petTypeName);
                         if (petTypeId) {
@@ -643,7 +643,7 @@ export async function syncOrdersAction(): Promise<SyncResult> {
     const client = new ShopSiteClient(config);
     let shopSiteOrders = [];
     try {
-        shopSiteOrders = await client.fetchOrders({ limit: TEST_LIMIT });
+        shopSiteOrders = await client.fetchOrders();
     } catch (err) {
         const result = {
             success: false,
