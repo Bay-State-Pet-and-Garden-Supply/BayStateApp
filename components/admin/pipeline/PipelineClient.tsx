@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import type { PipelineProduct, PipelineStatus, StatusCount } from '@/lib/pipeline';
+import { scrapeProducts, checkRunnersAvailable } from '@/lib/pipeline-scraping';
 import { PipelineStatusTabs } from './PipelineStatusTabs';
 import { PipelineProductCard } from './PipelineProductCard';
 import { PipelineProductDetail } from './PipelineProductDetail';
 import { BulkActionsToolbar } from './BulkActionsToolbar';
-import { Search, RefreshCw } from 'lucide-react';
+import { Search, RefreshCw, Bot } from 'lucide-react';
 
 const statusLabels: Record<PipelineStatus, string> = {
     staging: 'Imported',
@@ -30,6 +31,18 @@ export function PipelineClient({ initialProducts, initialCounts, initialStatus }
     const [search, setSearch] = useState('');
     const [isPending, startTransition] = useTransition();
     const [viewingSku, setViewingSku] = useState<string | null>(null);
+
+    // Scraping state
+    const [isScraping, setIsScraping] = useState(false);
+    const [runnersAvailable, setRunnersAvailable] = useState(false);
+    const [scrapeJobId, setScrapeJobId] = useState<string | null>(null);
+
+    // Check runner availability on mount and when switching to staging
+    useEffect(() => {
+        if (activeStatus === 'staging') {
+            checkRunnersAvailable().then(setRunnersAvailable);
+        }
+    }, [activeStatus]);
 
     const handleStatusChange = async (status: PipelineStatus) => {
         setActiveStatus(status);
@@ -109,6 +122,24 @@ export function PipelineClient({ initialProducts, initialCounts, initialStatus }
         });
     };
 
+    const handleScrape = async () => {
+        if (selectedSkus.size === 0) return;
+
+        setIsScraping(true);
+
+        const result = await scrapeProducts(Array.from(selectedSkus));
+
+        if (result.success && result.jobId) {
+            setScrapeJobId(result.jobId);
+            // Clear selection after starting scrape
+            setSelectedSkus(new Set());
+        } else {
+            console.error('Failed to start scraping:', result.error);
+        }
+
+        setIsScraping(false);
+    };
+
     const handleView = (sku: string) => {
         setViewingSku(sku);
     };
@@ -137,6 +168,11 @@ export function PipelineClient({ initialProducts, initialCounts, initialStatus }
                 const data = await countsRes.json();
                 setCounts(data.counts);
             }
+
+            // Refresh runner status
+            if (activeStatus === 'staging') {
+                checkRunnersAvailable().then(setRunnersAvailable);
+            }
         });
     };
 
@@ -148,6 +184,22 @@ export function PipelineClient({ initialProducts, initialCounts, initialStatus }
                 activeStatus={activeStatus}
                 onStatusChange={handleStatusChange}
             />
+
+            {/* Scraping Job Banner */}
+            {scrapeJobId && (
+                <div className="flex items-center gap-3 rounded-lg bg-purple-50 border border-purple-200 px-4 py-3">
+                    <Bot className="h-5 w-5 text-purple-600 animate-pulse" />
+                    <span className="text-sm text-purple-800">
+                        Data enhancement in progress. Products will move to &quot;Enhanced&quot; when complete.
+                    </span>
+                    <button
+                        onClick={() => setScrapeJobId(null)}
+                        className="ml-auto text-sm text-purple-600 hover:text-purple-800"
+                    >
+                        Dismiss
+                    </button>
+                </div>
+            )}
 
             {/* Search and Actions Bar */}
             <div className="flex items-center gap-4">
@@ -165,7 +217,7 @@ export function PipelineClient({ initialProducts, initialCounts, initialStatus }
 
                 <button
                     onClick={handleRefresh}
-                    disabled={isPending}
+                    disabled={isPending || isScraping}
                     className="flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50 disabled:opacity-50"
                 >
                     <RefreshCw className={`h-4 w-4 ${isPending ? 'animate-spin' : ''}`} />
@@ -175,7 +227,8 @@ export function PipelineClient({ initialProducts, initialCounts, initialStatus }
                 {products.length > 0 && (
                     <button
                         onClick={handleSelectAll}
-                        className="rounded-lg border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50"
+                        disabled={isScraping}
+                        className="rounded-lg border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50 disabled:opacity-50"
                     >
                         {selectedSkus.size === products.length ? 'Deselect All' : 'Select All'}
                     </button>
@@ -187,6 +240,9 @@ export function PipelineClient({ initialProducts, initialCounts, initialStatus }
                 selectedCount={selectedSkus.size}
                 currentStatus={activeStatus}
                 onAction={handleBulkAction}
+                onScrape={handleScrape}
+                isScraping={isScraping}
+                runnersAvailable={runnersAvailable}
                 onClearSelection={() => setSelectedSkus(new Set())}
             />
 

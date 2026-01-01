@@ -1,11 +1,15 @@
 'use client';
 
+import { Bot, Loader2 } from 'lucide-react';
 import type { PipelineStatus } from '@/lib/pipeline';
 
 interface BulkActionsToolbarProps {
     selectedCount: number;
     currentStatus: PipelineStatus;
     onAction: (action: 'approve' | 'publish' | 'reject' | 'consolidate') => void;
+    onScrape?: () => void;
+    isScraping?: boolean;
+    runnersAvailable?: boolean;
     onClearSelection: () => void;
 }
 
@@ -34,10 +38,19 @@ const actionLabels: Record<string, string> = {
     reject: 'Move Back',
 };
 
-export function BulkActionsToolbar({ selectedCount, currentStatus, onAction, onClearSelection }: BulkActionsToolbarProps) {
+export function BulkActionsToolbar({
+    selectedCount,
+    currentStatus,
+    onAction,
+    onScrape,
+    isScraping = false,
+    runnersAvailable = false,
+    onClearSelection,
+}: BulkActionsToolbarProps) {
     if (selectedCount === 0) return null;
 
     const actions = nextStatusMap[currentStatus];
+    const showScrapeButton = currentStatus === 'staging' && onScrape;
 
     return (
         <div className="flex items-center gap-4 rounded-lg bg-gray-900 px-4 py-3 text-white">
@@ -48,11 +61,33 @@ export function BulkActionsToolbar({ selectedCount, currentStatus, onAction, onC
             <div className="flex-1" />
 
             <div className="flex items-center gap-2">
+                {/* Scrape button - only visible in staging */}
+                {showScrapeButton && (
+                    <button
+                        onClick={onScrape}
+                        disabled={isScraping || !runnersAvailable}
+                        className={`flex items-center gap-2 rounded px-3 py-1.5 text-sm font-medium transition-colors ${runnersAvailable
+                                ? 'bg-purple-600 hover:bg-purple-700'
+                                : 'bg-gray-600 cursor-not-allowed'
+                            } disabled:opacity-50`}
+                        title={!runnersAvailable ? 'No scraping runners available' : undefined}
+                    >
+                        {isScraping ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <Bot className="h-4 w-4" />
+                        )}
+                        {isScraping ? 'Scraping...' : 'Enhance Data'}
+                    </button>
+                )}
+
+                {/* Standard actions */}
                 {actions.map(({ action }) => (
                     <button
                         key={action}
                         onClick={() => onAction(action as 'approve' | 'publish' | 'reject' | 'consolidate')}
-                        className={`rounded px-3 py-1.5 text-sm font-medium transition-colors ${action === 'reject'
+                        disabled={isScraping}
+                        className={`rounded px-3 py-1.5 text-sm font-medium transition-colors disabled:opacity-50 ${action === 'reject'
                             ? 'bg-red-600 hover:bg-red-700'
                             : action === 'publish'
                                 ? 'bg-green-600 hover:bg-green-700'
@@ -65,7 +100,8 @@ export function BulkActionsToolbar({ selectedCount, currentStatus, onAction, onC
 
                 <button
                     onClick={onClearSelection}
-                    className="rounded px-3 py-1.5 text-sm font-medium text-gray-300 hover:text-white"
+                    disabled={isScraping}
+                    className="rounded px-3 py-1.5 text-sm font-medium text-gray-300 hover:text-white disabled:opacity-50"
                 >
                     Clear
                 </button>

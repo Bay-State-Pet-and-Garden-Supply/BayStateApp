@@ -1,6 +1,18 @@
 import { render, screen } from '@testing-library/react';
-import AdminBrandsPage from '@/app/admin/brands/page';
 
+// Mock Next.js navigation
+jest.mock('next/navigation', () => ({
+    useRouter: jest.fn(() => ({
+        push: jest.fn(),
+        replace: jest.fn(),
+        prefetch: jest.fn(),
+        back: jest.fn(),
+    })),
+    usePathname: jest.fn(() => '/admin/brands'),
+    useSearchParams: jest.fn(() => new URLSearchParams()),
+}));
+
+import AdminBrandsPage from '@/app/admin/brands/page';
 // Mock the server component data fetching
 jest.mock('@/lib/supabase/server', () => ({
     createClient: jest.fn().mockReturnValue({

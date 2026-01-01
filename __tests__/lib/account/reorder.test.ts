@@ -35,7 +35,9 @@ describe('reorder.ts', () => {
         it('returns empty array for no order history', async () => {
             mockChain = {
                 select: jest.fn().mockReturnValue({
-                    eq: jest.fn().mockResolvedValue({ data: [], error: null })
+                    eq: jest.fn().mockReturnValue({
+                        eq: jest.fn().mockResolvedValue({ data: [], error: null })
+                    })
                 })
             }
 
@@ -44,16 +46,42 @@ describe('reorder.ts', () => {
         })
 
         it('aggregates and filters products by order count', async () => {
-            const mockData = [
-                { product_id: 'p1', orders: { user_id: 'test-user' }, products: { id: 'p1', name: 'Product 1', slug: 'p1', price: 10, images: [] } },
-                { product_id: 'p1', orders: { user_id: 'test-user' }, products: { id: 'p1', name: 'Product 1', slug: 'p1', price: 10, images: [] } },
-                { product_id: 'p2', orders: { user_id: 'test-user' }, products: { id: 'p2', name: 'Product 2', slug: 'p2', price: 20, images: [] } },
+            // The real query returns orders with order_items embedded
+            const mockOrdersData = [
+                {
+                    user_id: 'test-user',
+                    order_items: [
+                        { item_id: 'p1', item_name: 'Product 1', item_slug: 'p1', unit_price: 10, item_type: 'product' },
+                        { item_id: 'p1', item_name: 'Product 1', item_slug: 'p1', unit_price: 10, item_type: 'product' },
+                    ]
+                },
+                {
+                    user_id: 'test-user',
+                    order_items: [
+                        { item_id: 'p2', item_name: 'Product 2', item_slug: 'p2', unit_price: 20, item_type: 'product' },
+                    ]
+                },
             ]
 
+            // Mock that handles multiple from() calls
+            let callCount = 0
             mockChain = {
-                select: jest.fn().mockReturnValue({
-                    eq: jest.fn().mockResolvedValue({ data: mockData, error: null })
-                })
+                select: jest.fn().mockImplementation(() => {
+                    callCount++
+                    if (callCount === 1) {
+                        // First call: orders query
+                        return {
+                            eq: jest.fn().mockReturnValue({
+                                eq: jest.fn().mockResolvedValue({ data: mockOrdersData, error: null })
+                            })
+                        }
+                    } else {
+                        // Second call: products query
+                        return {
+                            in: jest.fn().mockResolvedValue({ data: [{ id: 'p1', images: [] }], error: null })
+                        }
+                    }
+                }),
             }
 
             const result = await getFrequentlyBoughtProducts()

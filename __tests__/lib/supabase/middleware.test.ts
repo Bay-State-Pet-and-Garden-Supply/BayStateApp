@@ -30,18 +30,20 @@ describe('Middleware Auth Logic', () => {
         return new NextRequest(new URL(path, 'http://localhost'));
     }
 
-    it('redirects unauthenticated user from /admin to /admin/login', async () => {
+    it('redirects unauthenticated user from /admin to unified login', async () => {
         mockGetUser.mockResolvedValue({ data: { user: null }, error: null });
 
         const req = createReq('/admin/dashboard');
         const res = await updateSession(req);
 
-        // Check if redirect to login
-        expect(res.status).toBe(307); // or 302? NextResponse.redirect default is 307
-        expect(res.headers.get('location')).toBe('http://localhost/admin/login');
+        // Check if redirect to login with next param
+        expect(res.status).toBe(307);
+        const location = new URL(res.headers.get('location') || '');
+        expect(location.pathname).toBe('/login');
+        expect(location.searchParams.get('next')).toBe('/admin/dashboard');
     });
 
-    it('redirects customer role from /admin to homepage', async () => {
+    it('redirects customer role from /admin to login with error', async () => {
         mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } }, error: null });
 
         // Mock profile lookup returning 'customer'
@@ -53,10 +55,10 @@ describe('Middleware Auth Logic', () => {
         const req = createReq('/admin/dashboard');
         const res = await updateSession(req);
 
-        // Should redirect to /admin/login with error params
+        // Should redirect to /login with error params
         expect(res.status).toBe(307);
         const location = new URL(res.headers.get('location') || '');
-        expect(location.pathname).toBe('/admin/login');
+        expect(location.pathname).toBe('/login');
         expect(location.searchParams.get('error')).toBe('unauthorized');
     });
 

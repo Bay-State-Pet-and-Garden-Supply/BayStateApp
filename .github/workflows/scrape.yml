@@ -31,28 +31,31 @@ jobs:
   scrape:
     runs-on: [self-hosted, docker]
     timeout-minutes: 60
+    environment: production
+
+    env:
+      # Only the callback URL and webhook secret - NO database credentials!
+      CALLBACK_URL: ${{ secrets.SCRAPER_CALLBACK_URL }} # actionlint-disable-line
+      WEBHOOK_SECRET: ${{ secrets.SCRAPER_WEBHOOK_SECRET }} # actionlint-disable-line
+
+      JOB_ID: ${{ inputs.job_id }}
 
     steps:
-      - name: Update job status to running
+      - name: Notify job started
         env:
-          JOB_ID: ${{ inputs.job_id }}
-          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RUNNER_NAME: ${{ runner.name }}
         run: |
-          curl -X PATCH \
-            "${SUPABASE_URL}/rest/v1/scrape_jobs?id=eq.${JOB_ID}" \
-            -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
-            -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
+          # Generate HMAC signature for the payload
+          PAYLOAD='{"job_id":"'"${JOB_ID}"'","status":"running","runner_name":"'"${RUNNER_NAME}"'"}'
+          SIGNATURE=$(echo -n "$PAYLOAD" | openssl dgst -sha256 -hmac "$WEBHOOK_SECRET" | awk '{print $2}')
+          
+          curl -X POST "$CALLBACK_URL" \
             -H "Content-Type: application/json" \
-            -d '{"status": "running"}'
+            -H "X-Webhook-Signature: $SIGNATURE" \
+            -d "$PAYLOAD"
 
       - name: Run scraping job in Docker
         id: scrape
-        env:
-          JOB_ID: ${{ inputs.job_id }}
-          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          RUNNER_NAME: ${{ runner.name }}
         run: |
           # Build Docker command args
           DOCKER_ARGS=""
@@ -75,46 +78,46 @@ jobs:
           
           echo "Running Docker: baystate-scraper:latest $DOCKER_ARGS"
           
-          docker run --rm \
-            -e SUPABASE_URL="${SUPABASE_URL}" \
-            -e SUPABASE_SERVICE_ROLE_KEY="${SUPABASE_SERVICE_ROLE_KEY}" \
-            -e JOB_ID="${JOB_ID}" \
-            -e RUNNER_NAME="${RUNNER_NAME}" \
-            baystate-scraper:latest $DOCKER_ARGS
+          # Run Docker without any database credentials
+          # The container outputs results to stdout as JSON
+          docker run --rm baystate-scraper:latest $DOCKER_ARGS > /tmp/scrape_results.json
 
-      - name: Update job status to completed
+      - name: Report success
         if: success()
         env:
-          JOB_ID: ${{ inputs.job_id }}
-          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           RUNNER_NAME: ${{ runner.name }}
         run: |
-          curl -X PATCH \
-            "${SUPABASE_URL}/rest/v1/scrape_jobs?id=eq.${JOB_ID}" \
-            -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
-            -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
-            -H "Content-Type: application/json" \
-            -d "{\"status\": \"completed\", \"completed_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}"
+          # Read results from the scraper output
+          RESULTS=$(cat /tmp/scrape_results.json 2>/dev/null || echo '{}')
           
-          # Insert result record
-          curl -X POST \
-            "${SUPABASE_URL}/rest/v1/scrape_results" \
-            -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
-            -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
+          # Build payload
+          PAYLOAD=$(jq -n \
+            --arg job_id "$JOB_ID" \
+            --arg runner_name "$RUNNER_NAME" \
+            --argjson results "$RESULTS" \
+            '{job_id: $job_id, status: "completed", runner_name: $runner_name, results: $results}')
+          
+          # Generate signature
+          SIGNATURE=$(echo -n "$PAYLOAD" | openssl dgst -sha256 -hmac "$WEBHOOK_SECRET" | awk '{print $2}')
+          
+          curl -X POST "$CALLBACK_URL" \
             -H "Content-Type: application/json" \
-            -d "{\"job_id\": \"${JOB_ID}\", \"runner_name\": \"${RUNNER_NAME}\", \"data\": {\"status\": \"success\", \"skus\": \"${{ inputs.skus }}\", \"scrapers\": \"${{ inputs.scrapers }}\"}}"
+            -H "X-Webhook-Signature: $SIGNATURE" \
+            -d "$PAYLOAD"
 
-      - name: Update job status on failure
+      - name: Report failure
         if: failure()
         env:
-          JOB_ID: ${{ inputs.job_id }}
-          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RUNNER_NAME: ${{ runner.name }}
         run: |
-          curl -X PATCH \
-            "${SUPABASE_URL}/rest/v1/scrape_jobs?id=eq.${JOB_ID}" \
-            -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
-            -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
+          PAYLOAD=$(jq -n \
+            --arg job_id "$JOB_ID" \
+            --arg runner_name "$RUNNER_NAME" \
+            '{job_id: $job_id, status: "failed", runner_name: $runner_name, error_message: "Workflow failed - check GitHub Actions logs"}')
+          
+          SIGNATURE=$(echo -n "$PAYLOAD" | openssl dgst -sha256 -hmac "$WEBHOOK_SECRET" | awk '{print $2}')
+          
+          curl -X POST "$CALLBACK_URL" \
             -H "Content-Type: application/json" \
-            -d "{\"status\": \"failed\", \"completed_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\", \"error_message\": \"Workflow failed - check GitHub Actions logs\"}"
+            -H "X-Webhook-Signature: $SIGNATURE" \
+            -d "$PAYLOAD"

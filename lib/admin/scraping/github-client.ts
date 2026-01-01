@@ -1,9 +1,18 @@
 /**
- * GitHub API Client for Self-Hosted Runner Management
+ * GitHub API Client using GitHub App Authentication
  *
- * Provides typed access to GitHub Actions API for managing
- * self-hosted runners and triggering workflows.
+ * Uses a GitHub App for authentication instead of a Personal Access Token.
+ * This is more secure and team-friendly as it doesn't rely on individual user credentials.
+ * 
+ * Required environment variables:
+ * - GITHUB_APP_ID: The App ID from your GitHub App settings
+ * - GITHUB_APP_INSTALLATION_ID: The installation ID (from URL after installing the app)
+ * - GITHUB_APP_PRIVATE_KEY: The private key (PEM format) from your GitHub App
+ * - GITHUB_OWNER: Repository owner
+ * - GITHUB_REPO: Repository name
  */
+
+import { App, Octokit } from 'octokit';
 
 export interface GitHubRunner {
     id: number;
@@ -50,63 +59,83 @@ export interface RunnerStatus {
     runners: GitHubRunner[];
 }
 
-class GitHubClient {
-    private readonly baseUrl = 'https://api.github.com';
-    private readonly token: string;
+class GitHubAppClient {
+    private app: App | null = null;
+    private octokit: Octokit | null = null;
     private readonly owner: string;
     private readonly repo: string;
+    private readonly installationId: number;
 
     constructor() {
-        const token = process.env.GITHUB_PAT;
+        const appId = process.env.GITHUB_APP_ID;
+        const privateKey = process.env.GITHUB_APP_PRIVATE_KEY;
+        const installationId = process.env.GITHUB_APP_INSTALLATION_ID;
         const owner = process.env.GITHUB_OWNER;
         const repo = process.env.GITHUB_REPO;
 
-        if (!token || !owner || !repo) {
+        if (!appId || !privateKey || !installationId || !owner || !repo) {
             throw new Error(
-                'Missing GitHub configuration. Required: GITHUB_PAT, GITHUB_OWNER, GITHUB_REPO'
+                'Missing GitHub App configuration. Required: GITHUB_APP_ID, GITHUB_APP_PRIVATE_KEY, GITHUB_APP_INSTALLATION_ID, GITHUB_OWNER, GITHUB_REPO'
             );
         }
 
-        this.token = token;
-        this.owner = owner;
-        this.repo = repo;
-    }
+        // Handle private key formatting (may be base64 encoded or have escaped newlines)
+        let formattedPrivateKey = privateKey;
+        if (!privateKey.includes('-----BEGIN')) {
+            // Assume base64 encoded
+            formattedPrivateKey = Buffer.from(privateKey, 'base64').toString('utf-8');
+        }
+        // Replace escaped newlines
+        formattedPrivateKey = formattedPrivateKey.replace(/\\n/g, '\n');
 
-    private async fetch<T>(
-        endpoint: string,
-        options: RequestInit = {}
-    ): Promise<T> {
-        const url = `${this.baseUrl}${endpoint}`;
-        const response = await fetch(url, {
-            ...options,
-            headers: {
-                Accept: 'application/vnd.github+json',
-                Authorization: `Bearer ${this.token}`,
-                'X-GitHub-Api-Version': '2022-11-28',
-                ...options.headers,
-            },
+        this.app = new App({
+            appId,
+            privateKey: formattedPrivateKey,
         });
 
-        if (!response.ok) {
-            const error = await response.text();
-            throw new Error(`GitHub API error: ${response.status} - ${error}`);
-        }
+        this.owner = owner;
+        this.repo = repo;
+        this.installationId = parseInt(installationId, 10);
+    }
 
-        // Handle 204 No Content
-        if (response.status === 204) {
-            return {} as T;
+    /**
+     * Get an authenticated Octokit instance for API calls
+     */
+    private async getOctokit(): Promise<Octokit> {
+        if (!this.octokit && this.app) {
+            this.octokit = await this.app.getInstallationOctokit(this.installationId);
         }
-
-        return response.json();
+        if (!this.octokit) {
+            throw new Error('Failed to initialize Octokit');
+        }
+        return this.octokit;
     }
 
     /**
      * Get all self-hosted runners for the repository
      */
     async getRunners(): Promise<GitHubRunnersResponse> {
-        return this.fetch<GitHubRunnersResponse>(
-            `/repos/${this.owner}/${this.repo}/actions/runners`
-        );
+        const octokit = await this.getOctokit();
+        const response = await octokit.rest.actions.listSelfHostedRunnersForRepo({
+            owner: this.owner,
+            repo: this.repo,
+        });
+
+        return {
+            total_count: response.data.total_count,
+            runners: response.data.runners.map((runner) => ({
+                id: runner.id,
+                name: runner.name,
+                os: runner.os,
+                status: runner.status as 'online' | 'offline',
+                busy: runner.busy,
+                labels: runner.labels.map((label) => ({
+                    id: label.id ?? 0,
+                    name: label.name ?? '',
+                    type: label.type ?? '',
+                })),
+            })),
+        };
     }
 
     /**
@@ -116,9 +145,7 @@ class GitHubClient {
         const response = await this.getRunners();
 
         const onlineRunners = response.runners.filter((r) => r.status === 'online');
-        const offlineRunners = response.runners.filter(
-            (r) => r.status === 'offline'
-        );
+        const offlineRunners = response.runners.filter((r) => r.status === 'offline');
 
         return {
             available: onlineRunners.length > 0,
@@ -141,49 +168,80 @@ class GitHubClient {
      * Trigger the scraping workflow
      */
     async triggerWorkflow(inputs: TriggerWorkflowInputs): Promise<void> {
-        await this.fetch(
-            `/repos/${this.owner}/${this.repo}/actions/workflows/scrape.yml/dispatches`,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    ref: 'main',
-                    inputs,
-                }),
-            }
-        );
+        const octokit = await this.getOctokit();
+        await octokit.rest.actions.createWorkflowDispatch({
+            owner: this.owner,
+            repo: this.repo,
+            workflow_id: 'scrape.yml',
+            ref: 'main',
+            inputs: {
+                job_id: inputs.job_id,
+                skus: inputs.skus || '',
+                scrapers: inputs.scrapers || '',
+                test_mode: String(inputs.test_mode || false),
+                max_workers: String(inputs.max_workers || 3),
+            },
+        });
     }
 
     /**
      * Get a specific workflow run
      */
     async getWorkflowRun(runId: number): Promise<WorkflowRun> {
-        return this.fetch<WorkflowRun>(
-            `/repos/${this.owner}/${this.repo}/actions/runs/${runId}`
-        );
+        const octokit = await this.getOctokit();
+        const response = await octokit.rest.actions.getWorkflowRun({
+            owner: this.owner,
+            repo: this.repo,
+            run_id: runId,
+        });
+
+        return {
+            id: response.data.id,
+            name: response.data.name || '',
+            status: response.data.status as WorkflowRun['status'],
+            conclusion: response.data.conclusion as WorkflowRun['conclusion'],
+            html_url: response.data.html_url,
+            created_at: response.data.created_at,
+            updated_at: response.data.updated_at,
+        };
     }
 
     /**
      * Get recent workflow runs for the scrape workflow
      */
     async getWorkflowRuns(limit = 10): Promise<WorkflowRunsResponse> {
-        return this.fetch<WorkflowRunsResponse>(
-            `/repos/${this.owner}/${this.repo}/actions/workflows/scrape.yml/runs?per_page=${limit}`
-        );
+        const octokit = await this.getOctokit();
+        const response = await octokit.rest.actions.listWorkflowRuns({
+            owner: this.owner,
+            repo: this.repo,
+            workflow_id: 'scrape.yml',
+            per_page: limit,
+        });
+
+        return {
+            total_count: response.data.total_count,
+            workflow_runs: response.data.workflow_runs.map((run) => ({
+                id: run.id,
+                name: run.name || '',
+                status: run.status as WorkflowRun['status'],
+                conclusion: run.conclusion as WorkflowRun['conclusion'],
+                html_url: run.html_url,
+                created_at: run.created_at,
+                updated_at: run.updated_at,
+            })),
+        };
     }
 }
 
 // Export singleton instance getter
-let clientInstance: GitHubClient | null = null;
+let clientInstance: GitHubAppClient | null = null;
 
-export function getGitHubClient(): GitHubClient {
+export function getGitHubClient(): GitHubAppClient {
     if (!clientInstance) {
-        clientInstance = new GitHubClient();
+        clientInstance = new GitHubAppClient();
     }
     return clientInstance;
 }
 
-// Export for testing with custom config
-export { GitHubClient };
+// Export class for testing
+export { GitHubAppClient as GitHubClient };

@@ -63,8 +63,8 @@ describe('Migration History', () => {
 
     it('should get recent migration logs', async () => {
         const mockLogs = [
-            { id: '1', sync_type: 'products', status: 'completed' },
-            { id: '2', sync_type: 'orders', status: 'failed' },
+            { id: '1', sync_type: 'products', status: 'completed', errors: [] },
+            { id: '2', sync_type: 'orders', status: 'failed', errors: [] },
         ];
         mockSupabase.limit.mockResolvedValue({ data: mockLogs, error: null });
 

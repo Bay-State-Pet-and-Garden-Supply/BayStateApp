@@ -48,7 +48,7 @@ describe('Admin RBAC Enforcement', () => {
             const adminOnlyRoutes = ['/admin/users', '/admin/settings'];
 
             // Simulate the sidebar logic
-            const isAdmin = staffRole === 'admin';
+            const isAdmin = (staffRole as string) === 'admin';
             const canAccessAdminRoutes = isAdmin;
 
             expect(canAccessAdminRoutes).toBe(false);

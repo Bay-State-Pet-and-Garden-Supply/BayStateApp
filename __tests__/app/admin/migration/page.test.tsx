@@ -5,13 +5,18 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
+// Mock date-fns to avoid module resolution issues in test env
+jest.mock('date-fns', () => ({
+    formatDistanceToNow: jest.fn(() => '5 minutes ago'),
+}));
+
 // Mock the server-side createClient
 jest.mock('@/lib/supabase/server', () => ({
     createClient: jest.fn(),
 }));
 
 // Mock the actions
-jest.mock('./actions', () => ({
+jest.mock('@/app/admin/migration/actions', () => ({
     saveCredentialsAction: jest.fn(),
     testConnectionAction: jest.fn(),
 }));
