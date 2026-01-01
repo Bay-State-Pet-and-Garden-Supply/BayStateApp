@@ -17,7 +17,7 @@ interface AdminProductsClientProps {
 
 export function AdminProductsClient({ initialProducts, totalCount }: AdminProductsClientProps) {
     const router = useRouter();
-    const [products, setProducts] = useState<PublishedProduct[]>(initialProducts);
+    const [products] = useState<PublishedProduct[]>(initialProducts);
     const [editingProduct, setEditingProduct] = useState<PublishedProduct | null>(null);
     const [search, setSearch] = useState('');
 

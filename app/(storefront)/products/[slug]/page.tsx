@@ -1,12 +1,14 @@
 import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { type Metadata } from 'next';
 import { getProductBySlug } from '@/lib/products';
 import { Badge } from '@/components/ui/badge';
 import { AddToCartButton } from '@/components/storefront/add-to-cart-button';
 import { ProductImageCarousel } from '@/components/storefront/product-image-carousel';
+import { ProductAdminEdit } from '@/components/storefront/product-admin-edit';
+import { createClient } from '@/lib/supabase/server';
+import { getUserRole } from '@/lib/auth/roles';
 
 interface ProductDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -52,11 +54,21 @@ export async function generateMetadata({ params }: ProductDetailPageProps): Prom
  */
 export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
   const { slug } = await params;
-  const product = await getProductBySlug(slug);
+
+  // Fetch product and user data in parallel
+  const supabase = await createClient();
+  const [product, { data: { user } }] = await Promise.all([
+    getProductBySlug(slug),
+    supabase.auth.getUser(),
+  ]);
 
   if (!product) {
     notFound();
   }
+
+  // Check if user is admin or staff
+  const userRole = user ? await getUserRole(user.id) : null;
+  const canEditProducts = userRole === 'admin' || userRole === 'staff';
 
   const formattedPrice = new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -74,6 +86,23 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
     out_of_stock: 'bg-red-100 text-red-800',
     pre_order: 'bg-blue-100 text-blue-800',
   }[product.stock_status];
+
+  // Transform product for the edit modal (add missing fields with defaults)
+  const editableProduct = {
+    id: product.id,
+    sku: product.slug, // Using slug as SKU since that's the current pattern
+    name: product.name,
+    slug: product.slug,
+    description: product.description,
+    price: product.price,
+    stock_status: product.stock_status,
+    is_featured: product.is_featured,
+    images: product.images,
+    brand_id: product.brand_id,
+    brand_name: product.brand?.name ?? null,
+    brand_slug: product.brand?.slug ?? null,
+    created_at: product.created_at,
+  };
 
   return (
     <div className="w-full px-4 py-8">
@@ -106,7 +135,12 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
             </Link>
           )}
 
-          <h1 className="text-3xl font-bold text-zinc-900">{product.name}</h1>
+          <div className="flex items-start justify-between gap-4">
+            <h1 className="text-3xl font-bold text-zinc-900">{product.name}</h1>
+            {canEditProducts && (
+              <ProductAdminEdit product={editableProduct} />
+            )}
+          </div>
 
           <div className="flex items-center gap-4">
             <span className="text-3xl font-bold text-zinc-900">

@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import type { PipelineStatus, StatusCount } from '@/lib/pipeline';
 
 interface PipelineStatusTabsProps {

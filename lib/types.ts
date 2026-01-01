@@ -45,3 +45,24 @@ export interface Category {
   image_url: string | null;
   created_at: string;
 }
+
+export interface PetType {
+  id: string;
+  name: string;
+  display_order: number;
+  icon: string | null;
+}
+
+export interface Pet {
+  id: string;
+  user_id: string;
+  pet_type_id: string;
+  name: string;
+  breed: string | null;
+  birth_date: string | null;
+  weight_lbs: number | null;
+  dietary_notes: string | null;
+  created_at: string;
+  updated_at: string;
+  pet_type?: PetType;
+}

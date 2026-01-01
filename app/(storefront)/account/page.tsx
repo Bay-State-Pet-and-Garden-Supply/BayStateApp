@@ -5,17 +5,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { BuyAgainSection } from '@/components/account/buy-again-section'
 import Link from 'next/link'
-import { Package, User, MapPin } from 'lucide-react'
+import { Package, User, MapPin, Dog } from 'lucide-react'
+import { getUserPets } from '@/lib/account/pets'
 
 export default async function AccountPage() {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return null
 
-    const [profile, frequentProducts, recentOrders] = await Promise.all([
+    const [profile, frequentProducts, recentOrders, pets] = await Promise.all([
         getProfile(user.id),
         getFrequentlyBoughtProducts(6),
-        getRecentOrders(5)
+        getRecentOrders(5),
+        getUserPets()
     ])
 
     return (
@@ -46,6 +48,33 @@ export default async function AccountPage() {
                         </div>
                         <Button asChild variant="outline" size="sm">
                             <Link href="/account/profile">Edit Profile</Link>
+                        </Button>
+                    </CardContent>
+                </Card>
+
+                {/* My Pets */}
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-lg font-medium">My Pets</CardTitle>
+                        <Dog className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent className="space-y-4 pt-4">
+                        <div className="grid gap-1">
+                            <span className="text-sm font-medium text-muted-foreground">Registered Pets</span>
+                            <span className="text-2xl font-bold">{pets.length}</span>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                            {pets.length > 0 ? (
+                                <p>
+                                    Configured for: {pets.slice(0, 3).map(p => p.name).join(', ')}
+                                    {pets.length > 3 && ` +${pets.length - 3} more`}
+                                </p>
+                            ) : (
+                                <p>Add pets to get personalized product recommendations.</p>
+                            )}
+                        </div>
+                        <Button asChild variant="outline" size="sm">
+                            <Link href="/account/pets">{pets.length > 0 ? 'Manage Pets' : 'Add a Pet'}</Link>
                         </Button>
                     </CardContent>
                 </Card>

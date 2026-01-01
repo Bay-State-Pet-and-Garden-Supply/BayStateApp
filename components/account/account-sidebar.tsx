@@ -3,12 +3,13 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { User, MapPin, Heart, Package, LayoutDashboard, LogOut } from 'lucide-react'
+import { User, MapPin, Heart, Package, LayoutDashboard, LogOut, Dog } from 'lucide-react'
 import { signOutAction } from '@/lib/auth/actions'
 
 const items = [
     { href: '/account', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/account/profile', label: 'Profile', icon: User },
+    { href: '/account/pets', label: 'My Pets', icon: Dog },
     { href: '/account/addresses', label: 'Addresses', icon: MapPin },
     { href: '/account/orders', label: 'Orders', icon: Package },
     { href: '/account/wishlist', label: 'Wishlist', icon: Heart },

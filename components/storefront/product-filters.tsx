@@ -1,6 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Search, X } from 'lucide-react';
 import { type Brand } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -17,10 +19,13 @@ export function ProductFilters({ brands }: ProductFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const currentSearch = searchParams.get('search') || '';
   const currentBrand = searchParams.get('brand') || '';
   const currentStock = searchParams.get('stock') || '';
   const currentMinPrice = searchParams.get('minPrice') || '';
   const currentMaxPrice = searchParams.get('maxPrice') || '';
+
+  const [searchQuery, setSearchQuery] = useState(currentSearch);
 
   const updateFilter = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -33,11 +38,22 @@ export function ProductFilters({ brands }: ProductFiltersProps) {
     router.push(`/products?${params.toString()}`);
   };
 
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateFilter('search', searchQuery.trim());
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    updateFilter('search', '');
+  };
+
   const clearFilters = () => {
+    setSearchQuery('');
     router.push('/products');
   };
 
-  const hasFilters = currentBrand || currentStock || currentMinPrice || currentMaxPrice;
+  const hasFilters = currentSearch || currentBrand || currentStock || currentMinPrice || currentMaxPrice;
 
   return (
     <div className="space-y-6 rounded-lg border bg-white p-4">
@@ -47,6 +63,43 @@ export function ProductFilters({ brands }: ProductFiltersProps) {
           <Button variant="ghost" size="sm" onClick={clearFilters}>
             Clear all
           </Button>
+        )}
+      </div>
+
+      {/* Search Input */}
+      <div>
+        <Label className="text-sm font-medium">Search Products</Label>
+        <form onSubmit={handleSearchSubmit} className="mt-2">
+          <div className="relative">
+            <Input
+              type="text"
+              placeholder="Search by name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pr-16"
+            />
+            <div className="absolute right-1 top-1/2 -translate-y-1/2 flex gap-1">
+              {searchQuery && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={clearSearch}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+              <Button type="submit" variant="ghost" size="icon" className="h-7 w-7">
+                <Search className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </form>
+        {currentSearch && (
+          <p className="mt-1 text-xs text-zinc-500">
+            Showing results for &quot;{currentSearch}&quot;
+          </p>
         )}
       </div>
 
