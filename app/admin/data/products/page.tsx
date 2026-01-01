@@ -7,7 +7,7 @@ export default async function ProductsDataPage() {
   const supabase = await createClient();
 
   const { data, count } = await supabase
-    .from('products_published')
+    .from('products')
     .select('*', { count: 'exact' })
     .order('created_at', { ascending: false });
 

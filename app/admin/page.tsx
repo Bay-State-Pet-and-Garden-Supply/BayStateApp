@@ -32,7 +32,7 @@ export default async function AdminDashboard() {
 
     // Published products
     supabase
-      .from('products_published')
+      .from('products')
       .select('*', { count: 'exact', head: true }),
 
     // Recent orders (last 10)
@@ -49,7 +49,7 @@ export default async function AdminDashboard() {
 
     // Out of stock products
     supabase
-      .from('products_published')
+      .from('products')
       .select('*', { count: 'exact', head: true })
       .eq('stock_status', 'out_of_stock'),
   ]);

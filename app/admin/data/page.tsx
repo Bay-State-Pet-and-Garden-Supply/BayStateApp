@@ -22,7 +22,7 @@ export default async function DataExplorerPage() {
         { count: ordersCount },
         { count: pipelineCount },
     ] = await Promise.all([
-        supabase.from('products_published').select('*', { count: 'exact', head: true }),
+        supabase.from('products').select('*', { count: 'exact', head: true }),
         supabase.from('brands').select('*', { count: 'exact', head: true }),
         supabase.from('services').select('*', { count: 'exact', head: true }),
         supabase.from('orders').select('*', { count: 'exact', head: true }),

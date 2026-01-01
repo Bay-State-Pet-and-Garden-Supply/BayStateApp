@@ -23,9 +23,9 @@ interface PublishedProduct {
 
 export default async function AdminProductsPage() {
   const supabase = await createClient();
-  
+
   const { data: products, count } = await supabase
-    .from('products_published')
+    .from('products')
     .select('*', { count: 'exact' })
     .order('created_at', { ascending: false })
     .limit(50);
@@ -86,8 +86,8 @@ export default async function AdminProductsPage() {
           {products.map((product: PublishedProduct) => {
             const images = parseImages(product.images);
             const imageUrl = images[0];
-            const stockColor = product.stock_status === 'in_stock' 
-              ? 'bg-green-100 text-green-700' 
+            const stockColor = product.stock_status === 'in_stock'
+              ? 'bg-green-100 text-green-700'
               : product.stock_status === 'out_of_stock'
                 ? 'bg-red-100 text-red-700'
                 : 'bg-blue-100 text-blue-700';
@@ -131,8 +131,8 @@ export default async function AdminProductsPage() {
                       ${Number(product.price).toFixed(2)}
                     </span>
                     <Badge className={stockColor}>
-                      {product.stock_status === 'in_stock' ? 'In Stock' : 
-                       product.stock_status === 'out_of_stock' ? 'Out of Stock' : 'Pre-order'}
+                      {product.stock_status === 'in_stock' ? 'In Stock' :
+                        product.stock_status === 'out_of_stock' ? 'Out of Stock' : 'Pre-order'}
                     </Badge>
                   </div>
 
