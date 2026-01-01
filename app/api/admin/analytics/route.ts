@@ -79,6 +79,10 @@ export async function GET(request: NextRequest) {
       label = `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
       break;
     }
+    case 'all':
+      startDate = new Date(0); // Epoch start
+      label = 'All Time';
+      break;
     default:
       startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       label = 'Last 7 days';
