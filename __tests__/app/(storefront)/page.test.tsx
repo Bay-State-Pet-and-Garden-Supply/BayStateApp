@@ -5,6 +5,15 @@ jest.mock('@/lib/data', () => ({
   getFeaturedProducts: jest.fn().mockResolvedValue([]),
 }));
 
+// Mock async components that might cause issues in test environment
+jest.mock('@/components/storefront/pet-recommendations', () => ({
+  PetRecommendations: () => <div data-testid="pet-recommendations" />,
+}));
+
+jest.mock('@/components/storefront/featured-products', () => ({
+  FeaturedProducts: () => <div data-testid="featured-products" />,
+}));
+
 // Import after mocking
 import HomePage from '@/app/(storefront)/page';
 

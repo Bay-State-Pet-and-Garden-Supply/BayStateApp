@@ -741,7 +741,7 @@ async function processOrders(shopSiteOrders: ShopSiteOrder[], logId?: string): P
 
         try {
             const batchOrdersData = [];
-            const batchOrdersItems: any[] = [];
+            const batchOrdersItems: ReturnType<typeof transformShopSiteOrder>['items'][] = [];
             const batchLegacyNumbers: string[] = [];
 
             for (const shopSiteOrder of batch) {
@@ -775,7 +775,7 @@ async function processOrders(shopSiteOrders: ShopSiteOrder[], logId?: string): P
                 });
 
                 // Update stats and prepare items
-                const allItemsToInsert: any[] = [];
+                const allItemsToInsert: (ReturnType<typeof transformShopSiteOrder>['items'][0] & { order_id: string })[] = [];
                 const orderIdsToClear: string[] = [];
 
                 batch.forEach((shopSiteOrder, index) => {
@@ -790,7 +790,7 @@ async function processOrders(shopSiteOrders: ShopSiteOrder[], logId?: string): P
                     if (dbOrderId) {
                         orderIdsToClear.push(dbOrderId);
                         const items = batchOrdersItems[index];
-                        items.forEach((item: any) => {
+                        items.forEach((item) => {
                             allItemsToInsert.push({
                                 ...item,
                                 order_id: dbOrderId,
