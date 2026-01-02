@@ -16,6 +16,7 @@ import {
   UserCircle,
   Percent,
   Network,
+  FileCode2,
 } from 'lucide-react';
 
 interface NavItem {
@@ -72,6 +73,7 @@ const navSections: NavSection[] = [
     adminOnly: true, // Only admins can see this section
     items: [
       { href: '/admin/users', label: 'Users', icon: <Users className="h-5 w-5" />, adminOnly: true },
+      { href: '/admin/scrapers', label: 'Scraper Configs', icon: <FileCode2 className="h-5 w-5" />, adminOnly: true },
       { href: '/admin/scraper-network', label: 'Scraper Network', icon: <Network className="h-5 w-5" />, adminOnly: true },
       { href: '/admin/migration', label: 'Data Migration', icon: <RefreshCw className="h-5 w-5" />, adminOnly: true },
       { href: '/admin/tools/integra-sync', label: 'Integra Sync', icon: <RefreshCw className="h-5 w-5" />, adminOnly: true },
