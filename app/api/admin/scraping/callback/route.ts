@@ -101,6 +101,22 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Update runner status (heartbeat/activity)
+        if (payload.runner_name) {
+            const runnerStatus = payload.status === 'running' ? 'busy' : 'online';
+            const currentJobId = payload.status === 'running' ? payload.job_id : null;
+
+            await getSupabaseAdmin()
+                .from('scraper_runners')
+                .upsert({
+                    name: payload.runner_name,
+                    status: runnerStatus,
+                    last_seen_at: new Date().toISOString(),
+                    current_job_id: currentJobId,
+                    metadata: { last_ip: request.ip }
+                }, { onConflict: 'name' });
+        }
+
         // If completed with results, update product sources and status
         if (payload.status === 'completed' && payload.results?.data) {
             const skus = Object.keys(payload.results.data);

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Server, Wifi, WifiOff, Loader2 } from 'lucide-react';
 
 interface Runner {
-    id: number;
+    id: string | number;
     name: string;
     os: string;
     status: 'online' | 'offline';
@@ -97,10 +97,10 @@ export function RunnerGrid({ initialRunners = [] }: RunnerGridProps) {
                     <div
                         key={runner.id}
                         className={`rounded-lg border p-4 ${runner.status === 'online'
-                                ? runner.busy
-                                    ? 'border-yellow-200 bg-yellow-50'
-                                    : 'border-green-200 bg-green-50'
-                                : 'border-gray-200 bg-gray-50'
+                            ? runner.busy
+                                ? 'border-yellow-200 bg-yellow-50'
+                                : 'border-green-200 bg-green-50'
+                            : 'border-gray-200 bg-gray-50'
                             }`}
                     >
                         <div className="flex items-start justify-between">
@@ -117,10 +117,10 @@ export function RunnerGrid({ initialRunners = [] }: RunnerGridProps) {
                             </div>
                             <span
                                 className={`rounded-full px-2 py-1 text-xs font-medium ${runner.status === 'online'
-                                        ? runner.busy
-                                            ? 'bg-yellow-100 text-yellow-800'
-                                            : 'bg-green-100 text-green-800'
-                                        : 'bg-gray-100 text-gray-800'
+                                    ? runner.busy
+                                        ? 'bg-yellow-100 text-yellow-800'
+                                        : 'bg-green-100 text-green-800'
+                                    : 'bg-gray-100 text-gray-800'
                                     }`}
                             >
                                 {runner.busy ? 'Busy' : runner.status === 'online' ? 'Ready' : 'Offline'}

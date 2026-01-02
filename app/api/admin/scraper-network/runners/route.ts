@@ -1,18 +1,61 @@
 import { NextResponse } from 'next/server';
-import { getGitHubClient } from '@/lib/admin/scraping/github-client';
+import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
+function getSupabaseAdmin() {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+    return createClient(url, key);
+}
+
+interface RunnerData {
+    name: string;
+    last_seen_at: string;
+    status: 'online' | 'offline' | 'busy';
+    current_job_id: string | null;
+    metadata: Record<string, unknown>;
+}
+
 export async function GET() {
     try {
-        const client = getGitHubClient();
-        const status = await client.getRunnerStatus();
+        const supabase = getSupabaseAdmin();
+        const { data: runnersData, error } = await supabase
+            .from('scraper_runners')
+            .select('*')
+            .order('last_seen_at', { ascending: false });
+
+        if (error) throw error;
+
+        const now = new Date();
+        const runners = (runnersData as RunnerData[]).map(r => {
+            const lastSeen = new Date(r.last_seen_at);
+            const minutesSinceSeen = (now.getTime() - lastSeen.getTime()) / 1000 / 60;
+
+            // Mark as offline if not seen in 5 minutes
+            let status = r.status;
+            if (minutesSinceSeen > 5) {
+                status = 'offline';
+            }
+
+            return {
+                id: r.name, // Use name as ID
+                name: r.name,
+                os: 'Linux/Mac', // Placeholder
+                status: status === 'busy' ? 'online' : status, // Frontend expects online/offline
+                busy: status === 'busy',
+                labels: []
+            };
+        });
+
+        const onlineCount = runners.filter(r => r.status === 'online').length;
+        const offlineCount = runners.filter(r => r.status === 'offline').length;
 
         return NextResponse.json({
-            runners: status.runners,
-            available: status.available,
-            onlineCount: status.onlineCount,
-            offlineCount: status.offlineCount,
+            runners,
+            available: true,
+            onlineCount,
+            offlineCount,
         });
     } catch (error) {
         console.error('[Runners API] Error:', error);
