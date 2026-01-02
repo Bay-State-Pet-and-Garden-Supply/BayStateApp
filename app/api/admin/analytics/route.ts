@@ -98,7 +98,8 @@ export async function GET(request: NextRequest) {
       .select('id, status, total, created_at')
       .gte('created_at', startIso)
       .lte('created_at', endIso)
-      .order('created_at', { ascending: true });
+      .order('created_at', { ascending: true })
+      .limit(10000);
 
     if (ordersError) {
       console.error('Error fetching orders:', ordersError);
@@ -110,7 +111,7 @@ export async function GET(request: NextRequest) {
 
     // Calculate revenue metrics
     const ordersList = orders || [];
-    const totalRevenue = ordersList.reduce((sum, o) => sum + (o.total || 0), 0);
+    const totalRevenue = ordersList.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
     const orderCount = ordersList.length;
     const averageOrderValue = orderCount > 0 ? totalRevenue / orderCount : 0;
 
@@ -130,7 +131,7 @@ export async function GET(request: NextRequest) {
       const dateKey = new Date(order.created_at).toISOString().split('T')[0];
       const existing = revenueByDayMap.get(dateKey) || { revenue: 0, orders: 0 };
       revenueByDayMap.set(dateKey, {
-        revenue: existing.revenue + (order.total || 0),
+        revenue: existing.revenue + (Number(order.total) || 0),
         orders: existing.orders + 1,
       });
     }
@@ -158,11 +159,13 @@ export async function GET(request: NextRequest) {
     const orderIds = ordersList.map((o) => o.id);
     let topProducts: AnalyticsData['topProducts'] = [];
 
-    if (orderIds.length > 0) {
+    if (true) {
       const { data: items, error: itemsError } = await supabase
         .from('order_items')
-        .select('item_name, quantity, total_price')
-        .in('order_id', orderIds);
+        .select('item_name, quantity, total_price, orders!inner(created_at)')
+        .gte('orders.created_at', startIso)
+        .lte('orders.created_at', endIso)
+        .limit(50000);
 
       if (!itemsError && items) {
         const productMap = new Map<string, { quantity: number; revenue: number }>();
@@ -171,8 +174,8 @@ export async function GET(request: NextRequest) {
           const name = item.item_name || 'Unknown';
           const existing = productMap.get(name) || { quantity: 0, revenue: 0 };
           productMap.set(name, {
-            quantity: existing.quantity + (item.quantity || 0),
-            revenue: existing.revenue + (item.total_price || 0),
+            quantity: existing.quantity + (Number(item.quantity) || 0),
+            revenue: existing.revenue + (Number(item.total_price) || 0),
           });
         }
 

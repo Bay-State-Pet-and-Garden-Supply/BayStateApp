@@ -115,7 +115,7 @@ export function JobHistory() {
                                     </td>
                                     <td className="px-4 py-3">
                                         <span className="rounded bg-gray-100 px-2 py-1 text-xs font-medium">
-                                            {job.skus.length} SKU{job.skus.length !== 1 ? 's' : ''}
+                                            {(job.skus || []).length} SKU{(job.skus || []).length !== 1 ? 's' : ''}
                                         </span>
                                     </td>
                                     <td className="px-4 py-3 text-gray-500">
