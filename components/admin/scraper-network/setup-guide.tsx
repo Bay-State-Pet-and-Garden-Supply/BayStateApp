@@ -66,18 +66,45 @@ export function SetupGuide() {
                         </section>
 
                         <section>
-                            <h4 className="font-semibold text-gray-900">2. Register as a GitHub Runner</h4>
+                            <h4 className="font-semibold text-gray-900">2. Generate Runner Credentials</h4>
+                            <p className="mt-1">
+                                Scroll up to the <strong>Runner Accounts</strong> section on this page.
+                            </p>
+                            <ul className="mt-2 list-inside list-disc space-y-1">
+                                <li>Click <strong>Create Account</strong></li>
+                                <li>Enter a unique runner name (e.g. <code>my-server-1</code>)</li>
+                                <li>Copy the generated <strong>Email</strong> and <strong>Password</strong></li>
+                            </ul>
+                            <p className="mt-2 text-amber-600 font-medium italic">
+                                Note: Credentials are only displayed once. If lost, you must delete and recreate the account.
+                            </p>
+                        </section>
+
+                        <section>
+                            <h4 className="font-semibold text-gray-900">3. Configure Environment</h4>
+                            <p className="mt-1">Set the following secrets in your environment or GitHub repository:</p>
+                            <ul className="mt-2 list-inside list-disc space-y-1 font-mono text-xs">
+                                <li>SUPABASE_URL</li>
+                                <li>SUPABASE_ANON_KEY</li>
+                                <li>RUNNER_EMAIL (from step 2)</li>
+                                <li>RUNNER_PASSWORD (from step 2)</li>
+                                <li>SCRAPER_API_URL (this app's URL)</li>
+                            </ul>
+                        </section>
+
+                        <section>
+                            <h4 className="font-semibold text-gray-900">4. Register as a GitHub Runner</h4>
                             <p className="mt-1">Go to your repo Settings → Actions → Runners → New self-hosted runner</p>
                             <p className="mt-2">Follow the instructions GitHub provides, using these labels:</p>
                             <CodeBlock code="--labels self-hosted,docker" id="labels" copied={copied} onCopy={copyToClipboard} />
                         </section>
 
                         <section>
-                            <h4 className="font-semibold text-gray-900">3. Build the Scraper Image</h4>
+                            <h4 className="font-semibold text-gray-900">5. Build the Scraper Image</h4>
                             <p className="mt-1">Clone the repo and build the Docker image:</p>
                             <CodeBlock
-                                code={`git clone https://github.com/Bay-State-Pet-and-Garden-Supply/BayStateApp.git
-cd BayStateApp/scraper_backend
+                                code={`git clone https://github.com/Bay-State-Pet-and-Garden-Supply/BayStateScraper.git
+cd BayStateScraper
 docker build -t baystate-scraper:latest .`}
                                 id="docker-build"
                                 copied={copied}
@@ -86,15 +113,15 @@ docker build -t baystate-scraper:latest .`}
                         </section>
 
                         <section>
-                            <h4 className="font-semibold text-gray-900">4. Start the Runner</h4>
+                            <h4 className="font-semibold text-gray-900">6. Start the Runner</h4>
                             <p className="mt-1">Run the GitHub Actions runner:</p>
                             <CodeBlock code="./run.sh" id="run" copied={copied} onCopy={copyToClipboard} />
                         </section>
 
                         <section>
-                            <h4 className="font-semibold text-gray-900">5. Verify Connection</h4>
+                            <h4 className="font-semibold text-gray-900">7. Verify Connection</h4>
                             <p className="mt-1">
-                                Once running, refresh this page. Your runner should appear in the grid above
+                                Once running, your runner will appear in the <strong>Connected Runners</strong> grid above
                                 with a green &quot;Ready&quot; status.
                             </p>
                         </section>
