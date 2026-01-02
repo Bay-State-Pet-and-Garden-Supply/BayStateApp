@@ -45,6 +45,22 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to view the storefront.
 
+### Authentication Setup (Required for OAuth)
+
+For Google/OAuth login to work locally, you must configure Supabase to allow localhost redirects:
+
+1. Go to [Supabase Dashboard](https://supabase.com/dashboard) → Your Project → **Authentication** → **URL Configuration**
+2. Under **Redirect URLs**, add:
+   ```
+   http://localhost:3000/**
+   ```
+3. Ensure your `.env.local` has:
+   ```bash
+   NEXT_PUBLIC_SITE_URL=http://localhost:3000
+   ```
+
+Without this, OAuth callbacks will redirect to production instead of your local dev server.
+
 ### Admin Access
 Navigate to [http://localhost:3000/admin](http://localhost:3000/admin) for the manager portal.
 

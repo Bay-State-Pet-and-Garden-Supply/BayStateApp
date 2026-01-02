@@ -149,7 +149,7 @@ export function RunnerAccountModal({ onClose, onSave }: RunnerAccountModalProps)
                             <h4 className="text-sm font-semibold text-gray-900">Next Steps:</h4>
                             <ul className="text-sm text-gray-600 space-y-2 list-disc ml-5">
                                 <li>Copy the credentials above and save them securely.</li>
-                                <li>Update your runner's <code>.env</code> file or export them.</li>
+                                <li>Update your runner&apos;s <code>.env</code> file or export them.</li>
                                 <li>Restart your runner container.</li>
                                 <li>The runner will appear as <strong>Online</strong> once it authenticates.</li>
                             </ul>

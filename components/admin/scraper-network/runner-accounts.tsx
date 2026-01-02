@@ -42,7 +42,7 @@ export function RunnerAccounts() {
 
     useEffect(() => {
         fetchRunners();
-    }, []);
+    }, [fetchRunners]);
 
     const handleDelete = async (runnerName: string) => {
         if (!confirm(`Remove credentials for ${runnerName}? The runner will no longer be able to authenticate.`)) {
@@ -104,7 +104,7 @@ export function RunnerAccounts() {
             <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Runner Accounts</h3>
                 <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={fetchRunners}>
+                    <Button variant="outline" size="sm" onClick={() => fetchRunners()}>
                         <RefreshCw className="mr-2 h-4 w-4" />
                         Refresh
                     </Button>

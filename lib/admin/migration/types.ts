@@ -4,7 +4,7 @@
  * Type definitions for handling ShopSite data import into Supabase.
  */
 
-import { z } from 'zod';
+import * as z from 'zod';
 
 // ============================================================================
 // ShopSite API Configuration

@@ -1,7 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  serverExternalPackages: ["zod"],
+  experimental: {
+    turbopackScopeHoisting: false,
+    turbopackFileSystemCacheForDev: false,
+  },
 };
 
 export default nextConfig;

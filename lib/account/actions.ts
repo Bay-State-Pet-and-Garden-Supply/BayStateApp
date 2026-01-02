@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { z } from 'zod'
+import * as z from 'zod'
 
 const profileSchema = z.object({
     fullName: z.string().min(2, "Name must be at least 2 characters").max(100),

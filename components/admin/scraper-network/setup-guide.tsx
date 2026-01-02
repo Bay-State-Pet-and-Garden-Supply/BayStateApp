@@ -88,7 +88,7 @@ export function SetupGuide() {
                                 <li>SUPABASE_ANON_KEY</li>
                                 <li>RUNNER_EMAIL (from step 2)</li>
                                 <li>RUNNER_PASSWORD (from step 2)</li>
-                                <li>SCRAPER_API_URL (this app's URL)</li>
+                                <li>SCRAPER_API_URL (this app&apos;s URL)</li>
                             </ul>
                         </section>
 

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createOrder, getOrderById } from '@/lib/orders';
 import { sendOrderConfirmationEmail } from '@/lib/email/resend';
-import { z } from 'zod';
+import * as z from 'zod';
 
 const orderSchema = z.object({
   customerName: z.string().min(1),

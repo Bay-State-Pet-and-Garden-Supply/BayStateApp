@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
-import { z } from 'zod';
+import * as z from 'zod';
 
 const categorySchema = z.object({
     name: z.string().min(1, 'Name is required'),
