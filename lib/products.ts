@@ -12,9 +12,14 @@ interface ProductRow {
   slug: string;
   description: string | null;
   price: number;
+  sale_price: number | null;
   stock_status: string;
   images: unknown;
   is_featured: boolean;
+  is_special_order: boolean;
+  weight: number | null;
+  search_keywords: string | null;
+  category_id: string | null;
   created_at: string;
   brand: {
     id: string;
@@ -32,9 +37,14 @@ function transformProductRow(row: ProductRow): Product {
     slug: row.slug,
     description: row.description,
     price: Number(row.price),
+    sale_price: row.sale_price ? Number(row.sale_price) : null,
     stock_status: (row.stock_status as Product['stock_status']) || 'in_stock',
     images: parseImages(row.images),
     is_featured: Boolean(row.is_featured),
+    is_special_order: Boolean(row.is_special_order),
+    weight: row.weight ? Number(row.weight) : null,
+    search_keywords: row.search_keywords,
+    category_id: row.category_id,
     created_at: row.created_at,
   };
 

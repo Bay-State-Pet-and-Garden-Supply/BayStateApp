@@ -25,7 +25,7 @@ export async function parseIntegraExcel(buffer: ArrayBuffer): Promise<IntegraPro
     const firstSheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[firstSheetName];
 
-    const rows = XLSX.utils.sheet_to_json<any>(worksheet);
+    const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet);
 
     const products: IntegraProduct[] = rows.map((row) => {
         const sku = String(row['SKU_NO'] || row['SKU'] || '').trim();
