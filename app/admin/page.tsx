@@ -124,7 +124,7 @@ export default async function AdminDashboard() {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-gray-600">
+        <p className="text-muted-foreground">
           Welcome back. Here&apos;s what&apos;s happening with your store.
         </p>
       </div>

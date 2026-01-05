@@ -224,7 +224,7 @@ export default function CartPage() {
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <ShoppingBag className="mb-4 h-20 w-20 text-zinc-300" />
+          <ShoppingBag className="mb-4 h-20 w-20 text-secondary" />
           <h2 className="mb-2 text-xl font-semibold text-zinc-900">
             Your cart is empty
           </h2>

@@ -127,7 +127,7 @@ export default async function OrderConfirmationPage({
                 <div>
                   <p className="font-medium text-zinc-900">Pickup Location</p>
                   <p className="text-sm text-zinc-600">
-                    123 Main Street, Anytown, MA 01234
+                    429 Winthrop Street, Taunton, MA 02780
                   </p>
                 </div>
               </li>

@@ -169,7 +169,7 @@ export function DataTable<T extends { id: string | number }>({
     if (!column.sortable) return null;
 
     if (sort.key !== column.key) {
-      return <ChevronsUpDown className="ml-1 inline h-4 w-4 text-gray-400" />;
+      return <ChevronsUpDown className="ml-1 inline h-4 w-4 text-muted-foreground" />;
     }
     if (sort.direction === 'asc') {
       return <ChevronUp className="ml-1 inline h-4 w-4" />;
@@ -185,7 +185,7 @@ export function DataTable<T extends { id: string | number }>({
       {/* Search and Page Size */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative max-w-sm flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="text"
             placeholder={searchPlaceholder}
@@ -196,7 +196,7 @@ export function DataTable<T extends { id: string | number }>({
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">Show</span>
+          <span className="text-sm text-muted-foreground">Show</span>
           <select
             value={pageSize}
             onChange={(e) => {
@@ -211,7 +211,7 @@ export function DataTable<T extends { id: string | number }>({
               </option>
             ))}
           </select>
-          <span className="text-sm text-gray-500">entries</span>
+          <span className="text-sm text-muted-foreground">entries</span>
         </div>
       </div>
 
@@ -226,7 +226,7 @@ export function DataTable<T extends { id: string | number }>({
       <div className="rounded-lg border">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-50 hover:bg-gray-50">
+            <TableRow className="bg-muted/50 hover:bg-muted/50">
               {selectable && (
                 <TableHead className="w-12">
                   <Checkbox
@@ -244,7 +244,7 @@ export function DataTable<T extends { id: string | number }>({
               {columns.map((column) => (
                 <TableHead
                   key={column.key}
-                  className={`${column.sortable ? 'cursor-pointer select-none hover:bg-gray-100' : ''} ${column.className || ''}`}
+                  className={`${column.sortable ? 'cursor-pointer select-none hover:bg-muted' : ''} ${column.className || ''}`}
                   onClick={() => column.sortable && handleSort(column.key)}
                 >
                   {column.header}
@@ -261,7 +261,7 @@ export function DataTable<T extends { id: string | number }>({
                   colSpan={columns.length + (selectable ? 1 : 0) + (actions ? 1 : 0)}
                   className="h-32 text-center"
                 >
-                  <Loader2 className="mx-auto h-6 w-6 animate-spin text-gray-400" />
+                  <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
                 </TableCell>
               </TableRow>
             ) : paginatedData.length === 0 ? (
@@ -270,7 +270,7 @@ export function DataTable<T extends { id: string | number }>({
                   colSpan={columns.length + (selectable ? 1 : 0) + (actions ? 1 : 0)}
                   className="h-32 text-center"
                 >
-                  <p className="text-gray-500">{emptyMessage}</p>
+                  <p className="text-muted-foreground">{emptyMessage}</p>
                   {emptyAction && <div className="mt-4">{emptyAction}</div>}
                 </TableCell>
               </TableRow>
@@ -313,7 +313,7 @@ export function DataTable<T extends { id: string | number }>({
 
       {/* Pagination */}
       <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-muted-foreground">
           Showing {paginatedData.length > 0 ? page * pageSize + 1 : 0} to{' '}
           {Math.min((page + 1) * pageSize, sortedData.length)} of {sortedData.length} entries
           {search && ` (filtered from ${data.length} total)`}

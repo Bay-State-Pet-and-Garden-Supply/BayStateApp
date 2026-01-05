@@ -95,7 +95,7 @@ export default function CheckoutPage() {
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-        <ShoppingBag className="mb-4 h-20 w-20 text-zinc-300" />
+        <ShoppingBag className="mb-4 h-20 w-20 text-secondary" />
         <h1 className="mb-2 text-2xl font-bold text-zinc-900">Cart is Empty</h1>
         <p className="mb-6 text-zinc-500">Add some items before checking out</p>
         <Button size="lg" asChild>

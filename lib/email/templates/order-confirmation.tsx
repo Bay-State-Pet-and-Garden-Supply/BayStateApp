@@ -122,10 +122,10 @@ export function OrderConfirmationEmail({
               📧 We&apos;ll email you when your order is ready for pickup.
             </Text>
             <Text style={text}>
-              📍 Pickup at: 123 Main Street, Taunton, MA 02780
+              📍 Pickup at: 429 Winthrop Street, Taunton, MA 02780
             </Text>
             <Text style={text}>
-              🕐 Store Hours: Mon-Sat 9am-6pm, Sun 10am-4pm
+              🕐 Store Hours: Mon-Fri 8am-7pm, Sat 8am-6pm, Sun 8am-5pm
             </Text>
           </Section>
 
@@ -173,12 +173,12 @@ export function OrderConfirmationEmail({
 
           <Section style={footer}>
             <Text style={footerText}>
-              Questions? Reply to this email or call us at (508) 555-1234
+              Questions? Reply to this email or call us at (508) 821-3704
             </Text>
             <Text style={footerText}>
               Bay State Pet & Garden Supply
               <br />
-              123 Main Street, Taunton, MA 02780
+              429 Winthrop Street, Taunton, MA 02780
             </Text>
             <Link href={baseUrl} style={footerLink}>
               Visit our website

@@ -20,7 +20,7 @@ const statusLabels = {
 };
 
 const statusColors = {
-  staging: 'bg-gray-100 text-gray-700',
+  staging: 'bg-muted text-foreground',
   scraped: 'bg-blue-100 text-blue-700',
   consolidated: 'bg-orange-100 text-orange-700',
   approved: 'bg-green-100 text-green-700',
@@ -32,10 +32,10 @@ export function PipelineStatus({ counts }: PipelineStatusProps) {
   const total = Object.values(counts).reduce((sum, c) => sum + c, 0);
 
   return (
-    <div className="rounded-lg border bg-white p-6">
+    <div className="rounded-lg border bg-card p-6">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <PackagePlus className="h-5 w-5 text-gray-600" />
+          <PackagePlus className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold">New Product Intake</h2>
         </div>
         <Link
@@ -73,7 +73,7 @@ export function PipelineStatus({ counts }: PipelineStatusProps) {
                   </span>
                 </div>
                 <div className="flex-1">
-                  <div className="h-2 rounded-full bg-gray-100">
+                  <div className="h-2 rounded-full bg-muted">
                     <div
                       className={`h-2 rounded-full ${status === 'published'
                         ? 'bg-purple-500'
@@ -83,13 +83,13 @@ export function PipelineStatus({ counts }: PipelineStatusProps) {
                             ? 'bg-orange-500'
                             : status === 'scraped'
                               ? 'bg-blue-500'
-                              : 'bg-gray-400'
+                              : 'bg-muted-foreground'
                         }`}
                       style={{ width: `${percentage}%` }}
                     />
                   </div>
                 </div>
-                <div className="w-12 text-right text-sm font-medium text-gray-600">
+                <div className="w-12 text-right text-sm font-medium text-muted-foreground">
                   {count}
                 </div>
               </div>
@@ -99,8 +99,8 @@ export function PipelineStatus({ counts }: PipelineStatusProps) {
       </div>
 
       <div className="mt-4 pt-4 border-t text-center">
-        <p className="text-sm text-gray-500">
-          Total: <span className="font-semibold text-gray-700">{total}</span> items in intake
+        <p className="text-sm text-muted-foreground">
+          Total: <span className="font-semibold text-foreground">{total}</span> items in intake
         </p>
       </div>
     </div>

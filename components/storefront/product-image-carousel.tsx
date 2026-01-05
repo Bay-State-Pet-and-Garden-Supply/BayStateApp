@@ -58,7 +58,7 @@ export function ProductImageCarousel({
     }
 
     return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 w-full max-w-xl mx-auto">
             {/* Main Carousel */}
             <Carousel setApi={setApi} className="w-full">
                 <CarouselContent>

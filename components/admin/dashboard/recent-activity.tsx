@@ -45,9 +45,9 @@ export function RecentActivity({ activities, maxItems = 5 }: RecentActivityProps
 
   if (displayActivities.length === 0) {
     return (
-      <div className="rounded-lg border bg-white p-6">
+      <div className="rounded-lg border bg-card p-6">
         <h2 className="mb-4 text-lg font-semibold">Recent Activity</h2>
-        <div className="flex items-center justify-center py-8 text-gray-500">
+        <div className="flex items-center justify-center py-8 text-muted-foreground">
           <Clock className="mr-2 h-5 w-5" />
           <span>No recent activity</span>
         </div>
@@ -56,7 +56,7 @@ export function RecentActivity({ activities, maxItems = 5 }: RecentActivityProps
   }
 
   return (
-    <div className="rounded-lg border bg-white p-6">
+    <div className="rounded-lg border bg-card p-6">
       <h2 className="mb-4 text-lg font-semibold">Recent Activity</h2>
       <div className="space-y-4">
         {displayActivities.map((activity) => {
@@ -65,28 +65,28 @@ export function RecentActivity({ activities, maxItems = 5 }: RecentActivityProps
             <div
               key={activity.id}
               className={`flex items-start gap-3 rounded-lg p-3 transition-colors ${
-                activity.href ? 'hover:bg-gray-50 cursor-pointer' : ''
+                activity.href ? 'hover:bg-muted/50 cursor-pointer' : ''
               }`}
             >
               <div
                 className={`rounded-full p-2 ${
                   activity.status
                     ? statusStyles[activity.status]
-                    : 'bg-gray-100 text-gray-600'
+                    : 'bg-muted text-muted-foreground'
                 }`}
               >
                 <Icon className="h-4 w-4" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-gray-900 truncate">
+                <p className="font-medium text-foreground truncate">
                   {activity.title}
                 </p>
                 {activity.description && (
-                  <p className="text-sm text-gray-500 truncate">
+                  <p className="text-sm text-muted-foreground truncate">
                     {activity.description}
                   </p>
                 )}
-                <p className="mt-1 text-xs text-gray-400">
+                <p className="mt-1 text-xs text-muted-foreground/70">
                   {formatDistanceToNow(new Date(activity.timestamp), {
                     addSuffix: true,
                   })}

@@ -87,7 +87,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             </>
           ) : (
             <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
-              <ShoppingBag className="mb-4 h-16 w-16 text-zinc-300" />
+              <ShoppingBag className="mb-4 h-16 w-16 text-secondary" />
               <h3 className="mb-2 text-lg font-medium text-zinc-900">
                 Your cart is empty
               </h3>

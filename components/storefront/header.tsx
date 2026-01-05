@@ -23,25 +23,25 @@ export function StorefrontHeader({ user, userRole }: { user: User | null, userRo
 
   return (
     <>
-      <header className="max-md:hidden sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+      <header className="max-md:hidden sticky top-0 z-50 w-full border-b border-white/10 bg-primary text-white backdrop-blur supports-[backdrop-filter]:bg-primary/95 shadow-sm">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3">
-            <div className="h-10 w-10 relative">
+            <div className="h-14 w-14 relative">
               <Image
                 src="/logo.png"
                 alt="Bay State Pet & Garden Supply Logo"
                 fill
-                sizes="40px"
+                sizes="56px"
                 className="object-contain"
                 priority
               />
             </div>
             <div className="flex flex-col">
-              <span className="text-lg font-bold leading-tight tracking-tight text-zinc-900">
+              <span className="text-lg font-bold leading-tight tracking-tight text-white">
                 Bay State
               </span>
-              <span className="hidden text-xs text-zinc-500 sm:inline leading-none">
+              <span className="hidden text-xs text-white/90 sm:inline leading-none">
                 Pet & Garden Supply
               </span>
             </div>
@@ -51,26 +51,32 @@ export function StorefrontHeader({ user, userRole }: { user: User | null, userRo
           <nav className="hidden items-center gap-6 md:flex">
             <Link
               href="/products"
-              className="text-sm font-medium text-zinc-600 transition-colors hover:text-zinc-900"
+              className="text-sm font-medium text-white/90 transition-colors hover:text-white"
             >
               Products
             </Link>
             <Link
+              href="/brands"
+              className="text-sm font-medium text-white/90 transition-colors hover:text-white"
+            >
+              Brands
+            </Link>
+            <Link
               href="/services"
-              className="text-sm font-medium text-zinc-600 transition-colors hover:text-zinc-900"
+              className="text-sm font-medium text-white/90 transition-colors hover:text-white"
             >
               Services
             </Link>
             <Link
               href="/about"
-              className="text-sm font-medium text-zinc-600 transition-colors hover:text-zinc-900"
+              className="text-sm font-medium text-white/90 transition-colors hover:text-white"
             >
               About
             </Link>
             {(userRole === 'admin' || userRole === 'staff') && (
               <Link
                 href="/admin"
-                className="text-sm font-medium text-red-600 transition-colors hover:text-red-900"
+                className="text-sm font-medium text-red-200 transition-colors hover:text-white"
               >
                 Admin
               </Link>
@@ -82,7 +88,7 @@ export function StorefrontHeader({ user, userRole }: { user: User | null, userRo
             <Button
               variant="ghost"
               size="icon"
-              className="h-11 w-11"
+              className="h-11 w-11 text-white hover:bg-white/20 hover:text-white"
               aria-label="Search"
               onClick={openSearch}
             >
@@ -91,12 +97,12 @@ export function StorefrontHeader({ user, userRole }: { user: User | null, userRo
             <Button
               variant="ghost"
               size="icon"
-              className="relative h-11 w-11"
+              className="relative h-11 w-11 text-white hover:bg-white/20 hover:text-white"
               aria-label="Shopping cart"
               onClick={() => setIsCartOpen(true)}
             >
               <ShoppingCart className="h-5 w-5" />
-              <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-zinc-900 text-xs font-medium text-white">
+              <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-medium text-white ring-2 ring-white">
                 {itemCount}
               </span>
             </Button>
@@ -107,7 +113,7 @@ export function StorefrontHeader({ user, userRole }: { user: User | null, userRo
             <Button
               variant="ghost"
               size="icon"
-              className="h-11 w-11 md:hidden"
+              className="h-11 w-11 text-white hover:bg-white/20 hover:text-white md:hidden"
               aria-label="Menu"
             >
               <Menu className="h-5 w-5" />

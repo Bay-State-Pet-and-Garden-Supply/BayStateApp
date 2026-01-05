@@ -1,3 +1,4 @@
+import { Facebook, Instagram, Twitter } from 'lucide-react';
 import Link from 'next/link';
 import { NewsletterSignup } from '@/components/storefront/newsletter-signup';
 
@@ -10,10 +11,38 @@ export function StorefrontFooter() {
             <h3 className="mb-4 text-lg font-semibold text-zinc-900">
               Bay State Pet & Garden
             </h3>
-            <p className="text-sm text-zinc-600">
-              Your local source for pet supplies, garden tools, and farm
-              products.
+            <p className="text-sm text-zinc-600 mb-6">
+              From big to small, we feed them all!
             </p>
+            <div className="flex space-x-4">
+              <a
+                href="https://www.facebook.com/baystatepet"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-zinc-400 hover:text-zinc-600"
+                aria-label="Facebook"
+              >
+                <Facebook className="h-5 w-5" />
+              </a>
+              <a
+                href="https://twitter.com/BayStatePet"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-zinc-400 hover:text-zinc-600"
+                aria-label="Twitter"
+              >
+                <Twitter className="h-5 w-5" />
+              </a>
+              <a
+                href="https://www.instagram.com/baystatepet/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-zinc-400 hover:text-zinc-600"
+                aria-label="Instagram"
+              >
+                <Instagram className="h-5 w-5" />
+              </a>
+            </div>
           </div>
 
           <div>

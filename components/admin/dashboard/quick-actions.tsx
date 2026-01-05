@@ -15,7 +15,7 @@ interface QuickActionsProps {
 
 export function QuickActions({ actions }: QuickActionsProps) {
   return (
-    <div className="rounded-lg border bg-white p-6">
+    <div className="rounded-lg border bg-card p-6">
       <h2 className="mb-4 text-lg font-semibold">Quick Actions</h2>
       <div className="flex flex-wrap gap-3">
         {actions.map((action) => (

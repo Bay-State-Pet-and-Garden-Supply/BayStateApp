@@ -60,9 +60,17 @@ export function ConfigStatus() {
 
     return (
         <div className="rounded-lg border border-gray-200 bg-white">
-            <button
+            <div
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex w-full items-center justify-between px-4 py-3 text-left"
+                className="flex w-full items-center justify-between px-4 py-3 text-left cursor-pointer hover:bg-gray-50 transition-colors"
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setIsOpen(!isOpen);
+                    }
+                }}
             >
                 <div className="flex items-center gap-3">
                     <Settings className="h-5 w-5 text-gray-400" />
@@ -95,7 +103,7 @@ export function ConfigStatus() {
                         <ChevronDown className="h-5 w-5 text-gray-400" />
                     )}
                 </div>
-            </button>
+            </div>
 
             {isOpen && (
                 <div className="border-t border-gray-200 p-4">

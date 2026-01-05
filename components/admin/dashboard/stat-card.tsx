@@ -16,21 +16,21 @@ interface StatCardProps {
 }
 
 const variantStyles = {
-  default: 'bg-white border-gray-200',
+  default: 'bg-card border-border',
   warning: 'bg-orange-50 border-orange-200',
   success: 'bg-green-50 border-green-200',
   info: 'bg-blue-50 border-blue-200',
 };
 
 const iconStyles = {
-  default: 'text-gray-600',
+  default: 'text-muted-foreground',
   warning: 'text-orange-600',
   success: 'text-green-600',
   info: 'text-blue-600',
 };
 
 const valueStyles = {
-  default: 'text-gray-900',
+  default: 'text-foreground',
   warning: 'text-orange-700',
   success: 'text-green-700',
   info: 'text-blue-700',
@@ -61,7 +61,7 @@ export function StatCard({
             {value}
           </p>
           {subtitle && (
-            <p className="mt-1 text-sm text-gray-500">{subtitle}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
           )}
           {trend && (
             <p

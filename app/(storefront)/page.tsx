@@ -37,65 +37,110 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Bento Grid Categories */}
+          {/* Bento Grid Categories */}
       <section className="mb-12">
         <h2 className="mb-6 text-2xl font-semibold text-zinc-900">
           Shop by Category
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {/* Pet Supplies - Large Card */}
-          <Card className="group cursor-pointer transition-shadow hover:shadow-lg">
+          <Card className="group cursor-pointer transition-shadow hover:shadow-lg lg:col-span-1 lg:row-span-2">
             <CardContent className="flex h-full min-h-[280px] flex-col items-center justify-between p-6">
-              <div className="mb-4 rounded-full bg-amber-100 p-4 flex items-center justify-center w-12 h-12 flex-none">
+              <div className="mb-4 rounded-full bg-amber-100 p-4 flex items-center justify-center w-16 h-16 flex-none">
                 <Dog className="h-10 w-10 text-amber-600" />
               </div>
-              <h3 className="mb-2 text-xl font-semibold text-zinc-900">
-                Pet Supplies
-              </h3>
-              <p className="mb-4 text-center text-sm text-zinc-600">
-                Food, treats, toys, and essentials.
-              </p>
-              <Button variant="ghost" className="group-hover:bg-zinc-100">
-                Browse Pets
-                <ArrowRight className="ml-2 h-4 w-4" />
+              <div className="text-center">
+                <h3 className="mb-2 text-xl font-semibold text-zinc-900">
+                  Pet Supplies
+                </h3>
+                <p className="mb-4 text-sm text-zinc-600">
+                  Dog, Cat, Small Pet, Bird, Reptile & Fish
+                </p>
+              </div>
+              <Button variant="ghost" className="group-hover:bg-zinc-100" asChild>
+                <Link href="/products?category=pet-supplies">
+                  Browse Pets
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
               </Button>
             </CardContent>
           </Card>
 
-          {/* Garden Tools */}
           <Card className="group cursor-pointer transition-shadow hover:shadow-lg">
-            <CardContent className="flex h-full min-h-[280px] flex-col items-center justify-between p-6">
+            <CardContent className="flex h-full min-h-[200px] flex-col items-center justify-between p-6">
+              <div className="mb-3 rounded-full bg-red-100 p-3 flex items-center justify-center w-12 h-12 flex-none">
+                <Leaf className="h-8 w-8 text-red-700" />
+              </div>
+              <h3 className="mb-1 text-lg font-semibold text-zinc-900">
+                Farm & Livestock
+              </h3>
+              <p className="text-center text-sm text-zinc-600">
+                Horse, Poultry, Feed & Supplies
+              </p>
+              <Button variant="ghost" className="group-hover:bg-zinc-100" asChild>
+                <Link href="/products?category=farm">
+                  Browse Farm
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="group cursor-pointer transition-shadow hover:shadow-lg">
+            <CardContent className="flex h-full min-h-[200px] flex-col items-center justify-between p-6">
               <div className="mb-3 rounded-full bg-green-100 p-3 flex items-center justify-center w-12 h-12 flex-none">
                 <Leaf className="h-8 w-8 text-green-600" />
               </div>
               <h3 className="mb-1 text-lg font-semibold text-zinc-900">
-                Garden & Lawn
+                Lawn & Garden
               </h3>
               <p className="text-center text-sm text-zinc-600">
-                Tools, seeds, and supplies
+                Plants, Tools, Mulch & Pest Control
               </p>
-              <Button variant="ghost" className="group-hover:bg-zinc-100">
-                Browse Garden
-                <ArrowRight className="ml-2 h-4 w-4" />
+              <Button variant="ghost" className="group-hover:bg-zinc-100" asChild>
+                <Link href="/products?category=lawn-garden">
+                  Browse Garden
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
               </Button>
             </CardContent>
           </Card>
 
-          {/* Propane & Grilling */}
           <Card className="group cursor-pointer transition-shadow hover:shadow-lg">
-            <CardContent className="flex h-full min-h-[280px] flex-col items-center justify-between p-6">
-              <div className="mb-3 rounded-full bg-orange-100 p-3 flex items-center justify-center w-12 h-12 flex-none">
-                <Flame className="h-8 w-8 text-orange-600" />
+            <CardContent className="flex h-full min-h-[200px] flex-col items-center justify-between p-6">
+              <div className="mb-3 rounded-full bg-blue-100 p-3 flex items-center justify-center w-12 h-12 flex-none">
+                <Flame className="h-8 w-8 text-blue-600" />
               </div>
               <h3 className="mb-1 text-lg font-semibold text-zinc-900">
-                Propane & Grilling
+                Home & Fuel
               </h3>
               <p className="text-center text-sm text-zinc-600">
-                Tanks, refills, and accessories
+                Wood Pellets, Coal, Propane & Heating
               </p>
-              <Button variant="ghost" className="group-hover:bg-zinc-100">
-                Browse Propane
-                <ArrowRight className="ml-2 h-4 w-4" />
+              <Button variant="ghost" className="group-hover:bg-zinc-100" asChild>
+                <Link href="/products?category=home">
+                  Browse Home
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="group cursor-pointer transition-shadow hover:shadow-lg">
+            <CardContent className="flex h-full min-h-[200px] flex-col items-center justify-between p-6">
+              <div className="mb-3 rounded-full bg-orange-100 p-3 flex items-center justify-center w-12 h-12 flex-none">
+                <Leaf className="h-8 w-8 text-orange-600" />
+              </div>
+              <h3 className="mb-1 text-lg font-semibold text-zinc-900">
+                Seasonal
+              </h3>
+              <p className="text-center text-sm text-zinc-600">
+                Holiday Shoppe & Seasonal Products
+              </p>
+              <Button variant="ghost" className="group-hover:bg-zinc-100" asChild>
+                <Link href="/products?category=seasonal">
+                  Browse Seasonal
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
               </Button>
             </CardContent>
           </Card>

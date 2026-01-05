@@ -94,7 +94,7 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
               </li>
               <li className="flex items-start gap-3">
                 <MapPin className="mt-0.5 h-5 w-5 text-blue-500" />
-                <span>Visit our store at 123 Main Street, Anytown MA</span>
+                <span>Visit our store at 429 Winthrop Street, Taunton MA</span>
               </li>
               <li className="flex items-start gap-3">
                 <Clock className="mt-0.5 h-5 w-5 text-blue-500" />
@@ -102,7 +102,7 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
               </li>
               <li className="flex items-start gap-3">
                 <Phone className="mt-0.5 h-5 w-5 text-blue-500" />
-                <span>Questions? Call us at (555) 123-4567</span>
+                <span>Questions? Call us at (508) 821-3704</span>
               </li>
             </ul>
           </div>

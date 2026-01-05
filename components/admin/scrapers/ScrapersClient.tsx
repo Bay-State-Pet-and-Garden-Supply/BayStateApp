@@ -200,7 +200,7 @@ export function ScrapersClient({ initialScrapers, totalCount }: ScrapersClientPr
       ) : (
         <div className="space-y-3">
           {filteredScrapers.map((scraper) => (
-            <Card key={scraper.id} className="hover:border-gray-400 transition-colors">
+            <Card key={scraper.name} className="hover:border-gray-400 transition-colors">
               <CardContent className="flex items-center justify-between p-4">
                 {/* Left: Info */}
                 <div className="flex-1 min-w-0">

@@ -29,15 +29,19 @@ export default async function ContactPage() {
                         <dl className="space-y-2">
                             <div className="flex justify-between">
                                 <dt className="font-medium">Monday - Friday</dt>
-                                <dd className="text-muted-foreground">8:00 AM - 6:00 PM</dd>
+                                <dd className="text-muted-foreground">8:00 AM - 7:00 PM</dd>
                             </div>
                             <div className="flex justify-between">
                                 <dt className="font-medium">Saturday</dt>
-                                <dd className="text-muted-foreground">8:00 AM - 5:00 PM</dd>
+                                <dd className="text-muted-foreground">8:00 AM - 6:00 PM</dd>
                             </div>
                             <div className="flex justify-between">
                                 <dt className="font-medium">Sunday</dt>
-                                <dd className="text-muted-foreground">10:00 AM - 4:00 PM</dd>
+                                <dd className="text-muted-foreground">8:00 AM - 5:00 PM</dd>
+                            </div>
+                            <div className="mt-4 pt-4 border-t">
+                                <dt className="font-medium mb-1">Receiving Hours</dt>
+                                <dd className="text-sm text-muted-foreground">Monday - Friday: 8:00 AM - 1:00 PM</dd>
                             </div>
                         </dl>
                     </CardContent>
@@ -110,10 +114,10 @@ export default async function ContactPage() {
                     </CardHeader>
                     <CardContent>
                         <a
-                            href="mailto:info@baystatepet.com"
+                            href="mailto:sales@baystatepet.com"
                             className="font-medium hover:underline"
                         >
-                            info@baystatepet.com
+                            sales@baystatepet.com
                         </a>
                         <p className="text-sm text-muted-foreground mt-1">
                             We typically respond within 24 hours

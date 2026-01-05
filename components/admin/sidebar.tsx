@@ -99,15 +99,15 @@ export function AdminSidebar({ userRole = 'staff' }: AdminSidebarProps) {
     .filter(section => section.items.length > 0);
 
   return (
-    <div className="flex h-full w-64 flex-col bg-gray-900 text-white">
-      <div className="flex h-16 items-center justify-center border-b border-gray-800">
+    <div className="flex h-full w-64 flex-col bg-sidebar text-sidebar-foreground">
+      <div className="flex h-16 items-center justify-center border-b border-sidebar-border">
         <h1 className="text-xl font-bold">Manager Portal</h1>
       </div>
       <nav className="flex-1 space-y-6 overflow-y-auto p-4">
         {visibleSections.map((section, idx) => (
           <div key={idx}>
             {section.title && (
-              <h2 className="mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-gray-400">
+              <h2 className="mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/70">
                 {section.title}
               </h2>
             )}
@@ -116,7 +116,7 @@ export function AdminSidebar({ userRole = 'staff' }: AdminSidebarProps) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="flex items-center space-x-3 rounded px-4 py-2 hover:bg-gray-800 transition-colors"
+                  className="flex items-center space-x-3 rounded px-4 py-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
                 >
                   {item.icon}
                   <span>{item.label}</span>
@@ -128,19 +128,19 @@ export function AdminSidebar({ userRole = 'staff' }: AdminSidebarProps) {
       </nav>
 
       {/* Footer: Role & Exit */}
-      <div className="border-t border-gray-800 p-4">
+      <div className="border-t border-sidebar-border p-4">
         <div className="flex items-center justify-between">
           <Link
             href="/"
-            className="flex items-center space-x-2 text-sm text-gray-400 transition-colors hover:text-white"
+            className="flex items-center space-x-2 text-sm text-sidebar-foreground/70 transition-colors hover:text-sidebar-foreground"
           >
             <LogOut className="h-4 w-4 rotate-180" />
             <span>Exit</span>
           </Link>
 
           <div className="flex items-center space-x-2 text-xs">
-            <span className="text-gray-500">Role:</span>
-            <span className={`px-2 py-0.5 rounded ${isAdmin ? 'bg-purple-900/50 text-purple-300' : 'bg-gray-800 text-gray-400'}`}>
+            <span className="text-sidebar-foreground/50">Role:</span>
+            <span className={`px-2 py-0.5 rounded ${isAdmin ? 'bg-purple-900/50 text-purple-300' : 'bg-sidebar-accent text-sidebar-accent-foreground'}`}>
               {userRole}
             </span>
           </div>
