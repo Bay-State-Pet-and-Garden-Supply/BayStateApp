@@ -1,9 +1,17 @@
 'use client'
 
 import { useState } from 'react'
-import { Pet, PetType } from '@/lib/types'
+import { 
+    Pet, 
+    PetType,
+    PET_LIFE_STAGES,
+    PET_SIZE_CLASSES,
+    PET_SPECIAL_NEEDS,
+    PET_ACTIVITY_LEVELS
+} from '@/lib/types'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import {
     Dog,
@@ -78,6 +86,11 @@ export function PetCard({ pet, petTypes }: PetCardProps) {
         ? formatDistanceToNow(new Date(pet.birth_date), { addSuffix: false }) + ' old'
         : null
 
+    const lifeStageLabel = PET_LIFE_STAGES.find(s => s.value === pet.life_stage)?.label
+    const sizeClassLabel = PET_SIZE_CLASSES.find(s => s.value === pet.size_class)?.label
+    const activityLevelLabel = PET_ACTIVITY_LEVELS.find(a => a.value === pet.activity_level)?.label
+    const genderLabel = pet.gender ? (pet.gender.charAt(0).toUpperCase() + pet.gender.slice(1)) : null
+
     return (
         <>
             <Card>
@@ -128,11 +141,64 @@ export function PetCard({ pet, petTypes }: PetCardProps) {
                             {pet.dietary_notes}
                         </div>
                     )}
+
+                    <div className="pt-2 space-y-2">
+                        {(lifeStageLabel || sizeClassLabel || genderLabel) && (
+                            <div className="flex flex-wrap items-center gap-2 text-xs">
+                                {lifeStageLabel && (
+                                    <div className="flex items-center gap-2">
+                                        <span><span className="text-muted-foreground">Stage:</span> {lifeStageLabel}</span>
+                                        {(sizeClassLabel || genderLabel) && <span className="text-muted-foreground/30">•</span>}
+                                    </div>
+                                )}
+                                {sizeClassLabel && (
+                                    <div className="flex items-center gap-2">
+                                        <span><span className="text-muted-foreground">Size:</span> {sizeClassLabel}</span>
+                                        {genderLabel && <span className="text-muted-foreground/30">•</span>}
+                                    </div>
+                                )}
+                                {genderLabel && (
+                                    <span>{genderLabel}</span>
+                                )}
+                            </div>
+                        )}
+
+                        {(activityLevelLabel || pet.is_fixed) && (
+                            <div className="flex flex-wrap items-center gap-2 text-xs">
+                                {activityLevelLabel && (
+                                    <div className="flex items-center gap-2">
+                                        <span><span className="text-muted-foreground">Activity:</span> {activityLevelLabel}</span>
+                                        {pet.is_fixed && <span className="text-muted-foreground/30">•</span>}
+                                    </div>
+                                )}
+                                {pet.is_fixed && (
+                                    <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-normal text-muted-foreground border-muted-foreground/30">
+                                        Spayed/Neutered
+                                    </Badge>
+                                )}
+                            </div>
+                        )}
+
+                        {pet.special_needs && pet.special_needs.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 pt-1">
+                                {pet.special_needs.map(need => {
+                                    const label = PET_SPECIAL_NEEDS.find(n => n.value === need)?.label || need
+                                    return (
+                                        <Badge key={need} variant="secondary" className="text-[10px] h-5 px-2 font-normal">
+                                            {label}
+                                        </Badge>
+                                    )
+                                })}
+                            </div>
+                        )}
+                    </div>
+
+
                 </CardContent>
             </Card>
 
             <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent>
+                <DialogContent className="max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>Edit {pet.name}</DialogTitle>
                         <DialogDescription>

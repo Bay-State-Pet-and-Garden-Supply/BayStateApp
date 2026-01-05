@@ -9,6 +9,7 @@ import { CalendarIcon, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
     Form,
     FormControl,
@@ -32,7 +33,18 @@ import {
 } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Pet, PetType } from '@/lib/types'
+import { 
+    Pet, 
+    PetType,
+    PetLifeStage,
+    PetSizeClass,
+    PetActivityLevel,
+    PetGender,
+    PET_LIFE_STAGES,
+    PET_SIZE_CLASSES,
+    PET_SPECIAL_NEEDS,
+    PET_ACTIVITY_LEVELS
+} from '@/lib/types'
 import { createPet, updatePet } from '@/lib/account/pets'
 import { toast } from 'sonner'
 
@@ -45,6 +57,12 @@ const petFormSchema = z.object({
         message: 'Weight must be a number',
     }).optional(),
     dietary_notes: z.string().max(500).optional(),
+    life_stage: z.enum(['puppy', 'kitten', 'juvenile', 'adult', 'senior']).optional(),
+    size_class: z.enum(['small', 'medium', 'large', 'giant']).optional(),
+    special_needs: z.array(z.string()).default([]),
+    gender: z.enum(['male', 'female']).optional(),
+    is_fixed: z.boolean().default(false),
+    activity_level: z.enum(['low', 'moderate', 'high', 'very_high']).optional(),
 })
 
 type PetFormValues = z.infer<typeof petFormSchema>
@@ -65,6 +83,12 @@ export function PetForm({ pet, petTypes, onSuccess }: PetFormProps) {
         birth_date: pet?.birth_date ? new Date(pet.birth_date) : undefined,
         weight_lbs: pet?.weight_lbs?.toString() || '',
         dietary_notes: pet?.dietary_notes || '',
+        life_stage: pet?.life_stage || undefined,
+        size_class: pet?.size_class || undefined,
+        special_needs: pet?.special_needs || [],
+        gender: pet?.gender || undefined,
+        is_fixed: pet?.is_fixed || false,
+        activity_level: pet?.activity_level || undefined,
     }
 
     const form = useForm<PetFormValues>({
@@ -79,6 +103,10 @@ export function PetForm({ pet, petTypes, onSuccess }: PetFormProps) {
                 ...data,
                 weight_lbs: data.weight_lbs ? parseFloat(data.weight_lbs) : null,
                 birth_date: data.birth_date ? format(data.birth_date, 'yyyy-MM-dd') : null,
+                life_stage: data.life_stage as PetLifeStage,
+                size_class: data.size_class as PetSizeClass,
+                gender: data.gender as PetGender,
+                activity_level: data.activity_level as PetActivityLevel,
             }
 
             if (pet) {
@@ -104,98 +132,242 @@ export function PetForm({ pet, petTypes, onSuccess }: PetFormProps) {
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Name</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Pet's name" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <div className="space-y-4">
+                    <h3 className="text-sm font-medium text-muted-foreground">Basic Info</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                            control={form.control}
+                            name="name"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Name</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Pet's name" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
-                <FormField
-                    control={form.control}
-                    name="pet_type_id"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Type</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select a pet type" />
-                                    </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    {petTypes.map((type) => (
-                                        <SelectItem key={type.id} value={type.id}>
-                                            {type.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                        <FormField
+                            control={form.control}
+                            name="pet_type_id"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Type</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select type" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {petTypes.map((type) => (
+                                                <SelectItem key={type.id} value={type.id}>
+                                                    {type.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
 
-                <FormField
-                    control={form.control}
-                    name="breed"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Breed (Optional)</FormLabel>
-                            <FormControl>
-                                <Input placeholder="e.g. Golden Retriever" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                <div className="grid grid-cols-2 gap-4">
                     <FormField
                         control={form.control}
-                        name="birth_date"
+                        name="breed"
                         render={({ field }) => (
-                            <FormItem className="flex flex-col">
-                                <FormLabel>Birth Date (Optional)</FormLabel>
-                                <Popover>
-                                    <PopoverTrigger asChild>
+                            <FormItem>
+                                <FormLabel>Breed (Optional)</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="e.g. Golden Retriever" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                            control={form.control}
+                            name="birth_date"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-col">
+                                    <FormLabel>Birth Date (Optional)</FormLabel>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <FormControl>
+                                                <Button
+                                                    variant={"outline"}
+                                                    className={cn(
+                                                        "w-full pl-3 text-left font-normal",
+                                                        !field.value && "text-muted-foreground"
+                                                    )}
+                                                >
+                                                    {field.value ? (
+                                                        format(field.value, "PPP")
+                                                    ) : (
+                                                        <span>Pick a date</span>
+                                                    )}
+                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                </Button>
+                                            </FormControl>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                            <Calendar
+                                                mode="single"
+                                                selected={field.value}
+                                                onSelect={field.onChange}
+                                                disabled={(date) =>
+                                                    date > new Date() || date < new Date("1900-01-01")
+                                                }
+                                                initialFocus
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="weight_lbs"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Weight (lbs)</FormLabel>
+                                    <FormControl>
+                                        <Input type="number" step="0.1" placeholder="e.g. 15.5" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+                </div>
+
+                <div className="space-y-4">
+                    <h3 className="text-sm font-medium text-muted-foreground">Details</h3>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                            control={form.control}
+                            name="gender"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Gender</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                                         <FormControl>
-                                            <Button
-                                                variant={"outline"}
-                                                className={cn(
-                                                    "w-full pl-3 text-left font-normal",
-                                                    !field.value && "text-muted-foreground"
-                                                )}
-                                            >
-                                                {field.value ? (
-                                                    format(field.value, "PPP")
-                                                ) : (
-                                                    <span>Pick a date</span>
-                                                )}
-                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                            </Button>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select gender" />
+                                            </SelectTrigger>
                                         </FormControl>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0" align="start">
-                                        <Calendar
-                                            mode="single"
-                                            selected={field.value}
-                                            onSelect={field.onChange}
-                                            disabled={(date) =>
-                                                date > new Date() || date < new Date("1900-01-01")
-                                            }
-                                            initialFocus
+                                        <SelectContent>
+                                            <SelectItem value="male">Male</SelectItem>
+                                            <SelectItem value="female">Female</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="is_fixed"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                                    <FormControl>
+                                        <Checkbox
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
                                         />
-                                    </PopoverContent>
-                                </Popover>
+                                    </FormControl>
+                                    <div className="space-y-1 leading-none">
+                                        <FormLabel>
+                                            Spayed/Neutered
+                                        </FormLabel>
+                                    </div>
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                            control={form.control}
+                            name="life_stage"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Life Stage</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select stage" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {PET_LIFE_STAGES.map((stage) => (
+                                                <SelectItem key={stage.value} value={stage.value}>
+                                                    {stage.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="size_class"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Size Category</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select size" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {PET_SIZE_CLASSES.map((size) => (
+                                                <SelectItem key={size.value} value={size.value}>
+                                                    {size.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+
+                    <FormField
+                        control={form.control}
+                        name="activity_level"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Activity Level</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select activity level" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {PET_ACTIVITY_LEVELS.map((level) => (
+                                            <SelectItem key={level.value} value={level.value}>
+                                                {level.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                                 <FormMessage />
                             </FormItem>
                         )}
@@ -203,13 +375,50 @@ export function PetForm({ pet, petTypes, onSuccess }: PetFormProps) {
 
                     <FormField
                         control={form.control}
-                        name="weight_lbs"
-                        render={({ field }) => (
+                        name="special_needs"
+                        render={() => (
                             <FormItem>
-                                <FormLabel>Weight (lbs)</FormLabel>
-                                <FormControl>
-                                    <Input type="number" step="0.1" placeholder="e.g. 15.5" {...field} />
-                                </FormControl>
+                                <div className="mb-4">
+                                    <FormLabel className="text-base">Special Needs / Diet</FormLabel>
+                                    <FormDescription>
+                                        Select all that apply for better recommendations.
+                                    </FormDescription>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {PET_SPECIAL_NEEDS.map((item) => (
+                                        <FormField
+                                            key={item.value}
+                                            control={form.control}
+                                            name="special_needs"
+                                            render={({ field }) => {
+                                                return (
+                                                    <FormItem
+                                                        key={item.value}
+                                                        className="flex flex-row items-start space-x-3 space-y-0"
+                                                    >
+                                                        <FormControl>
+                                                            <Checkbox
+                                                                checked={field.value?.includes(item.value)}
+                                                                onCheckedChange={(checked) => {
+                                                                    return checked
+                                                                        ? field.onChange([...field.value, item.value])
+                                                                        : field.onChange(
+                                                                            field.value?.filter(
+                                                                                (value) => value !== item.value
+                                                                            )
+                                                                        )
+                                                                }}
+                                                            />
+                                                        </FormControl>
+                                                        <FormLabel className="font-normal text-xs">
+                                                            {item.label}
+                                                        </FormLabel>
+                                                    </FormItem>
+                                                )
+                                            }}
+                                        />
+                                    ))}
+                                </div>
                                 <FormMessage />
                             </FormItem>
                         )}
@@ -221,17 +430,14 @@ export function PetForm({ pet, petTypes, onSuccess }: PetFormProps) {
                     name="dietary_notes"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Dietary Notes (Optional)</FormLabel>
+                            <FormLabel>Additional Notes</FormLabel>
                             <FormControl>
                                 <Textarea
-                                    placeholder="Allergies, preferences, or special diet..."
+                                    placeholder="Any other allergies or preferences..."
                                     className="resize-none"
                                     {...field}
                                 />
                             </FormControl>
-                            <FormDescription>
-                                We&apos;ll use this to recommend safe treats and food.
-                            </FormDescription>
                             <FormMessage />
                         </FormItem>
                     )}

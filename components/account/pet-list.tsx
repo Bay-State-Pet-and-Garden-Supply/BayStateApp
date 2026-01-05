@@ -44,7 +44,7 @@ export function PetList({ pets, petTypes }: PetListProps) {
                         </CardContent>
                     </Card>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>Add a Pet</DialogTitle>
                         <DialogDescription>
