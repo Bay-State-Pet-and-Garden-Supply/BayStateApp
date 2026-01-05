@@ -38,6 +38,7 @@ import {
     PetType,
     PetLifeStage,
     PetSizeClass,
+    PetSpecialNeed,
     PetActivityLevel,
     PetGender,
     PET_LIFE_STAGES,
@@ -59,9 +60,9 @@ const petFormSchema = z.object({
     dietary_notes: z.string().max(500).optional(),
     life_stage: z.enum(['puppy', 'kitten', 'juvenile', 'adult', 'senior']).optional(),
     size_class: z.enum(['small', 'medium', 'large', 'giant']).optional(),
-    special_needs: z.array(z.string()).default([]),
+    special_needs: z.array(z.string()),
     gender: z.enum(['male', 'female']).optional(),
-    is_fixed: z.boolean().default(false),
+    is_fixed: z.boolean(),
     activity_level: z.enum(['low', 'moderate', 'high', 'very_high']).optional(),
 })
 
@@ -76,7 +77,7 @@ interface PetFormProps {
 export function PetForm({ pet, petTypes, onSuccess }: PetFormProps) {
     const [loading, setLoading] = useState(false)
 
-    const defaultValues: Partial<PetFormValues> = {
+    const defaultValues: PetFormValues = {
         name: pet?.name || '',
         pet_type_id: pet?.pet_type_id || '',
         breed: pet?.breed || '',
@@ -107,6 +108,7 @@ export function PetForm({ pet, petTypes, onSuccess }: PetFormProps) {
                 size_class: data.size_class as PetSizeClass,
                 gender: data.gender as PetGender,
                 activity_level: data.activity_level as PetActivityLevel,
+                special_needs: data.special_needs as PetSpecialNeed[],
             }
 
             if (pet) {
