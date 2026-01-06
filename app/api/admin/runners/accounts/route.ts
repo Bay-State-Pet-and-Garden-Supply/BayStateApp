@@ -194,6 +194,7 @@ export async function DELETE(request: NextRequest) {
     const keyId = searchParams.get('key_id');
     const runnerName = searchParams.get('runner_name');
     const revokeAll = searchParams.get('revoke_all') === 'true';
+    const deleteRunner = searchParams.get('delete_runner') === 'true';
 
     if (!keyId && !runnerName) {
         return NextResponse.json(
@@ -203,6 +204,21 @@ export async function DELETE(request: NextRequest) {
     }
 
     const admin = getSupabaseAdmin();
+
+    if (runnerName && deleteRunner) {
+        const { error } = await admin
+            .from('scraper_runners')
+            .delete()
+            .eq('name', runnerName);
+
+        if (error) {
+            console.error('[Runner Accounts] Failed to delete runner:', error);
+            return NextResponse.json({ error: 'Failed to delete runner' }, { status: 500 });
+        }
+
+        console.log(`[Runner Accounts] Deleted runner: ${runnerName}`);
+        return NextResponse.json({ success: true, message: `Runner ${runnerName} deleted` });
+    }
 
     if (keyId) {
         // Revoke specific key

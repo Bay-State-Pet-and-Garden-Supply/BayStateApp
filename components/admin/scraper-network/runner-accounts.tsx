@@ -43,13 +43,13 @@ export function RunnerAccounts() {
     }, [fetchRunners]);
 
     const handleDelete = async (runnerName: string) => {
-        if (!confirm(`Remove credentials for ${runnerName}? The runner will no longer be able to authenticate.`)) {
+        if (!confirm(`Are you sure you want to delete ${runnerName}?\n\nThis will remove the runner and revoke all API keys.`)) {
             return;
         }
 
         setDeleting(runnerName);
         try {
-            const res = await fetch(`/api/admin/runners/accounts?runner_name=${encodeURIComponent(runnerName)}`, {
+            const res = await fetch(`/api/admin/runners/accounts?runner_name=${encodeURIComponent(runnerName)}&delete_runner=true`, {
                 method: 'DELETE',
             });
 
@@ -58,7 +58,7 @@ export function RunnerAccounts() {
                 throw new Error(data.error || 'Failed to delete');
             }
 
-            toast.success(`Credentials removed for ${runnerName}`);
+            toast.success(`Runner ${runnerName} deleted`);
             fetchRunners();
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to delete';
@@ -184,21 +184,20 @@ export function RunnerAccounts() {
                                         {formatDate(runner.last_seen_at)}
                                     </td>
                                     <td className="whitespace-nowrap px-4 py-3 text-right">
-                                        {runner.has_credentials && (
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => handleDelete(runner.name)}
-                                                disabled={deleting === runner.name}
-                                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                            >
-                                                {deleting === runner.name ? (
-                                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                                ) : (
-                                                    <Trash2 className="h-4 w-4" />
-                                                )}
-                                            </Button>
-                                        )}
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => handleDelete(runner.name)}
+                                            disabled={deleting === runner.name}
+                                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                            title="Delete Runner"
+                                        >
+                                            {deleting === runner.name ? (
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                            ) : (
+                                                <Trash2 className="h-4 w-4" />
+                                            )}
+                                        </Button>
                                     </td>
                                 </tr>
                             ))}
