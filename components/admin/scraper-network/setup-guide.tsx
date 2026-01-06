@@ -59,9 +59,9 @@ export function SetupGuide() {
                         <section>
                             <h4 className="font-semibold text-gray-900">1. Prerequisites</h4>
                             <ul className="mt-2 list-inside list-disc space-y-1">
-                                <li>Docker installed on your machine</li>
-                                <li>Access to the GitHub repository</li>
-                                <li>Network access to this admin panel URL</li>
+                                <li>Python 3.9 or higher</li>
+                                <li>Docker installed (optional, but recommended)</li>
+                                <li>Admin access to generate an API key</li>
                             </ul>
                         </section>
 
@@ -71,7 +71,7 @@ export function SetupGuide() {
                                 Scroll up to the <strong>Runner Accounts</strong> section on this page.
                             </p>
                             <ul className="mt-2 list-inside list-disc space-y-1">
-                                <li>Click <strong>Create Account</strong></li>
+                                <li>Click <strong>Create Runner</strong></li>
                                 <li>Enter a unique runner name (e.g. <code className="bg-gray-100 px-1 rounded">my-server-1</code>)</li>
                                 <li>Copy the generated <strong>API Key</strong> (starts with <code className="bg-gray-100 px-1 rounded">bsr_</code>)</li>
                             </ul>
@@ -81,57 +81,53 @@ export function SetupGuide() {
                         </section>
 
                         <section>
-                            <h4 className="font-semibold text-gray-900">3. Add GitHub Secrets</h4>
-                            <p className="mt-1">Go to your repository Settings → Secrets and variables → Actions → New repository secret:</p>
-                            <ul className="mt-2 list-inside list-disc space-y-1 font-mono text-xs">
-                                <li>SCRAPER_API_URL (this app&apos;s URL)</li>
-                                <li>SCRAPER_API_KEY (the key from step 2)</li>
-                            </ul>
-                        </section>
-
-                        <section>
-                            <h4 className="font-semibold text-gray-900">4. Register as a GitHub Runner</h4>
-                            <p className="mt-1">Go to your repo Settings → Actions → Runners → New self-hosted runner</p>
-                            <p className="mt-2">Follow the instructions GitHub provides, using these labels:</p>
-                            <CodeBlock code="--labels self-hosted,docker" id="labels" copied={copied} onCopy={copyToClipboard} />
-                        </section>
-
-                        <section>
-                            <h4 className="font-semibold text-gray-900">5. Quick Install (Recommended)</h4>
-                            <p className="mt-1">Run the one-line installer on your runner machine:</p>
+                            <h4 className="font-semibold text-gray-900">3. Automatic Install (Recommended)</h4>
+                            <p className="mt-1">Run the new installer script on your machine (macOS/Linux). This handles Python setup, virtual environments, and configuration automatically.</p>
                             <CodeBlock
-                                code={`curl -fsSL https://raw.githubusercontent.com/Bay-State-Pet-and-Garden-Supply/BayStateScraper/main/install.py | python3 -`}
+                                code={`curl -fsSL https://raw.githubusercontent.com/Bay-State-Pet-and-Garden-Supply/BayStateScraper/main/install.sh | bash`}
                                 id="curl-install"
                                 copied={copied}
                                 onCopy={copyToClipboard}
                             />
-                            <p className="mt-2 text-gray-500">The installer will prompt you for your API key and configure everything automatically.</p>
+                            <p className="mt-2 text-gray-500">The interactive wizard will ask for your Runner Name and API Key.</p>
                         </section>
 
                         <section>
-                            <h4 className="font-semibold text-gray-900">6. Manual Install (Alternative)</h4>
-                            <p className="mt-1">Clone the repo and build the Docker image manually:</p>
+                            <h4 className="font-semibold text-gray-900">4. GitHub Actions / Docker Setup</h4>
+                            <p className="mt-1">For headless CI/CD environments, configure these secrets in your repository or container:</p>
+                            <div className="mt-2 rounded-lg bg-gray-50 p-3 font-mono text-xs">
+                                <div className="grid grid-cols-[1fr,2fr] gap-2">
+                                    <div className="font-semibold text-gray-700">SCRAPER_API_URL</div>
+                                    <div className="text-gray-600">This app's URL (e.g. https://app.baystatepet.com)</div>
+                                    
+                                    <div className="font-semibold text-gray-700">SCRAPER_API_KEY</div>
+                                    <div className="text-gray-600">Your bsr_... key</div>
+                                    
+                                    <div className="font-semibold text-gray-700">RUNNER_NAME</div>
+                                    <div className="text-gray-600">Unique identifier for this runner</div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section>
+                            <h4 className="font-semibold text-gray-900">5. Desktop App (Development)</h4>
+                            <p className="mt-1">
+                                To run the scraper with a visual interface for debugging:
+                            </p>
                             <CodeBlock
                                 code={`git clone https://github.com/Bay-State-Pet-and-Garden-Supply/BayStateScraper.git
-cd BayStateScraper
-docker build -t baystate-scraper:latest .`}
-                                id="docker-build"
+cd BayStateScraper/ui && npm install
+cd ../src-tauri && cargo tauri dev`}
+                                id="desktop-dev"
                                 copied={copied}
                                 onCopy={copyToClipboard}
                             />
                         </section>
 
                         <section>
-                            <h4 className="font-semibold text-gray-900">7. Start the Runner</h4>
-                            <p className="mt-1">Run the GitHub Actions runner:</p>
-                            <CodeBlock code="./run.sh" id="run" copied={copied} onCopy={copyToClipboard} />
-                        </section>
-
-                        <section>
-                            <h4 className="font-semibold text-gray-900">8. Verify Connection</h4>
+                            <h4 className="font-semibold text-gray-900">6. Verify Connection</h4>
                             <p className="mt-1">
-                                Once running, your runner will appear in the <strong>Connected Runners</strong> grid above
-                                with a green &quot;Ready&quot; status.
+                                Once the installer completes or the Docker container starts, the runner will appear in the <strong>Connected Runners</strong> grid above with a green "Ready" status.
                             </p>
                         </section>
                     </div>
