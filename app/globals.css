@@ -55,7 +55,7 @@
   --card-foreground: #66161D;
   --popover: #ffffff;
   --popover-foreground: #66161D;
-  --primary: #348C41; /* Forest Green (Prominent) */
+  --primary: #008850; /* Forest Green (Prominent) */
   --primary-foreground: #ffffff;
   --secondary: #66161D; /* Bay State Burgundy (Secondary) */
   --secondary-foreground: #FCD048; /* Harvest Gold text on Burgundy */
@@ -67,15 +67,15 @@
   --destructive-foreground: #ffffff;
   --border: #e4e4e7;
   --input: #e4e4e7;
-  --ring: #348C41; /* Forest Green */
-  --chart-1: #348C41;
+  --ring: #008850; /* Forest Green */
+  --chart-1: #008850;
   --chart-2: #66161D;
   --chart-3: #FCD048;
   --chart-4: #e76e50;
   --chart-5: #2a9d8f;
-  --sidebar: #348C41; /* Forest Green */
+  --sidebar: #008850; /* Forest Green */
   --sidebar-foreground: #ffffff;
-  --sidebar-primary: #348C41;
+  --sidebar-primary: #008850;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #2a7034; /* Darker Green for hover */
   --sidebar-accent-foreground: #FCD048;
@@ -90,7 +90,7 @@
   --card-foreground: #ffffff;
   --popover: #09090b;
   --popover-foreground: #ffffff;
-  --primary: #348C41; /* Forest Green */
+  --primary: #008850; /* Forest Green */
   --primary-foreground: #ffffff;
   --secondary: #66161D; /* Bay State Burgundy */
   --secondary-foreground: #FCD048;
@@ -102,15 +102,15 @@
   --destructive-foreground: #ffffff;
   --border: #27272a;
   --input: #27272a;
-  --ring: #348C41;
-  --chart-1: #348C41;
+  --ring: #008850;
+  --chart-1: #008850;
   --chart-2: #66161D;
   --chart-3: #FCD048;
   --chart-4: #e76e50;
   --chart-5: #2a9d8f;
-  --sidebar: #348C41;
+  --sidebar: #008850;
   --sidebar-foreground: #ffffff;
-  --sidebar-primary: #348C41;
+  --sidebar-primary: #008850;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #2a7034;
   --sidebar-accent-foreground: #FCD048;
