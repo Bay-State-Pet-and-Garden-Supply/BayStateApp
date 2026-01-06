@@ -99,9 +99,9 @@ export function PipelineStatus({ counts }: PipelineStatusProps) {
       </div>
 
       <div className="mt-4 pt-4 border-t text-center">
-        <p className="text-sm text-muted-foreground">
+        <div className="text-sm text-muted-foreground">
           Total: <span className="font-semibold text-foreground">{total}</span> items in intake
-        </p>
+        </div>
       </div>
     </div>
   );
