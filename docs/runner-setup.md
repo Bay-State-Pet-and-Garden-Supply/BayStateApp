@@ -38,13 +38,34 @@ The interactive wizard will ask for your:
 
 ### Option B: Docker / GitHub Actions (Headless)
 
-For headless CI/CD environments or manual Docker usage, configure these environment variables:
+For headless CI/CD environments or manual Docker usage, configure the following environment variables. These use a "Vault Pattern" where the runner fetches encrypted credentials at runtime.
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `SCRAPER_API_URL` | BayStateApp base URL | `https://app.baystatepet.com` |
-| `SCRAPER_API_KEY` | Your API key from Step 1 | `bsr_abc123...` |
-| `RUNNER_NAME` | Unique identifier | `prod-worker-1` |
+| Variable | Required | Description | Where to Get |
+|----------|----------|-------------|--------------|
+| `SCRAPER_API_URL` | Yes | BayStateApp base URL | Your deployment URL |
+| `SCRAPER_API_KEY` | Yes | Runner authentication | Admin Panel → Runners → Create |
+| `SCRAPER_WEBHOOK_SECRET` | Yes | HMAC fallback signing | Generate with `openssl rand -hex 32` |
+| `SCRAPER_CALLBACK_URL` | Yes | Callback endpoint | `{SCRAPER_API_URL}/api/admin/scraping/callback` |
+| `SUPABASE_URL` | Yes | Supabase project URL | Supabase Dashboard → Settings → API |
+| `SUPABASE_SERVICE_KEY` | Yes | Service role key | Supabase Dashboard → Settings → API → service_role |
+| `SETTINGS_ENCRYPTION_KEY` | Yes | Decrypt stored credentials | Same key used when encrypting settings |
+| `RUNNER_NAME` | Yes | Unique identifier | e.g., `prod-worker-1` |
+
+### Setting Up GitHub Secrets
+
+If you are using GitHub Actions to trigger scrapes, you must add these variables as **Repository Secrets**:
+
+1. Go to your repository on GitHub.
+2. Navigate to **Settings** → **Secrets and variables** → **Actions**.
+3. Click **New repository secret** for each item in the table above.
+
+### Credential Flow (Vault Pattern)
+
+The runner does not store site passwords (like Phillips or Orgill) in the environment. Instead:
+1. GitHub Actions passes "vault keys" (Supabase URL/Key and Encryption Key) to the Docker container.
+2. The runner connects to the Supabase Vault and downloads encrypted settings.
+3. The runner decrypts these settings using the `SETTINGS_ENCRYPTION_KEY`.
+4. Site credentials are now available in memory for the scraper to perform login actions.
 
 ### Option C: Desktop App (Development)
 
