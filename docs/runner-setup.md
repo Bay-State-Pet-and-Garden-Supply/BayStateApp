@@ -1,14 +1,63 @@
 # Self-Hosted Runner Setup Guide
 
-This guide explains how to set up a runner for Bay State's distributed scraping system.
+Set up a new scraping runner in **under 5 minutes**.
 
-## What is a Runner?
+## TL;DR (One Command)
 
-A **runner** is a computer that executes scraping jobs. When you click "Run Scrape" in the Admin Panel, a runner:
-1. Receives the job
-2. Opens a browser
-3. Visits websites and extracts product data
-4. Sends results back to BayStateApp
+```bash
+curl -fsSL https://raw.githubusercontent.com/Bay-State-Pet-and-Garden-Supply/BayStateScraper/main/scripts/bootstrap-runner.sh | bash
+```
+
+---
+
+## What You'll Need
+
+1. A Mac or Linux machine that stays powered on
+2. A GitHub runner registration token (instructions below)
+3. 5 minutes
+
+---
+
+## Step-by-Step Setup
+
+### Step 1: Get Your Runner Token
+
+1. Go to: **[Add New Runner](https://github.com/Bay-State-Pet-and-Garden-Supply/BayStateScraper/settings/actions/runners/new)**
+2. Select your OS (macOS or Linux)
+3. Copy the token from the `--token` part of the configure command
+
+The token looks like: `AXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX`
+
+### Step 2: Run the Bootstrap Script
+
+Open Terminal and run:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Bay-State-Pet-and-Garden-Supply/BayStateScraper/main/scripts/bootstrap-runner.sh | bash
+```
+
+The script will prompt you for:
+- **Runner token**: Paste the token from Step 1
+- **Runner name**: A name for this machine (e.g., "nicks-macbook")
+
+### Step 3: Verify
+
+Check your runner appears at:
+**[GitHub Runners](https://github.com/Bay-State-Pet-and-Garden-Supply/BayStateScraper/settings/actions/runners)**
+
+It should show as **Idle** (green dot).
+
+---
+
+## What the Bootstrap Script Does
+
+1. **Installs Docker** (if not already installed)
+2. **Downloads GitHub Actions Runner** (latest version)
+3. **Configures the runner** with labels `self-hosted,docker`
+4. **Pulls the Docker image** for scraping
+5. **Installs as a system service** (auto-starts on boot)
+
+---
 
 ## Architecture Overview
 
@@ -20,8 +69,8 @@ A **runner** is a computer that executes scraping jobs. When you click "Run Scra
                                                        │
                                                        ▼
                                             ┌─────────────────────┐
-                                            │   Your Server       │
-                                            │   (Runner Agent)    │
+                                            │   Your Laptop       │
+                                            │   (Runner Service)  │
                                             │                     │
                                             │   Runs Docker       │
                                             │   container with    │
@@ -37,159 +86,72 @@ A **runner** is a computer that executes scraping jobs. When you click "Run Scra
 
 ---
 
-## Choose Your Setup Method
+## Required GitHub Secrets
 
-| Method | Best For | Difficulty |
-|--------|----------|------------|
-| **Desktop App** | Testing, debugging, manual scrapes | Easy |
-| **GitHub Actions Runner** | Production, automated scrapes | Medium |
+These must be configured in the **BayStateScraper** repository settings by an admin:
 
----
-
-## Option A: Desktop App (Recommended for Testing)
-
-### Step 1: Download
-
-Go to [GitHub Releases](https://github.com/Bay-State-Pet-and-Garden-Supply/BayStateScraper/releases/latest) and download:
-- **macOS**: `Bay.State.Scraper.dmg`
-- **Windows**: `Bay.State.Scraper.msi`
-
-### Step 2: Install
-
-- **macOS**: Open `.dmg`, drag to Applications
-- **Windows**: Run `.msi` installer
-
-### Step 3: First Run
-
-1. Open the app
-2. **First Run (macOS only)**: Right-click → Open → Confirm (required until app is notarized)
-3. Follow the **Setup Wizard**:
-   - Enter a **Runner Name** (e.g., "Nick's MacBook")
-   - Enter your **API Key** (get from Admin Panel → Scraper Network → Create Runner)
-   - Install Chromium when prompted
-4. Done! Your runner appears in the Admin Panel.
-
-### Step 4: Verify
-
-Check the **Scraper Network** page in Admin Panel. You should see your runner with a green "Ready" status.
+| Secret | Description |
+|--------|-------------|
+| `SCRAPER_API_URL` | BayStateApp URL (e.g., `https://app.baystatepet.com`) |
+| `SCRAPER_API_KEY` | Runner API key from Admin Panel |
+| `SCRAPER_WEBHOOK_SECRET` | HMAC fallback signing key |
+| `SCRAPER_CALLBACK_URL` | `{SCRAPER_API_URL}/api/admin/scraping/callback` |
+| `SUPABASE_URL` | Supabase project URL |
+| `SUPABASE_SERVICE_KEY` | Supabase service role key |
+| `SETTINGS_ENCRYPTION_KEY` | Key for decrypting stored credentials |
 
 ---
 
-## Option B: GitHub Actions Self-Hosted Runner (Production)
+## Managing Your Runner
 
-This sets up an always-on runner that processes jobs automatically.
-
-### Prerequisites
-
-- A server (Mac, Linux, or Windows) that stays on
-- Docker installed
-- Admin access to the GitHub repository
-
-### Step 1: Generate an API Key
-
-1. Login to **BayStateApp Admin Panel**
-2. Navigate to **Scraper Network** → **Runner Accounts**
-3. Click **"Create Runner"** and enter a unique name
-4. **Copy the API key** (starts with `bsr_`) - only shown once!
-
-### Step 2: Add GitHub Secrets
-
-Go to: `https://github.com/Bay-State-Pet-and-Garden-Supply/BayStateScraper/settings/secrets/actions`
-
-Add these **Repository Secrets**:
-
-| Secret | Required | Where to Get |
-|--------|----------|--------------|
-| `SCRAPER_API_URL` | Yes | Your BayStateApp URL (e.g., `https://app.baystatepet.com`) |
-| `SCRAPER_API_KEY` | Yes | Admin Panel → Scraper Network → Create Runner |
-| `SCRAPER_WEBHOOK_SECRET` | Yes | Generate: `openssl rand -hex 32` |
-| `SCRAPER_CALLBACK_URL` | Yes | `{SCRAPER_API_URL}/api/admin/scraping/callback` |
-| `SUPABASE_URL` | Yes | Supabase Dashboard → Settings → API |
-| `SUPABASE_SERVICE_KEY` | Yes | Supabase Dashboard → Settings → API → service_role |
-| `SETTINGS_ENCRYPTION_KEY` | Yes | Same key used when encrypting settings in your database |
-
-### Step 3: Install Docker
-
-**macOS:**
-```bash
-brew install --cask docker
-# Or download Docker Desktop from https://docker.com
-```
-
-**Linux (Ubuntu/Debian):**
-```bash
-curl -fsSL https://get.docker.com | sh
-sudo usermod -aG docker $USER
-```
-
-**Windows:**
-Download Docker Desktop from https://docker.com
-
-### Step 4: Install GitHub Actions Runner
-
-1. Go to: `https://github.com/Bay-State-Pet-and-Garden-Supply/BayStateScraper/settings/actions/runners/new`
-
-2. Select your OS and follow the instructions. Example for macOS:
+### Service Commands (macOS)
 
 ```bash
-# Create a folder
-mkdir actions-runner && cd actions-runner
+cd ~/actions-runner
 
-# Download the runner
-curl -o actions-runner.tar.gz -L https://github.com/actions/runner/releases/download/v2.311.0/actions-runner-osx-arm64-2.311.0.tar.gz
+# Check status
+./svc.sh status
 
-# Extract
-tar xzf actions-runner.tar.gz
+# Stop the runner
+./svc.sh stop
 
-# Configure (use the token from the GitHub page)
-./config.sh --url https://github.com/Bay-State-Pet-and-Garden-Supply/BayStateScraper --token YOUR_TOKEN_HERE
-
-# Add labels for the scraper workflow
-# When prompted for labels, enter: self-hosted,docker
-```
-
-### Step 5: Start the Runner
-
-**Run interactively (for testing):**
-```bash
-./run.sh
-```
-
-**Install as a service (for production):**
-```bash
-# macOS
-./svc.sh install
+# Start the runner
 ./svc.sh start
 
-# Linux
-sudo ./svc.sh install
-sudo ./svc.sh start
+# View logs
+tail -f ~/Library/Logs/actions.runner.*.log
 ```
 
-### Step 6: Verify
+### Service Commands (Linux)
 
-1. Go to: `https://github.com/Bay-State-Pet-and-Garden-Supply/BayStateScraper/settings/actions/runners`
-2. Your runner should show as **Idle** (green dot)
+```bash
+# Check status
+sudo systemctl status actions.runner.*
 
----
+# Stop the runner
+sudo systemctl stop actions.runner.*
 
-## How Jobs Run (Production Flow)
+# Start the runner
+sudo systemctl start actions.runner.*
 
-1. You click **"Run Scrape"** in BayStateApp Admin Panel
-2. BayStateApp triggers a GitHub Actions workflow
-3. GitHub finds your self-hosted runner
-4. Runner pulls the Docker image and starts a container
-5. Container receives secrets via environment variables
-6. Scraper runs, extracts data
-7. Results are sent back to BayStateApp
+# View logs
+journalctl -u actions.runner.* -f
+```
 
-**You don't need to do anything manually** - it's fully automated once set up.
+### Remove the Runner
+
+```bash
+cd ~/actions-runner
+./svc.sh stop
+./svc.sh uninstall
+./config.sh remove --token YOUR_TOKEN
+```
 
 ---
 
 ## Credential Security (Vault Pattern)
 
-Site passwords (Phillips, Orgill, etc.) are **never stored on the runner**. Instead:
+Site passwords (Phillips, Orgill, etc.) are **never stored on the runner**:
 
 1. GitHub Actions passes "vault keys" to the Docker container
 2. Container connects to Supabase and downloads encrypted settings
@@ -197,35 +159,43 @@ Site passwords (Phillips, Orgill, etc.) are **never stored on the runner**. Inst
 4. Credentials exist only in memory during execution
 5. Container exits and credentials are gone
 
-This ensures credentials never touch the filesystem.
-
 ---
 
 ## Troubleshooting
 
 | Issue | Solution |
 |-------|----------|
-| Runner not appearing in GitHub | Check if `./run.sh` is running, verify labels include `self-hosted,docker` |
-| Runner not appearing in Admin Panel | For Desktop App only - GitHub runners don't register there |
-| "Invalid API key" | Verify the key in GitHub Secrets matches Admin Panel |
-| Docker permission denied | Run `sudo usermod -aG docker $USER` and log out/in |
-| "No matching manifest" on M1/M2 Mac | Wait for multi-platform build or use `--platform linux/amd64` |
-| Jobs stuck in "queued" | Check runner is online and has correct labels |
+| "Docker not running" | Open Docker Desktop (macOS) or `sudo systemctl start docker` (Linux) |
+| Runner shows offline | Check if service is running: `./svc.sh status` |
+| Jobs stuck in "queued" | Verify runner has labels `self-hosted,docker` |
+| "Permission denied" on Docker | Run `sudo usermod -aG docker $USER` and log out/in |
+| Token expired | Get a new token from GitHub Settings |
 
 ---
 
 ## FAQ
 
-**Q: Do I need both Desktop App and GitHub Runner?**
-A: No. Choose one:
-- Desktop App for testing/debugging
-- GitHub Runner for production
+**Q: Can I use my laptop while it's running jobs?**
+A: Yes. Jobs run in Docker containers and don't interfere with normal use.
 
-**Q: Does the Desktop App need to stay open?**
-A: Yes, for it to receive jobs. For always-on operation, use the GitHub Runner.
+**Q: Does my laptop need to stay open?**
+A: Yes, it needs to be powered on and connected to the internet. Sleep mode will pause jobs.
 
-**Q: Where do site passwords come from?**
-A: Encrypted in Supabase. The runner fetches and decrypts them at runtime.
+**Q: Can I have multiple runners?**
+A: Yes! Run the bootstrap script on each machine with a unique name.
 
-**Q: Can I run multiple runners?**
-A: Yes! Each needs a unique name and API key.
+**Q: What happens if I close my laptop during a job?**
+A: The job will fail and be marked as such. No data is lost.
+
+---
+
+## Alternative: Desktop App
+
+For testing and debugging, use the Desktop App instead:
+
+1. Download from [GitHub Releases](https://github.com/Bay-State-Pet-and-Garden-Supply/BayStateScraper/releases/latest)
+2. Open the app
+3. Enter your API key from Admin Panel → Scraper Network
+4. Run scrapes manually with full visibility
+
+The Desktop App is for **development/testing**. For production, use the GitHub Runner setup above.
