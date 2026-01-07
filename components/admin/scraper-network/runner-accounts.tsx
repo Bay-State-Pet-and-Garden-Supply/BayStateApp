@@ -8,7 +8,7 @@ import { RunnerAccountModal } from './runner-account-modal';
 
 interface RunnerAccount {
     name: string;
-    status: 'online' | 'offline' | 'busy';
+    status: string;
     last_seen_at: string | null;
     last_auth_at: string | null;
     has_credentials: boolean;
@@ -168,9 +168,9 @@ export function RunnerAccounts() {
                                     </td>
                                     <td className="whitespace-nowrap px-4 py-3">
                                         <span
-                                            className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${runner.status === 'online'
+                                            className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${['online', 'idle', 'polling'].includes(runner.status)
                                                 ? 'bg-green-100 text-green-800'
-                                                : runner.status === 'busy'
+                                                : ['busy', 'running'].includes(runner.status)
                                                     ? 'bg-yellow-100 text-yellow-800'
                                                     : 'bg-gray-100 text-gray-800'
                                                 }`}
