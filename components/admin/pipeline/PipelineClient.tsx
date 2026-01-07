@@ -44,6 +44,29 @@ export function PipelineClient({ initialProducts, initialCounts, initialStatus }
     const [consolidationProgress, setConsolidationProgress] = useState(0);
     const [isBannerDismissed, setIsBannerDismissed] = useState(false);
 
+    const handleRefresh = () => {
+        startTransition(async () => {
+            const [productsRes, countsRes] = await Promise.all([
+                fetch(`/api/admin/pipeline?status=${activeStatus}&search=${encodeURIComponent(search)}`),
+                fetch('/api/admin/pipeline/counts'),
+            ]);
+
+            if (productsRes.ok) {
+                const data = await productsRes.json();
+                setProducts(data.products);
+            }
+            if (countsRes.ok) {
+                const data = await countsRes.json();
+                setCounts(data.counts);
+            }
+
+            // Refresh runner status
+            if (activeStatus === 'staging') {
+                checkRunnersAvailable().then(setRunnersAvailable);
+            }
+        });
+    };
+
     useEffect(() => {
         if (activeStatus === 'staging') {
             checkRunnersAvailable().then(setRunnersAvailable);
@@ -59,7 +82,7 @@ export function PipelineClient({ initialProducts, initialCounts, initialStatus }
                 if (res.ok) {
                     const data = await res.json();
                     setConsolidationProgress(data.progress || 0);
-                    
+
                     if (data.status === 'completed' || data.status === 'failed') {
                         setIsConsolidating(false);
                         setConsolidationBatchId(null);
@@ -224,28 +247,7 @@ export function PipelineClient({ initialProducts, initialCounts, initialStatus }
         handleRefresh();
     };
 
-    const handleRefresh = () => {
-        startTransition(async () => {
-            const [productsRes, countsRes] = await Promise.all([
-                fetch(`/api/admin/pipeline?status=${activeStatus}&search=${encodeURIComponent(search)}`),
-                fetch('/api/admin/pipeline/counts'),
-            ]);
 
-            if (productsRes.ok) {
-                const data = await productsRes.json();
-                setProducts(data.products);
-            }
-            if (countsRes.ok) {
-                const data = await countsRes.json();
-                setCounts(data.counts);
-            }
-
-            // Refresh runner status
-            if (activeStatus === 'staging') {
-                checkRunnersAvailable().then(setRunnersAvailable);
-            }
-        });
-    };
 
     return (
         <div className="space-y-6">
@@ -256,7 +258,7 @@ export function PipelineClient({ initialProducts, initialCounts, initialStatus }
                 onStatusChange={handleStatusChange}
             />
 
-            <BatchJobsPanel 
+            <BatchJobsPanel
                 onApplyBatch={handleApplyBatch}
                 activeBatchId={consolidationBatchId}
             />

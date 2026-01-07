@@ -53,7 +53,7 @@ interface ScraperEditorClientProps {
 export function ScraperEditorClient({ scraper }: ScraperEditorClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  
+
   const [yamlContent, setYamlContent] = useState(() => {
     try {
       return stringify(scraper.config, { indent: 2 });
@@ -65,7 +65,7 @@ export function ScraperEditorClient({ scraper }: ScraperEditorClientProps) {
   const [validationError, setValidationError] = useState<string | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  
+
   const [displayName, setDisplayName] = useState(scraper.display_name || '');
   const [baseUrl, setBaseUrl] = useState(scraper.base_url);
   const [status, setStatus] = useState<ScraperStatus>(scraper.status);
@@ -74,18 +74,7 @@ export function ScraperEditorClient({ scraper }: ScraperEditorClientProps) {
     setHasChanges(yamlContent !== originalYaml);
   }, [yamlContent, originalYaml]);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-        e.preventDefault();
-        if (hasChanges && !validationError) {
-          handleSave();
-        }
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [hasChanges, validationError, yamlContent]);
+
 
   const validateYaml = useCallback((content: string): { valid: boolean; config?: ScraperConfig; error?: string } => {
     try {
@@ -104,12 +93,12 @@ export function ScraperEditorClient({ scraper }: ScraperEditorClientProps) {
   const handleEditorChange = useCallback((value: string | undefined) => {
     const content = value || '';
     setYamlContent(content);
-    
+
     const validation = validateYaml(content);
     setValidationError(validation.valid ? null : (validation.error || 'Unknown error'));
   }, [validateYaml]);
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     const validation = validateYaml(yamlContent);
     if (!validation.valid || !validation.config) {
       toast.error('Cannot save: ' + (validation.error || 'Invalid configuration'));
@@ -135,7 +124,20 @@ export function ScraperEditorClient({ scraper }: ScraperEditorClientProps) {
         toast.error(result.error || 'Failed to save');
       }
     });
-  };
+  }, [validateYaml, yamlContent, scraper.id, router]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        e.preventDefault();
+        if (hasChanges && !validationError) {
+          handleSave();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [hasChanges, validationError, yamlContent, handleSave]);
 
   const handleReset = () => {
     setYamlContent(originalYaml);

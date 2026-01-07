@@ -43,7 +43,7 @@ export async function getRecentlyViewedProducts(
 
   if (!user) return [];
 
-  let query = supabase
+  const query = supabase
     .from('recently_viewed')
     .select(`
       viewed_at,

@@ -26,7 +26,7 @@ function ActionParams({ step, index }: { step: WorkflowStep; index: number }) {
   const { updateWorkflowStep, config } = useScraperEditorStore();
   const params = step.params || {};
 
-  const updateParam = (key: string, value: any) => {
+  const updateParam = (key: string, value: string | number | boolean) => {
     updateWorkflowStep(index, { params: { ...params, [key]: value } });
   };
 
@@ -35,14 +35,14 @@ function ActionParams({ step, index }: { step: WorkflowStep; index: number }) {
       return (
         <div className="space-y-2">
           <Label>URL</Label>
-          <Input 
-            value={params.url as string || ''} 
-            onChange={(e) => updateParam('url', e.target.value)} 
-            placeholder="https://..." 
+          <Input
+            value={params.url as string || ''}
+            onChange={(e) => updateParam('url', e.target.value)}
+            placeholder="https://..."
           />
         </div>
       );
-    
+
     case 'click':
     case 'wait_for':
     case 'conditional_click':
@@ -50,19 +50,19 @@ function ActionParams({ step, index }: { step: WorkflowStep; index: number }) {
         <div className="space-y-4">
           <div className="space-y-2">
             <Label>Selector</Label>
-            <Input 
-              value={params.selector as string || ''} 
-              onChange={(e) => updateParam('selector', e.target.value)} 
+            <Input
+              value={params.selector as string || ''}
+              onChange={(e) => updateParam('selector', e.target.value)}
               className="font-mono"
             />
           </div>
           {step.action === 'wait_for' && (
             <div className="space-y-2">
               <Label>Timeout (sec)</Label>
-              <Input 
+              <Input
                 type="number"
-                value={params.timeout as number || 10} 
-                onChange={(e) => updateParam('timeout', parseInt(e.target.value))} 
+                value={params.timeout as number || 10}
+                onChange={(e) => updateParam('timeout', parseInt(e.target.value))}
               />
             </div>
           )}
@@ -73,62 +73,62 @@ function ActionParams({ step, index }: { step: WorkflowStep; index: number }) {
       return (
         <div className="space-y-2">
           <Label>Seconds</Label>
-          <Input 
+          <Input
             type="number"
-            value={params.seconds as number || 2} 
-            onChange={(e) => updateParam('seconds', parseInt(e.target.value))} 
+            value={params.seconds as number || 2}
+            onChange={(e) => updateParam('seconds', parseInt(e.target.value))}
           />
         </div>
       );
-      
+
     case 'input_text':
       return (
         <div className="space-y-4">
           <div className="space-y-2">
             <Label>Selector</Label>
-            <Input 
-              value={params.selector as string || ''} 
-              onChange={(e) => updateParam('selector', e.target.value)} 
+            <Input
+              value={params.selector as string || ''}
+              onChange={(e) => updateParam('selector', e.target.value)}
               className="font-mono"
             />
           </div>
           <div className="space-y-2">
             <Label>Text to Type</Label>
-            <Input 
-              value={params.text as string || ''} 
-              onChange={(e) => updateParam('text', e.target.value)} 
+            <Input
+              value={params.text as string || ''}
+              onChange={(e) => updateParam('text', e.target.value)}
             />
           </div>
         </div>
       );
-      
-     case 'extract_and_transform':
+
+    case 'extract_and_transform':
       return (
-         <div className="space-y-4">
+        <div className="space-y-4">
           <div className="p-4 bg-muted rounded-md text-sm">
             <p className="mb-2"><strong>Fields to Extract:</strong></p>
             {config.selectors.length === 0 ? (
-               <p className="text-muted-foreground italic">No selectors defined. Go to the Selectors tab to add some.</p>
+              <p className="text-muted-foreground italic">No selectors defined. Go to the Selectors tab to add some.</p>
             ) : (
-               <div className="grid grid-cols-2 gap-2">
-                  {config.selectors.map(sel => (
-                    <div key={sel.name} className="flex items-center gap-2 p-2 bg-background border rounded">
-                       <div className="h-2 w-2 rounded-full bg-green-500" />
-                       <span className="font-mono text-xs">{sel.name}</span>
-                    </div>
-                  ))}
-               </div>
+              <div className="grid grid-cols-2 gap-2">
+                {config.selectors.map(sel => (
+                  <div key={sel.name} className="flex items-center gap-2 p-2 bg-background border rounded">
+                    <div className="h-2 w-2 rounded-full bg-green-500" />
+                    <span className="font-mono text-xs">{sel.name}</span>
+                  </div>
+                ))}
+              </div>
             )}
-             <p className="mt-4 text-xs text-muted-foreground">This action will automatically use all defined selectors.</p>
+            <p className="mt-4 text-xs text-muted-foreground">This action will automatically use all defined selectors.</p>
           </div>
-         </div>
+        </div>
       );
 
     default:
       return (
         <div className="space-y-2">
           <Label>Parameters (JSON)</Label>
-          <Textarea 
+          <Textarea
             value={JSON.stringify(params, null, 2)}
             onChange={(e) => {
               try {
@@ -175,60 +175,60 @@ export function ActionCard({ step, index, id }: ActionCardProps) {
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <Card className="border-l-4 border-l-primary/50 hover:border-l-primary transition-all">
           <CardHeader className="p-3 pb-2 flex flex-row items-center space-y-0 gap-3">
-             <div {...attributes} {...listeners} className="cursor-grab hover:text-primary transition-colors">
-               <GripVertical className="h-5 w-5 text-muted-foreground" />
-             </div>
-             
-             <div className="flex-1 flex items-center gap-2">
-               <Badge variant="outline" className="uppercase text-[10px] tracking-wider font-semibold">
-                 {step.action.replace(/_/g, ' ')}
-               </Badge>
-               
-               {isEditingName ? (
-                 <Input 
-                   value={step.name || ''} 
-                   onChange={handleNameChange}
-                   onBlur={() => setIsEditingName(false)}
-                   onKeyDown={(e) => e.key === 'Enter' && setIsEditingName(false)}
-                   className="h-7 text-sm max-w-[200px]"
-                   autoFocus
-                   placeholder="Step Name"
-                   onClick={(e) => e.stopPropagation()} 
-                 />
-               ) : (
-                 <div 
-                   className="flex items-center gap-2 group/name cursor-pointer py-1 px-1.5 rounded hover:bg-muted/50 transition-colors"
-                   onClick={(e) => {
-                     e.stopPropagation();
-                     setIsEditingName(true);
-                   }}
-                   title="Click to rename step"
-                 >
-                   <span className="text-sm font-medium text-muted-foreground group-hover/name:text-foreground transition-colors">
-                     {step.name || `Step ${index + 1}`}
-                   </span>
-                   <Edit2 className="h-3 w-3 text-muted-foreground opacity-0 group-hover/name:opacity-100 transition-opacity" />
-                 </div>
-               )}
-             </div>
+            <div {...attributes} {...listeners} className="cursor-grab hover:text-primary transition-colors">
+              <GripVertical className="h-5 w-5 text-muted-foreground" />
+            </div>
 
-             <div className="flex items-center gap-1">
-               <CollapsibleTrigger asChild>
-                 <Button variant="ghost" size="icon" className="h-8 w-8">
-                   {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                 </Button>
-               </CollapsibleTrigger>
-               <Button 
-                 variant="ghost" 
-                 size="icon" 
-                 className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                 onClick={() => removeWorkflowStep(index)}
-               >
-                 <Trash2 className="h-4 w-4" />
-               </Button>
-             </div>
+            <div className="flex-1 flex items-center gap-2">
+              <Badge variant="outline" className="uppercase text-[10px] tracking-wider font-semibold">
+                {step.action.replace(/_/g, ' ')}
+              </Badge>
+
+              {isEditingName ? (
+                <Input
+                  value={step.name || ''}
+                  onChange={handleNameChange}
+                  onBlur={() => setIsEditingName(false)}
+                  onKeyDown={(e) => e.key === 'Enter' && setIsEditingName(false)}
+                  className="h-7 text-sm max-w-[200px]"
+                  autoFocus
+                  placeholder="Step Name"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              ) : (
+                <div
+                  className="flex items-center gap-2 group/name cursor-pointer py-1 px-1.5 rounded hover:bg-muted/50 transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsEditingName(true);
+                  }}
+                  title="Click to rename step"
+                >
+                  <span className="text-sm font-medium text-muted-foreground group-hover/name:text-foreground transition-colors">
+                    {step.name || `Step ${index + 1}`}
+                  </span>
+                  <Edit2 className="h-3 w-3 text-muted-foreground opacity-0 group-hover/name:opacity-100 transition-opacity" />
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-1">
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </Button>
+              </CollapsibleTrigger>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                onClick={() => removeWorkflowStep(index)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
           </CardHeader>
-          
+
           <CollapsibleContent>
             <CardContent className="p-3 pt-0 pl-11">
               <div className="pt-2 border-t mt-2">

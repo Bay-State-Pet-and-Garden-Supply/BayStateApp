@@ -35,7 +35,7 @@ describe('Home Page', () => {
     const page = await HomePage();
     render(page);
     expect(screen.getByText('Pet Supplies')).toBeInTheDocument();
-    expect(screen.getByText('Garden & Lawn')).toBeInTheDocument();
-    expect(screen.getByText('Propane & Grilling')).toBeInTheDocument();
+    expect(screen.getByText('Lawn & Garden')).toBeInTheDocument();
+    expect(screen.getByText('Home & Fuel')).toBeInTheDocument();
   });
 });

@@ -53,7 +53,7 @@ export function StepEditorPanel({ step, nodeId, onUpdate, onClose }: StepEditorP
           </Button>
         </div>
         <p className="text-sm text-gray-500">
-          Action type "{step.action}" is not recognized.
+          Action type &quot;{step.action}&quot; is not recognized.
         </p>
       </div>
     );
@@ -280,7 +280,7 @@ export function StepEditorPanel({ step, nodeId, onUpdate, onClose }: StepEditorP
               {paramEntries
                 .filter(([, def]) => def.required)
                 .map(([key, def]) => renderParam(key, def))}
-              
+
               {/* Separator if we have both required and optional */}
               {paramEntries.some(([, def]) => def.required) &&
                 paramEntries.some(([, def]) => !def.required) && (

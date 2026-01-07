@@ -36,7 +36,7 @@ export function ScraperEditor() {
       }
 
       toast.success('Scraper configuration saved successfully');
-      router.push('/admin/scrapers'); 
+      router.push('/admin/scrapers');
     } catch (e) {
       toast.error('Failed to save scraper: ' + (e as Error).message);
     }
@@ -66,7 +66,7 @@ export function ScraperEditor() {
             {config.display_name && <span className="text-muted-foreground text-sm ml-2">({config.display_name})</span>}
           </h1>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <YamlImportDialog />
           <Button variant="outline" size="sm" onClick={handleExport}>
@@ -83,9 +83,9 @@ export function ScraperEditor() {
 
       {/* Main Content */}
       <div className="flex-1 overflow-hidden">
-        <Tabs 
-          value={activeTab} 
-          onValueChange={(v) => setActiveTab(v as any)}
+        <Tabs
+          value={activeTab}
+          onValueChange={(v) => setActiveTab(v as string)}
           className="h-full flex flex-col"
         >
           <div className="px-4 border-b bg-muted/40">
@@ -109,15 +109,15 @@ export function ScraperEditor() {
             <TabsContent value="settings" className="m-0 h-full max-w-4xl mx-auto">
               <GlobalSettings />
             </TabsContent>
-            
+
             <TabsContent value="selectors" className="m-0 h-full max-w-5xl mx-auto">
               <SelectorsEditor />
             </TabsContent>
-            
+
             <TabsContent value="workflow" className="m-0 h-full">
               <WorkflowBuilder />
             </TabsContent>
-            
+
             <TabsContent value="yaml" className="m-0 h-full">
               <YamlPreview />
             </TabsContent>

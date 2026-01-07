@@ -98,11 +98,11 @@ export function SetupGuide() {
                             <div className="mt-2 rounded-lg bg-gray-50 p-3 font-mono text-xs">
                                 <div className="grid grid-cols-[1fr,2fr] gap-2">
                                     <div className="font-semibold text-gray-700">SCRAPER_API_URL</div>
-                                    <div className="text-gray-600">This app's URL (e.g. https://app.baystatepet.com)</div>
-                                    
+                                    <div className="text-gray-600">This app&apos;s URL (e.g. https://app.baystatepet.com)</div>
+
                                     <div className="font-semibold text-gray-700">SCRAPER_API_KEY</div>
                                     <div className="text-gray-600">Your bsr_... key</div>
-                                    
+
                                     <div className="font-semibold text-gray-700">RUNNER_NAME</div>
                                     <div className="text-gray-600">Unique identifier for this runner</div>
                                 </div>
@@ -113,6 +113,12 @@ export function SetupGuide() {
                             <h4 className="font-semibold text-gray-900">5. Desktop App (Development)</h4>
                             <p className="mt-1">
                                 To run the scraper with a visual interface for debugging:
+                            </p>
+                            <p>
+                                Ensure the runner&apos;s API key matches what you see in the Runner Accounts table.
+                            </p>
+                            <p>
+                                If using Docker: &quot;runner_id&quot; in <code>docker-compose.yml</code> must verify against the ID in Runner Accounts.
                             </p>
                             <CodeBlock
                                 code={`git clone https://github.com/Bay-State-Pet-and-Garden-Supply/BayStateScraper.git
@@ -127,7 +133,7 @@ cd ../src-tauri && cargo tauri dev`}
                         <section>
                             <h4 className="font-semibold text-gray-900">6. Verify Connection</h4>
                             <p className="mt-1">
-                                Once the installer completes or the Docker container starts, the runner will appear in the <strong>Connected Runners</strong> grid above with a green "Ready" status.
+                                Once the installer completes or the Docker container starts, the runner will appear in the <strong>Connected Runners</strong> grid above with a green &quot;Ready&quot; status.
                             </p>
                         </section>
                     </div>

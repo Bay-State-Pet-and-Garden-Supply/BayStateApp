@@ -45,7 +45,8 @@ export async function getProductQuestions(
   if (error) {
     console.error('Error fetching questions:', error);
     if (error && typeof error === 'object' && 'message' in error) {
-      console.error('Error details:', (error as any).message, (error as any).details, (error as any).hint);
+      const pgError = error as { message: string; details: string; hint: string };
+      console.error('Error details:', pgError.message, pgError.details, pgError.hint);
     }
     return [];
   }

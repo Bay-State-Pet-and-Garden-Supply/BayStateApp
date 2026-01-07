@@ -13,71 +13,71 @@ export interface Scraper {
   status: 'healthy' | 'degraded' | 'broken' | 'unknown';
   disabled: boolean;
   last_tested: string | null;
-  test_results: any | null;
-  selectors: any | null;
-  workflows: any | null;
+  test_results: unknown | null;
+  selectors: unknown | null;
+  workflows: unknown | null;
   created_at: string;
   updated_at: string;
 }
 
 export async function getScrapers(): Promise<Scraper[]> {
   const supabase = await createClient();
-  
+
   const { data, error } = await supabase
     .from('scrapers')
     .select('*')
     .order('name');
-    
+
   if (error) {
     console.error('Error fetching scrapers:', error);
     throw new Error('Failed to fetch scrapers');
   }
-  
+
   return data as Scraper[];
 }
 
 export async function getScraperByName(name: string): Promise<Scraper | null> {
   const supabase = await createClient();
-  
+
   const { data, error } = await supabase
     .from('scrapers')
     .select('*')
     .eq('name', name)
     .single();
-    
+
   if (error) {
     console.error(`Error fetching scraper ${name}:`, error);
     return null;
   }
-  
+
   return data as Scraper;
 }
 
 export async function updateScraperStatus(name: string, disabled: boolean) {
   const supabase = await createClient();
-  
+
   const { error } = await supabase
     .from('scrapers')
     .update({ disabled })
     .eq('name', name);
-    
+
   if (error) {
     console.error(`Error updating scraper status ${name}:`, error);
     throw new Error('Failed to update scraper status');
   }
-  
+
   revalidatePath('/admin/scrapers');
 }
 
 export async function testScraper(name: string, sku: string) {
   const supabase = await createClient();
-  
+
   // 1. Get scraper by name
   const scraper = await getScraperByName(name);
   if (!scraper) {
     return { error: 'Scraper not found' };
   }
-  
+
   // 2. Create test run record
   const testRun = {
     scraper_id: scraper.id,
@@ -156,7 +156,7 @@ export async function testScraper(name: string, sku: string) {
     if (!dispatchResponse.ok) {
       const errorText = await dispatchResponse.text();
       console.error('GitHub dispatch failed:', errorText);
-      
+
       await supabase
         .from('scraper_test_runs')
         .update({
@@ -165,7 +165,7 @@ export async function testScraper(name: string, sku: string) {
           completed_at: new Date().toISOString(),
         })
         .eq('id', insertedRun.id);
-        
+
       return { error: `Failed to trigger GitHub workflow: ${dispatchResponse.status}` };
     }
 
@@ -175,9 +175,9 @@ export async function testScraper(name: string, sku: string) {
       .update({ status: 'running' })
       .eq('id', insertedRun.id);
 
-    return { 
-      success: true, 
-      testRunId: insertedRun.id 
+    return {
+      success: true,
+      testRunId: insertedRun.id
     };
 
   } catch (err) {

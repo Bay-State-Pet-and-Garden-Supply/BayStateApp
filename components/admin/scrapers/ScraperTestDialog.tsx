@@ -19,12 +19,12 @@ export function ScraperTestDialog({ open, onOpenChange, scraperName }: ScraperTe
   const [sku, setSku] = useState('');
   const [isRunning, setIsRunning] = useState(false);
   const [testRunId, setTestRunId] = useState<string | null>(null);
-  const [results, setResults] = useState<any | null>(null);
+  const [results, setResults] = useState<Record<string, unknown> | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleRunTest = async () => {
     if (!sku) return;
-    
+
     setIsRunning(true);
     setResults(null);
     setError(null);
@@ -32,7 +32,7 @@ export function ScraperTestDialog({ open, onOpenChange, scraperName }: ScraperTe
 
     try {
       const response = await testScraper(scraperName, sku);
-      
+
       if (response.error) {
         setError(response.error);
         setIsRunning(false);
@@ -60,9 +60,9 @@ export function ScraperTestDialog({ open, onOpenChange, scraperName }: ScraperTe
         try {
           const res = await fetch(`/api/admin/scraper-network/test?id=${testRunId}`);
           if (!res.ok) return;
-          
+
           const data = await res.json();
-          
+
           if (data.status === 'completed' || data.status === 'failed') {
             setIsRunning(false);
             setResults(data);
@@ -93,7 +93,7 @@ export function ScraperTestDialog({ open, onOpenChange, scraperName }: ScraperTe
             Enter a product SKU to test the scraper configuration.
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
             <Label htmlFor="sku">Product SKU</Label>

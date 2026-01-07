@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     try {
         // Validate authentication
         const rawBody = await request.text();
-        let runner = await validateRunnerAuth({
+        const runner = await validateRunnerAuth({
             apiKey: request.headers.get('X-API-Key'),
             authorization: request.headers.get('Authorization'),
             webhookSignature: request.headers.get('X-Webhook-Signature'),
