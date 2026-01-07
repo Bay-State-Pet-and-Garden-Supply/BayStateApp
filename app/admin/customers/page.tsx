@@ -1,21 +1,25 @@
-'use client';
+import { getUsers } from "@/lib/admin/users"
+import { CustomersClient } from "@/components/admin/customers/CustomersClient"
 
-import { UserCircle } from 'lucide-react';
+export default async function CustomersPage({
+    searchParams,
+}: {
+    searchParams: Promise<{ page?: string; q?: string }>
+}) {
+    const params = await searchParams
+    const page = Number(params.page) || 1
+    const search = params.q || ''
 
-export default function CustomersPage() {
+    // Fetch only users with role 'customer'
+    // Note: Some legacy users might be 'customer' by default.
+    const { users, count } = await getUsers({ 
+        page, 
+        search, 
+        limit: 10,
+        role: 'customer' 
+    })
+
     return (
-        <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
-            <div className="rounded-full bg-gray-100 p-6 mb-6">
-                <UserCircle className="h-16 w-16 text-gray-400" />
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Customers</h1>
-            <p className="text-gray-500 max-w-md mb-6">
-                Customer management is coming soon. You&apos;ll be able to view customer profiles,
-                order history, and loyalty information.
-            </p>
-            <span className="inline-flex items-center rounded-full bg-amber-100 px-4 py-1.5 text-sm font-medium text-amber-800">
-                Coming Soon
-            </span>
-        </div>
-    );
+        <CustomersClient customers={users} count={count} />
+    )
 }

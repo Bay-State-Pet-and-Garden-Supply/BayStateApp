@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Palette, Shield, Bell, Database } from 'lucide-react';
+import { Palette, Database } from 'lucide-react';
 
 export default function AdminSettingsPage() {
   return (
@@ -36,50 +36,6 @@ export default function AdminSettingsPage() {
             <Link href="/admin/design">
               <Button variant="outline">Manage Design</Button>
             </Link>
-          </CardContent>
-        </Card>
-
-        {/* Security Settings - Placeholder */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100">
-                <Shield className="h-5 w-5 text-red-600" />
-              </div>
-              <div>
-                <CardTitle>Security</CardTitle>
-                <CardDescription>
-                  Authentication and access control
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="rounded-lg border border-dashed p-4 text-center text-muted-foreground text-sm">
-              Security settings coming soon
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Notifications Settings - Placeholder */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100">
-                <Bell className="h-5 w-5 text-amber-600" />
-              </div>
-              <div>
-                <CardTitle>Notifications</CardTitle>
-                <CardDescription>
-                  Email and alert settings
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="rounded-lg border border-dashed p-4 text-center text-muted-foreground text-sm">
-              Notification settings coming soon
-            </div>
           </CardContent>
         </Card>
 

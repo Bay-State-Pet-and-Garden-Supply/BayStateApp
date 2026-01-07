@@ -146,6 +146,8 @@ export async function getOrderByNumber(orderNumber: string): Promise<Order | nul
 
 export async function getOrders(options?: {
   status?: string;
+  userId?: string;
+  customerEmail?: string;
   limit?: number;
   offset?: number;
 }): Promise<{ orders: Order[]; count: number }> {
@@ -156,6 +158,14 @@ export async function getOrders(options?: {
 
   if (options?.status) {
     query = query.eq('status', options.status);
+  }
+
+  if (options?.userId) {
+    query = query.eq('user_id', options.userId);
+  }
+
+  if (options?.customerEmail) {
+    query = query.eq('customer_email', options.customerEmail);
   }
 
   query = query.order('created_at', { ascending: false });

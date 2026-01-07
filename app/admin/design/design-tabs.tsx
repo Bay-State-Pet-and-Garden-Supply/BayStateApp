@@ -4,10 +4,11 @@ import { useState } from 'react';
 import { Megaphone, Home, Navigation, Paintbrush } from 'lucide-react';
 import { BannersTab } from './banners-tab';
 import { HomepageTab } from './homepage-tab';
-import type { CampaignBannerSettings } from '@/lib/settings';
+import type { CampaignBannerSettings, HomepageSettings } from '@/lib/settings';
 
 interface DesignTabsProps {
     initialBannerSettings: CampaignBannerSettings;
+    initialHomepageSettings: HomepageSettings;
 }
 
 type TabId = 'banners' | 'homepage' | 'navigation' | 'branding';
@@ -26,7 +27,7 @@ const tabs: Tab[] = [
     { id: 'branding', label: 'Branding', icon: <Paintbrush className="h-4 w-4" />, available: false },
 ];
 
-export function DesignTabs({ initialBannerSettings }: DesignTabsProps) {
+export function DesignTabs({ initialBannerSettings, initialHomepageSettings }: DesignTabsProps) {
     const [activeTab, setActiveTab] = useState<TabId>('banners');
 
     return (
@@ -64,7 +65,7 @@ export function DesignTabs({ initialBannerSettings }: DesignTabsProps) {
                 {activeTab === 'banners' && (
                     <BannersTab initialSettings={initialBannerSettings} />
                 )}
-                {activeTab === 'homepage' && <HomepageTab />}
+                {activeTab === 'homepage' && <HomepageTab initialSettings={initialHomepageSettings} />}
                 {activeTab === 'navigation' && (
                     <div className="text-center py-12 text-muted-foreground">
                         Navigation customization coming soon

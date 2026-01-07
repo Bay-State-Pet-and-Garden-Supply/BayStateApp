@@ -1,7 +1,13 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { updateCampaignBanner, type CampaignBannerSettings, type BannerMessage } from '@/lib/settings';
+import { 
+    updateCampaignBanner, 
+    type CampaignBannerSettings, 
+    type BannerMessage,
+    updateHomepageSettings,
+    type HomepageSettings
+} from '@/lib/settings';
 
 export async function updateCampaignBannerAction(formData: FormData) {
     // Parse messages from JSON string
@@ -30,6 +36,44 @@ export async function updateCampaignBannerAction(formData: FormData) {
 
         revalidatePath('/admin/design');
         revalidatePath('/'); // Revalidate storefront to show updated banner
+        return { success: true };
+    } catch (error: unknown) {
+        console.error('Action error:', error);
+        const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+        return { success: false, error: errorMessage };
+    }
+}
+
+export async function updateHomepageSettingsAction(formData: FormData) {
+    const featuredProductIdsJson = formData.get('featuredProductIds') as string;
+    let featuredProductIds: string[] = [];
+    try {
+        featuredProductIds = featuredProductIdsJson ? JSON.parse(featuredProductIdsJson) : [];
+    } catch {
+        featuredProductIds = [];
+    }
+
+    const settings: HomepageSettings = {
+        hero: {
+            title: formData.get('hero.title') as string,
+            subtitle: formData.get('hero.subtitle') as string,
+            imageUrl: formData.get('hero.imageUrl') as string,
+            ctaText: formData.get('hero.ctaText') as string,
+            ctaLink: formData.get('hero.ctaLink') as string,
+        },
+        featuredProductIds,
+        storeHours: formData.get('storeHours') as string,
+    };
+
+    try {
+        const success = await updateHomepageSettings(settings);
+
+        if (!success) {
+            return { success: false, error: 'Failed to update homepage settings' };
+        }
+
+        revalidatePath('/admin/design');
+        revalidatePath('/'); // Revalidate homepage
         return { success: true };
     } catch (error: unknown) {
         console.error('Action error:', error);

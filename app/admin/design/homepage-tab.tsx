@@ -1,11 +1,44 @@
 'use client';
 
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Home, Image, Star, Clock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Home, Image, Star, Clock, Save } from 'lucide-react';
+import { updateHomepageSettingsAction } from './actions';
+import type { HomepageSettings } from '@/lib/settings';
+import { toast } from 'sonner';
 
-export function HomepageTab() {
+interface HomepageTabProps {
+    initialSettings: HomepageSettings;
+}
+
+export function HomepageTab({ initialSettings }: HomepageTabProps) {
+    const [hero, setHero] = useState(initialSettings.hero);
+    const [featuredIds, setFeaturedIds] = useState(initialSettings.featuredProductIds.join(', '));
+    const [storeHours, setStoreHours] = useState(initialSettings.storeHours);
+    const [isSaving, setIsSaving] = useState(false);
+
+    const handleSubmit = async (formData: FormData) => {
+        setIsSaving(true);
+        // Clean up featured IDs
+        const ids = featuredIds.split(',').map(s => s.trim()).filter(Boolean);
+        formData.set('featuredProductIds', JSON.stringify(ids));
+
+        const result = await updateHomepageSettingsAction(formData);
+        setIsSaving(false);
+
+        if (result.success) {
+            toast.success('Homepage settings updated');
+        } else {
+            toast.error(result.error || 'Failed to update settings');
+        }
+    };
+
     return (
-        <div className="space-y-6">
+        <form action={handleSubmit} className="space-y-6">
             {/* Hero Section */}
             <Card>
                 <CardHeader>
@@ -21,11 +54,58 @@ export function HomepageTab() {
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent>
-                    <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
-                        <Home className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        <p className="font-medium">Hero Customization Coming Soon</p>
-                        <p className="text-sm">Upload hero images, set headlines, and customize CTAs</p>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="hero.title">Headline</Label>
+                        <Input
+                            id="hero.title"
+                            name="hero.title"
+                            value={hero.title}
+                            onChange={(e) => setHero({ ...hero, title: e.target.value })}
+                            placeholder="Welcome to Bay State Pet & Garden"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="hero.subtitle">Subtitle</Label>
+                        <Input
+                            id="hero.subtitle"
+                            name="hero.subtitle"
+                            value={hero.subtitle || ''}
+                            onChange={(e) => setHero({ ...hero, subtitle: e.target.value })}
+                            placeholder="Your local source for pet supplies..."
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="hero.imageUrl">Background Image URL</Label>
+                        <Input
+                            id="hero.imageUrl"
+                            name="hero.imageUrl"
+                            value={hero.imageUrl || ''}
+                            onChange={(e) => setHero({ ...hero, imageUrl: e.target.value })}
+                            placeholder="/images/hero-bg.jpg"
+                        />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="hero.ctaText">CTA Button Text</Label>
+                            <Input
+                                id="hero.ctaText"
+                                name="hero.ctaText"
+                                value={hero.ctaText || ''}
+                                onChange={(e) => setHero({ ...hero, ctaText: e.target.value })}
+                                placeholder="Shop Now"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="hero.ctaLink">CTA Button Link</Label>
+                            <Input
+                                id="hero.ctaLink"
+                                name="hero.ctaLink"
+                                value={hero.ctaLink || ''}
+                                onChange={(e) => setHero({ ...hero, ctaLink: e.target.value })}
+                                placeholder="/products"
+                            />
+                        </div>
                     </div>
                 </CardContent>
             </Card>
@@ -45,11 +125,19 @@ export function HomepageTab() {
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent>
-                    <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
-                        <Star className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        <p className="font-medium">Featured Products Coming Soon</p>
-                        <p className="text-sm">Select and order featured products for the homepage</p>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="featuredProductIds">Product IDs (comma separated)</Label>
+                        <Textarea
+                            id="featuredProductIds"
+                            value={featuredIds}
+                            onChange={(e) => setFeaturedIds(e.target.value)}
+                            placeholder="e.g. 123-abc, 456-def"
+                            className="font-mono text-sm"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            Copy Product IDs from the Products page URL.
+                        </p>
                     </div>
                 </CardContent>
             </Card>
@@ -62,21 +150,34 @@ export function HomepageTab() {
                             <Clock className="h-5 w-5 text-purple-600" />
                         </div>
                         <div>
-                            <CardTitle>Store Hours & Info</CardTitle>
+                            <CardTitle>Store Hours</CardTitle>
                             <CardDescription>
-                                Update store hours displayed on the homepage
+                                Update store hours displayed on the homepage footer
                             </CardDescription>
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent>
-                    <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
-                        <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        <p className="font-medium">Store Hours Coming Soon</p>
-                        <p className="text-sm">Set business hours, holiday schedules, and store announcements</p>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="storeHours">Hours Text</Label>
+                        <Textarea
+                            id="storeHours"
+                            name="storeHours"
+                            value={storeHours}
+                            onChange={(e) => setStoreHours(e.target.value)}
+                            placeholder="Mon-Fri: 9am - 6pm..."
+                            rows={4}
+                        />
                     </div>
                 </CardContent>
             </Card>
-        </div>
+
+            <div className="sticky bottom-4 flex justify-end">
+                <Button type="submit" size="lg" disabled={isSaving} className="shadow-lg">
+                    <Save className="mr-2 h-4 w-4" />
+                    {isSaving ? 'Saving...' : 'Save Homepage Settings'}
+                </Button>
+            </div>
+        </form>
     );
 }

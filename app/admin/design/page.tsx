@@ -1,4 +1,4 @@
-import { getCampaignBanner } from '@/lib/settings';
+import { getCampaignBanner, getHomepageSettings } from '@/lib/settings';
 import { DesignTabs } from './design-tabs';
 
 export const metadata = {
@@ -7,7 +7,10 @@ export const metadata = {
 };
 
 export default async function DesignPage() {
-    const campaignBanner = await getCampaignBanner();
+    const [campaignBanner, homepageSettings] = await Promise.all([
+        getCampaignBanner(),
+        getHomepageSettings(),
+    ]);
 
     return (
         <div className="space-y-6">
@@ -18,7 +21,10 @@ export default async function DesignPage() {
                 </p>
             </div>
 
-            <DesignTabs initialBannerSettings={campaignBanner} />
+            <DesignTabs 
+                initialBannerSettings={campaignBanner}
+                initialHomepageSettings={homepageSettings}
+            />
         </div>
     );
 }

@@ -17,8 +17,23 @@ export interface CampaignBannerSettings {
   link_href?: string;
 }
 
+export interface HeroSettings {
+  title: string;
+  subtitle?: string;
+  imageUrl?: string;
+  ctaText?: string;
+  ctaLink?: string;
+}
+
+export interface HomepageSettings {
+  hero: HeroSettings;
+  featuredProductIds: string[];
+  storeHours: string; // Markdown or simple text
+}
+
 export interface SiteSettings {
   campaign_banner: CampaignBannerSettings;
+  homepage: HomepageSettings;
 }
 
 const defaultSettings: SiteSettings = {
@@ -27,6 +42,17 @@ const defaultSettings: SiteSettings = {
     messages: [],
     variant: 'info',
     cycleInterval: 5000,
+  },
+  homepage: {
+    hero: {
+      title: 'Welcome to Bay State Pet & Garden',
+      subtitle: 'Your local source for pet supplies and garden needs.',
+      imageUrl: '/hero-placeholder.jpg',
+      ctaText: 'Shop Now',
+      ctaLink: '/products',
+    },
+    featuredProductIds: [],
+    storeHours: 'Mon-Fri: 9am - 6pm\nSat: 9am - 5pm\nSun: 10am - 4pm',
   },
 };
 
@@ -120,4 +146,26 @@ export async function updateCampaignBanner(
   settings: CampaignBannerSettings
 ): Promise<boolean> {
   return updateSetting('campaign_banner', settings);
+}
+
+/**
+ * Fetches the homepage settings.
+ */
+export async function getHomepageSettings(): Promise<HomepageSettings> {
+  const settings = await getSetting('homepage');
+  // Merge with defaults to ensure all fields exist
+  return {
+    ...defaultSettings.homepage,
+    ...settings,
+    hero: { ...defaultSettings.homepage.hero, ...settings?.hero },
+  };
+}
+
+/**
+ * Updates the homepage settings.
+ */
+export async function updateHomepageSettings(
+  settings: HomepageSettings
+): Promise<boolean> {
+  return updateSetting('homepage', settings);
 }
