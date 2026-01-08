@@ -7,9 +7,11 @@ import { PipelineStatusTabs } from './PipelineStatusTabs';
 import { PipelineProductCard } from './PipelineProductCard';
 import { PipelineProductDetail } from './PipelineProductDetail';
 import { BulkActionsToolbar } from './BulkActionsToolbar';
+import { BatchEnhanceToolbar } from './BatchEnhanceToolbar';
 import { BatchJobsPanel } from './BatchJobsPanel';
 import { ConsolidationProgressBanner } from './ConsolidationProgressBanner';
-import { Search, RefreshCw, Bot } from 'lucide-react';
+import { EnrichmentWorkspace } from './enrichment/EnrichmentWorkspace';
+import { Search, RefreshCw, Bot, Settings2 } from 'lucide-react';
 
 const statusLabels: Record<PipelineStatus, string> = {
     staging: 'Imported',
@@ -43,6 +45,11 @@ export function PipelineClient({ initialProducts, initialCounts, initialStatus }
     const [consolidationBatchId, setConsolidationBatchId] = useState<string | null>(null);
     const [consolidationProgress, setConsolidationProgress] = useState(0);
     const [isBannerDismissed, setIsBannerDismissed] = useState(false);
+
+    const [enrichingSku, setEnrichingSku] = useState<string | null>(null);
+
+    // Batch enhance workspace state
+    const [showBatchEnhanceWorkspace, setShowBatchEnhanceWorkspace] = useState(false);
 
     const handleRefresh = () => {
         startTransition(async () => {
@@ -175,12 +182,15 @@ export function PipelineClient({ initialProducts, initialCounts, initialStatus }
         });
     };
 
-    const handleScrape = async () => {
+    const handleScrape = async (scrapers?: string[]) => {
         if (selectedSkus.size === 0) return;
 
         setIsScraping(true);
+        setShowBatchEnhanceWorkspace(false);
 
-        const result = await scrapeProducts(Array.from(selectedSkus));
+        const result = await scrapeProducts(Array.from(selectedSkus), {
+            scrapers: scrapers,
+        });
 
         if (result.success && result.jobId) {
             setScrapeJobId(result.jobId);
@@ -323,18 +333,31 @@ export function PipelineClient({ initialProducts, initialCounts, initialStatus }
                 )}
             </div>
 
-            {/* Bulk Actions */}
-            <BulkActionsToolbar
-                selectedCount={selectedSkus.size}
-                currentStatus={activeStatus}
-                onAction={handleBulkAction}
-                onScrape={handleScrape}
-                isScraping={isScraping}
-                runnersAvailable={runnersAvailable}
-                onConsolidate={handleConsolidate}
-                isConsolidating={isConsolidating}
-                onClearSelection={() => setSelectedSkus(new Set())}
-            />
+            {/* Batch Enhance Toolbar for Imported (staging) tab */}
+            {activeStatus === 'staging' && (
+                <BatchEnhanceToolbar
+                    selectedCount={selectedSkus.size}
+                    onBatchEnhance={() => setShowBatchEnhanceWorkspace(true)}
+                    isEnhancing={isScraping}
+                    runnersAvailable={runnersAvailable}
+                    onClearSelection={() => setSelectedSkus(new Set())}
+                />
+            )}
+
+            {/* Bulk Actions - hidden on Imported (staging) tab */}
+            {activeStatus !== 'staging' && (
+                <BulkActionsToolbar
+                    selectedCount={selectedSkus.size}
+                    currentStatus={activeStatus}
+                    onAction={handleBulkAction}
+                    onScrape={handleScrape}
+                    isScraping={isScraping}
+                    runnersAvailable={runnersAvailable}
+                    onConsolidate={handleConsolidate}
+                    isConsolidating={isConsolidating}
+                    onClearSelection={() => setSelectedSkus(new Set())}
+                />
+            )}
 
             {/* Product Grid */}
             {isPending ? (
@@ -354,6 +377,10 @@ export function PipelineClient({ initialProducts, initialCounts, initialStatus }
                             isSelected={selectedSkus.has(product.sku)}
                             onSelect={handleSelect}
                             onView={handleView}
+                            onEnrich={setEnrichingSku}
+                            showEnrichButton={activeStatus === 'scraped'}
+                            readOnly={activeStatus === 'staging'}
+                            showBatchSelect={activeStatus === 'staging'}
                         />
                     ))}
                 </div>
@@ -391,6 +418,27 @@ export function PipelineClient({ initialProducts, initialCounts, initialStatus }
                     sku={viewingSku}
                     onClose={handleCloseModal}
                     onSave={handleSaveModal}
+                />
+            )}
+
+            {/* Enrichment Workspace Modal */}
+            {enrichingSku && (
+                <EnrichmentWorkspace
+                    sku={enrichingSku}
+                    onClose={() => setEnrichingSku(null)}
+                    onSave={handleRefresh}
+                />
+            )}
+
+            {/* Batch Enhance Workspace - uses same UI as single enhancement */}
+            {showBatchEnhanceWorkspace && (
+                <EnrichmentWorkspace
+                    skus={Array.from(selectedSkus)}
+                    onClose={() => setShowBatchEnhanceWorkspace(false)}
+                    onSave={() => {
+                        setSelectedSkus(new Set());
+                        handleRefresh();
+                    }}
                 />
             )}
         </div>

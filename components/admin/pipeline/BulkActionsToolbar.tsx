@@ -16,7 +16,7 @@ interface BulkActionsToolbarProps {
 }
 
 const nextStatusMap: Record<PipelineStatus, { action: string; nextStatus: PipelineStatus }[]> = {
-    staging: [],
+    staging: [], // Staging (Imported) tab is now read-only, no bulk actions
     scraped: [
         { action: 'consolidate', nextStatus: 'consolidated' },
     ],
@@ -54,7 +54,7 @@ export function BulkActionsToolbar({
     const actions = nextStatusMap[currentStatus];
     const showScrapeButton = currentStatus === 'staging' && onScrape;
 
-    const visibleActions = onConsolidate 
+    const visibleActions = onConsolidate
         ? actions.filter(a => a.action !== 'consolidate')
         : actions;
 
@@ -74,8 +74,8 @@ export function BulkActionsToolbar({
                         onClick={onScrape}
                         disabled={isScraping || !runnersAvailable || isConsolidating}
                         className={`flex items-center gap-2 rounded px-3 py-1.5 text-sm font-medium transition-colors ${runnersAvailable
-                                ? 'bg-purple-600 hover:bg-purple-700'
-                                : 'bg-gray-600 cursor-not-allowed'
+                            ? 'bg-purple-600 hover:bg-purple-700'
+                            : 'bg-gray-600 cursor-not-allowed'
                             } disabled:opacity-50`}
                         title={!runnersAvailable ? 'No scraping runners available' : undefined}
                     >

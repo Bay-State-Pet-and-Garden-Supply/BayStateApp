@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 interface RunnerAccountModalProps {
     onClose: () => void;
     onSave: () => void;
+    initialRunnerName?: string;
 }
 
 interface CreatedCredentials {
@@ -17,8 +18,8 @@ interface CreatedCredentials {
     api_key: string;
 }
 
-export function RunnerAccountModal({ onClose, onSave }: RunnerAccountModalProps) {
-    const [runnerName, setRunnerName] = useState('');
+export function RunnerAccountModal({ onClose, onSave, initialRunnerName }: RunnerAccountModalProps) {
+    const [runnerName, setRunnerName] = useState(initialRunnerName || '');
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [credentials, setCredentials] = useState<CreatedCredentials | null>(null);
@@ -160,7 +161,9 @@ export function RunnerAccountModal({ onClose, onSave }: RunnerAccountModalProps)
                 <div className="flex items-center justify-between border-b px-6 py-4">
                     <div className="flex items-center gap-3">
                         <Key className="h-6 w-6 text-purple-600" />
-                        <h2 className="text-lg font-semibold">Create Runner API Key</h2>
+                        <h2 className="text-lg font-semibold">
+                            {initialRunnerName ? 'Generate New API Key' : 'Create Runner Account'}
+                        </h2>
                     </div>
                     <button onClick={onClose} className="rounded-full p-2 hover:bg-gray-100">
                         <X className="h-5 w-5" />
@@ -181,18 +184,23 @@ export function RunnerAccountModal({ onClose, onSave }: RunnerAccountModalProps)
                             value={runnerName}
                             onChange={(e) => setRunnerName(e.target.value)}
                             placeholder="e.g. home-server-1"
-                            autoFocus
+                            autoFocus={!initialRunnerName}
+                            readOnly={!!initialRunnerName}
+                            className={initialRunnerName ? 'bg-gray-100 text-gray-500' : ''}
                         />
                         <p className="text-xs text-gray-500">
-                            Lowercase letters, numbers, and hyphens only. 3-50 characters.
+                            {initialRunnerName 
+                                ? 'Runner name cannot be changed. Create a new runner for a different name.'
+                                : 'Lowercase letters, numbers, and hyphens only. 3-50 characters.'}
                         </p>
                     </div>
 
                     <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-sm text-blue-800">
                         <strong>API Key Authentication</strong>
                         <p className="mt-1">
-                            Each runner gets a unique API key. Keys are hashed before storage - 
-                            we never store the raw key, so save it immediately after creation.
+                            {initialRunnerName 
+                                ? 'This will generate a NEW key. Old keys will remain valid until revoked.'
+                                : 'Each runner gets a unique API key. Keys are hashed before storage - we never store the raw key, so save it immediately after creation.'}
                         </p>
                     </div>
                 </div>
@@ -203,7 +211,7 @@ export function RunnerAccountModal({ onClose, onSave }: RunnerAccountModalProps)
                     </Button>
                     <Button onClick={handleCreate} disabled={saving || !runnerName.trim()}>
                         <Key className="mr-2 h-4 w-4" />
-                        {saving ? 'Creating...' : 'Generate API Key'}
+                        {saving ? (initialRunnerName ? 'Generating...' : 'Creating...') : (initialRunnerName ? 'Generate Key' : 'Create Account')}
                     </Button>
                 </div>
             </div>

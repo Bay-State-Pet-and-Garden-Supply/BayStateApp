@@ -8,8 +8,8 @@ interface PipelineStatusTabsProps {
     onStatusChange: (status: PipelineStatus) => void;
 }
 
-const statusConfig: Record<PipelineStatus, { label: string; color: string }> = {
-    staging: { label: 'Imported', color: 'bg-gray-500' },
+const statusConfig: Record<PipelineStatus, { label: string; color: string; readOnly?: boolean }> = {
+    staging: { label: 'Imported', color: 'bg-gray-500', readOnly: true },
     scraped: { label: 'Enhanced', color: 'bg-blue-500' },
     consolidated: { label: 'Ready for Review', color: 'bg-yellow-500' },
     approved: { label: 'Verified', color: 'bg-green-500' },

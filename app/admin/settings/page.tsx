@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Palette, Database } from 'lucide-react';
+import { EnrichmentDefaultsCard } from '@/components/admin/settings/EnrichmentDefaultsCard';
 
 export default function AdminSettingsPage() {
   return (
@@ -64,6 +65,9 @@ export default function AdminSettingsPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Enrichment Defaults - Full Width */}
+      <EnrichmentDefaultsCard />
     </div>
   );
 }

@@ -21,6 +21,7 @@ export function RunnerAccounts() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showModal, setShowModal] = useState(false);
+    const [keyModalRunner, setKeyModalRunner] = useState<string | null>(null);
     const [deleting, setDeleting] = useState<string | null>(null);
 
     const fetchRunners = useCallback(async (silent = false) => {
@@ -185,20 +186,31 @@ export function RunnerAccounts() {
                                         {formatDate(runner.last_seen_at)}
                                     </td>
                                     <td className="whitespace-nowrap px-4 py-3 text-right">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => handleDelete(runner.name)}
-                                            disabled={deleting === runner.name}
-                                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                            title="Delete Runner"
-                                        >
-                                            {deleting === runner.name ? (
-                                                <Loader2 className="h-4 w-4 animate-spin" />
-                                            ) : (
-                                                <Trash2 className="h-4 w-4" />
-                                            )}
-                                        </Button>
+                                        <div className="flex justify-end gap-2">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => setKeyModalRunner(runner.name)}
+                                                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                                title="Generate New API Key"
+                                            >
+                                                <Key className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => handleDelete(runner.name)}
+                                                disabled={deleting === runner.name}
+                                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                title="Delete Runner"
+                                            >
+                                                {deleting === runner.name ? (
+                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                ) : (
+                                                    <Trash2 className="h-4 w-4" />
+                                                )}
+                                            </Button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -207,10 +219,14 @@ export function RunnerAccounts() {
                 </div>
             )}
 
-            {showModal && (
+            {(showModal || keyModalRunner) && (
                 <RunnerAccountModal
-                    onClose={() => setShowModal(false)}
+                    onClose={() => {
+                        setShowModal(false);
+                        setKeyModalRunner(null);
+                    }}
                     onSave={() => fetchRunners(true)}
+                    initialRunnerName={keyModalRunner || undefined}
                 />
             )}
         </div>
