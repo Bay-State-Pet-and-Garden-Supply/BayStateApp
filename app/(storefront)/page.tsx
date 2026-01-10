@@ -4,40 +4,54 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { FeaturedProducts } from '@/components/storefront/featured-products';
 import { PetRecommendations } from '@/components/storefront/pet-recommendations';
+import { HeroCarousel } from '@/components/storefront/hero-carousel';
 import { getFeaturedProducts } from '@/lib/data';
+import { getHomepageSettings } from '@/lib/settings';
 
 /**
  * Homepage - Main landing page for Bay State Pet & Garden Supply.
  * Features a bento-grid layout with category highlights and value proposition.
  */
 export default async function HomePage() {
-  const featuredProducts = await getFeaturedProducts(6);
+  const [featuredProducts, homepageSettings] = await Promise.all([
+    getFeaturedProducts(6),
+    getHomepageSettings(),
+  ]);
+
+  const { heroSlides, heroSlideInterval } = homepageSettings;
 
   return (
     <div className="w-full max-w-none px-4 py-8">
-      {/* Hero Section */}
-      <section className="mb-12 text-center">
-        <h1 className="mb-4 text-4xl font-bold tracking-tight text-zinc-900 sm:text-5xl">
-          Bay State Pet & Garden
-        </h1>
-        <p className="mx-auto mb-8 max-w-2xl text-lg text-zinc-600">
-          Your local source for pet supplies, garden tools, and farm products.
-          Quality brands, expert advice, and neighborly service since 1985.
-        </p>
-        <div className="flex flex-col justify-center gap-4 sm:flex-row">
-          <Button size="lg" className="h-12 px-8" asChild>
-            <Link href="/products">
-              Shop Now
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-          <Button size="lg" variant="outline" className="h-12 px-8" asChild>
-            <Link href="/services">Our Services</Link>
-          </Button>
-        </div>
-      </section>
+      {/* Promotional Hero Carousel */}
+      {heroSlides && heroSlides.length > 0 && (
+        <HeroCarousel slides={heroSlides} interval={heroSlideInterval} />
+      )}
 
-          {/* Bento Grid Categories */}
+      {/* Hero Section (fallback when no carousel) */}
+      {(!heroSlides || heroSlides.length === 0) && (
+        <section className="mb-12 text-center">
+          <h1 className="mb-4 text-4xl font-bold tracking-tight text-zinc-900 sm:text-5xl">
+            Bay State Pet & Garden
+          </h1>
+          <p className="mx-auto mb-8 max-w-2xl text-lg text-zinc-600">
+            Your local source for pet supplies, garden tools, and farm products.
+            Quality brands, expert advice, and neighborly service since 1985.
+          </p>
+          <div className="flex flex-col justify-center gap-4 sm:flex-row">
+            <Button size="lg" className="h-12 px-8" asChild>
+              <Link href="/products">
+                Shop Now
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+            <Button size="lg" variant="outline" className="h-12 px-8" asChild>
+              <Link href="/services">Our Services</Link>
+            </Button>
+          </div>
+        </section>
+      )}
+
+      {/* Bento Grid Categories */}
       <section className="mb-12">
         <h2 className="mb-6 text-2xl font-semibold text-zinc-900">
           Shop by Category

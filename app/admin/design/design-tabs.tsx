@@ -4,11 +4,20 @@ import { useState } from 'react';
 import { Megaphone, Home, Navigation, Paintbrush } from 'lucide-react';
 import { BannersTab } from './banners-tab';
 import { HomepageTab } from './homepage-tab';
-import type { CampaignBannerSettings, HomepageSettings } from '@/lib/settings';
+import { NavigationTab } from './navigation-tab';
+import { BrandingTab } from './branding-tab';
+import type {
+    CampaignBannerSettings,
+    HomepageSettings,
+    NavigationSettings,
+    BrandingSettings
+} from '@/lib/settings';
 
 interface DesignTabsProps {
     initialBannerSettings: CampaignBannerSettings;
     initialHomepageSettings: HomepageSettings;
+    initialNavigationSettings: NavigationSettings;
+    initialBrandingSettings: BrandingSettings;
 }
 
 type TabId = 'banners' | 'homepage' | 'navigation' | 'branding';
@@ -23,11 +32,16 @@ interface Tab {
 const tabs: Tab[] = [
     { id: 'banners', label: 'Banners', icon: <Megaphone className="h-4 w-4" />, available: true },
     { id: 'homepage', label: 'Homepage', icon: <Home className="h-4 w-4" />, available: true },
-    { id: 'navigation', label: 'Navigation', icon: <Navigation className="h-4 w-4" />, available: false },
-    { id: 'branding', label: 'Branding', icon: <Paintbrush className="h-4 w-4" />, available: false },
+    { id: 'navigation', label: 'Navigation', icon: <Navigation className="h-4 w-4" />, available: true },
+    { id: 'branding', label: 'Branding', icon: <Paintbrush className="h-4 w-4" />, available: true },
 ];
 
-export function DesignTabs({ initialBannerSettings, initialHomepageSettings }: DesignTabsProps) {
+export function DesignTabs({
+    initialBannerSettings,
+    initialHomepageSettings,
+    initialNavigationSettings,
+    initialBrandingSettings,
+}: DesignTabsProps) {
     const [activeTab, setActiveTab] = useState<TabId>('banners');
 
     return (
@@ -67,14 +81,10 @@ export function DesignTabs({ initialBannerSettings, initialHomepageSettings }: D
                 )}
                 {activeTab === 'homepage' && <HomepageTab initialSettings={initialHomepageSettings} />}
                 {activeTab === 'navigation' && (
-                    <div className="text-center py-12 text-muted-foreground">
-                        Navigation customization coming soon
-                    </div>
+                    <NavigationTab initialSettings={initialNavigationSettings} />
                 )}
                 {activeTab === 'branding' && (
-                    <div className="text-center py-12 text-muted-foreground">
-                        Branding customization coming soon
-                    </div>
+                    <BrandingTab initialSettings={initialBrandingSettings} />
                 )}
             </div>
         </div>

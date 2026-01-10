@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Home, Image, Star, Clock, Save } from 'lucide-react';
+import { Home, Image, Star, Clock, Save, Plus, Trash2, GripVertical, Megaphone } from 'lucide-react';
 import { updateHomepageSettingsAction } from './actions';
-import type { HomepageSettings } from '@/lib/settings';
+import type { HomepageSettings, HeroSlide } from '@/lib/settings';
 import { toast } from 'sonner';
 
 interface HomepageTabProps {
@@ -17,15 +17,39 @@ interface HomepageTabProps {
 
 export function HomepageTab({ initialSettings }: HomepageTabProps) {
     const [hero, setHero] = useState(initialSettings.hero);
+    const [heroSlides, setHeroSlides] = useState<HeroSlide[]>(initialSettings.heroSlides || []);
+    const [heroSlideInterval, setHeroSlideInterval] = useState((initialSettings.heroSlideInterval || 5000) / 1000);
     const [featuredIds, setFeaturedIds] = useState(initialSettings.featuredProductIds.join(', '));
     const [storeHours, setStoreHours] = useState(initialSettings.storeHours);
     const [isSaving, setIsSaving] = useState(false);
+
+    const addSlide = () => {
+        const newSlide: HeroSlide = {
+            id: crypto.randomUUID(),
+            title: '',
+            subtitle: '',
+            imageUrl: '',
+            linkUrl: '',
+            linkText: 'Shop Now',
+        };
+        setHeroSlides([...heroSlides, newSlide]);
+    };
+
+    const removeSlide = (id: string) => {
+        setHeroSlides(heroSlides.filter(s => s.id !== id));
+    };
+
+    const updateSlide = (id: string, field: keyof HeroSlide, value: string) => {
+        setHeroSlides(heroSlides.map(s => s.id === id ? { ...s, [field]: value } : s));
+    };
 
     const handleSubmit = async (formData: FormData) => {
         setIsSaving(true);
         // Clean up featured IDs
         const ids = featuredIds.split(',').map(s => s.trim()).filter(Boolean);
         formData.set('featuredProductIds', JSON.stringify(ids));
+        formData.set('heroSlides', JSON.stringify(heroSlides));
+        formData.set('heroSlideInterval', String(heroSlideInterval * 1000));
 
         const result = await updateHomepageSettingsAction(formData);
         setIsSaving(false);
@@ -106,6 +130,116 @@ export function HomepageTab({ initialSettings }: HomepageTabProps) {
                                 placeholder="/products"
                             />
                         </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Hero Carousel Slides */}
+            <Card>
+                <CardHeader>
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-100">
+                            <Megaphone className="h-5 w-5 text-rose-600" />
+                        </div>
+                        <div>
+                            <CardTitle>Promotional Carousel</CardTitle>
+                            <CardDescription>
+                                Cycling hero slides for promotions and advertisements
+                            </CardDescription>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                            <Label>Slide Interval (seconds)</Label>
+                            <Input
+                                type="number"
+                                min="2"
+                                max="30"
+                                value={heroSlideInterval}
+                                onChange={(e) => setHeroSlideInterval(parseInt(e.target.value, 10) || 5)}
+                                className="w-24"
+                            />
+                        </div>
+                        <Button type="button" variant="outline" onClick={addSlide}>
+                            <Plus className="h-4 w-4 mr-1" />
+                            Add Slide
+                        </Button>
+                    </div>
+
+                    {heroSlides.length === 0 && (
+                        <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
+                            No promotional slides configured. Add your first slide to create a hero carousel!
+                        </div>
+                    )}
+
+                    <div className="space-y-4">
+                        {heroSlides.map((slide, index) => (
+                            <div key={slide.id} className="rounded-lg border p-4 space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
+                                        <span className="text-sm font-medium">Slide {index + 1}</span>
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => removeSlide(slide.id)}
+                                    >
+                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                    </Button>
+                                </div>
+
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    <div className="space-y-2">
+                                        <Label>Title</Label>
+                                        <Input
+                                            value={slide.title}
+                                            onChange={(e) => updateSlide(slide.id, 'title', e.target.value)}
+                                            placeholder="Spring Sale - 20% Off!"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Subtitle</Label>
+                                        <Input
+                                            value={slide.subtitle || ''}
+                                            onChange={(e) => updateSlide(slide.id, 'subtitle', e.target.value)}
+                                            placeholder="Save on all garden supplies"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label>Image URL</Label>
+                                    <Input
+                                        value={slide.imageUrl}
+                                        onChange={(e) => updateSlide(slide.id, 'imageUrl', e.target.value)}
+                                        placeholder="/images/promo-spring.jpg"
+                                    />
+                                </div>
+
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    <div className="space-y-2">
+                                        <Label>Link URL</Label>
+                                        <Input
+                                            value={slide.linkUrl}
+                                            onChange={(e) => updateSlide(slide.id, 'linkUrl', e.target.value)}
+                                            placeholder="/products?sale=spring"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Button Text</Label>
+                                        <Input
+                                            value={slide.linkText || ''}
+                                            onChange={(e) => updateSlide(slide.id, 'linkText', e.target.value)}
+                                            placeholder="Shop Now"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </CardContent>
             </Card>

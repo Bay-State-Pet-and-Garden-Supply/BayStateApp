@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import type { PostgrestError } from '@supabase/supabase-js';
 
 export interface BannerMessage {
   text: string;
@@ -25,15 +26,58 @@ export interface HeroSettings {
   ctaLink?: string;
 }
 
+export interface HeroSlide {
+  id: string;
+  title: string;
+  subtitle?: string;
+  imageUrl: string;
+  linkUrl: string;
+  linkText?: string;
+}
+
 export interface HomepageSettings {
   hero: HeroSettings;
+  heroSlides: HeroSlide[];
+  heroSlideInterval: number; // ms between slides
   featuredProductIds: string[];
   storeHours: string; // Markdown or simple text
+}
+
+export interface NavLink {
+  label: string;
+  href: string;
+  openInNewTab?: boolean;
+}
+
+export interface NavigationSettings {
+  headerLinks: NavLink[];
+  footerShopLinks: NavLink[];
+  footerServiceLinks: NavLink[];
+  footerLegalLinks: NavLink[];
+}
+
+export interface SocialLink {
+  platform: 'facebook' | 'twitter' | 'instagram' | 'youtube' | 'tiktok';
+  url: string;
+}
+
+export interface BrandingSettings {
+  siteName: string;
+  tagline: string;
+  logoUrl: string;
+  primaryColor: string;
+  accentColor: string;
+  contactAddress: string;
+  contactEmail: string;
+  contactPhones: string[];
+  socialLinks: SocialLink[];
 }
 
 export interface SiteSettings {
   campaign_banner: CampaignBannerSettings;
   homepage: HomepageSettings;
+  navigation: NavigationSettings;
+  branding: BrandingSettings;
 }
 
 const defaultSettings: SiteSettings = {
@@ -52,7 +96,47 @@ const defaultSettings: SiteSettings = {
       ctaLink: '/products',
     },
     featuredProductIds: [],
+    heroSlides: [],
+    heroSlideInterval: 5000,
     storeHours: 'Mon-Fri: 9am - 6pm\nSat: 9am - 5pm\nSun: 10am - 4pm',
+  },
+  navigation: {
+    headerLinks: [
+      { label: 'Products', href: '/products' },
+      { label: 'Brands', href: '/brands' },
+      { label: 'Services', href: '/services' },
+      { label: 'About', href: '/about' },
+    ],
+    footerShopLinks: [
+      { label: 'All Products', href: '/products' },
+      { label: 'Services', href: '/services' },
+      { label: 'Brands', href: '/brands' },
+    ],
+    footerServiceLinks: [
+      { label: 'Propane Refill', href: '/services/propane' },
+      { label: 'Equipment Rentals', href: '/services/rentals' },
+    ],
+    footerLegalLinks: [
+      { label: 'Shipping', href: '/shipping' },
+      { label: 'Returns', href: '/returns' },
+      { label: 'Privacy / Security', href: '/privacy' },
+      { label: 'Career Opportunities', href: '/careers' },
+    ],
+  },
+  branding: {
+    siteName: 'Bay State Pet & Garden',
+    tagline: 'From big to small, we feed them all!',
+    logoUrl: '/logo.png',
+    primaryColor: '#1e3a5f',
+    accentColor: '#22c55e',
+    contactAddress: '429 Winthrop Street\nTaunton, MA 02780',
+    contactEmail: 'sales@baystatepet.com',
+    contactPhones: ['(508) 821-3704', '(774) 226-9845'],
+    socialLinks: [
+      { platform: 'facebook', url: 'https://www.facebook.com/baystatepet' },
+      { platform: 'twitter', url: 'https://twitter.com/BayStatePet' },
+      { platform: 'instagram', url: 'https://www.instagram.com/baystatepet/' },
+    ],
   },
 };
 
@@ -100,8 +184,18 @@ export async function getSetting<K extends keyof SiteSettings>(
     .eq('key', key)
     .single();
 
-  if (error || !data) {
-    console.error(`Error fetching setting ${key}:`, error);
+  if (error) {
+    // PGRST116: JSON object requested, multiple (or no) rows returned
+    // This typically means the setting row doesn't exist yet
+    if (error.code === 'PGRST116') {
+      return defaultSettings[key];
+    }
+
+    console.error(`Error fetching setting ${key}:`, JSON.stringify(error, null, 2));
+    return defaultSettings[key];
+  }
+
+  if (!data) {
     return defaultSettings[key];
   }
 
@@ -168,4 +262,44 @@ export async function updateHomepageSettings(
   settings: HomepageSettings
 ): Promise<boolean> {
   return updateSetting('homepage', settings);
+}
+
+/**
+ * Fetches the navigation settings.
+ */
+export async function getNavigationSettings(): Promise<NavigationSettings> {
+  const settings = await getSetting('navigation');
+  return {
+    ...defaultSettings.navigation,
+    ...settings,
+  };
+}
+
+/**
+ * Updates the navigation settings.
+ */
+export async function updateNavigationSettings(
+  settings: NavigationSettings
+): Promise<boolean> {
+  return updateSetting('navigation', settings);
+}
+
+/**
+ * Fetches the branding settings.
+ */
+export async function getBrandingSettings(): Promise<BrandingSettings> {
+  const settings = await getSetting('branding');
+  return {
+    ...defaultSettings.branding,
+    ...settings,
+  };
+}
+
+/**
+ * Updates the branding settings.
+ */
+export async function updateBrandingSettings(
+  settings: BrandingSettings
+): Promise<boolean> {
+  return updateSetting('branding', settings);
 }
