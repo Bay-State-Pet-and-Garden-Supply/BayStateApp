@@ -7,13 +7,27 @@ export default async function AdminProductsPage() {
 
   const { data: products, count } = await supabase
     .from('products')
-    .select('*', { count: 'exact' })
+    .select('*, brand:brands!inner(id, name, slug)', { count: 'exact' })
     .order('created_at', { ascending: false })
     .limit(50);
 
-  // Cast to PublishedProduct because we know the shape matches but types might be loose 
-  // from the select('*')
-  const clientProducts = (products || []) as unknown as PublishedProduct[];
+  // Transform products to match PublishedProduct interface
+  // brand:brands!inner returns nested brand object, we flatten it to brand_name/brand_slug
+  const clientProducts: PublishedProduct[] = (products || []).map(product => ({
+    id: product.id,
+    sku: product.sku || '',
+    name: product.name,
+    slug: product.slug,
+    description: product.description,
+    price: product.price,
+    stock_status: product.stock_status,
+    is_featured: product.is_featured,
+    images: product.images,
+    brand_id: product.brand_id,
+    brand_name: product.brand?.name || null,
+    brand_slug: product.brand?.slug || null,
+    created_at: product.created_at,
+  }));
 
   return (
     <AdminProductsClient
