@@ -44,14 +44,9 @@ describe('Middleware Auth Logic', () => {
     });
 
     it('redirects customer role from /admin to login with error', async () => {
-        mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } }, error: null });
+        mockGetUser.mockResolvedValue({ data: { user: { id: 'u1', app_metadata: { role: 'customer' } } }, error: null });
 
-        // Mock profile lookup returning 'customer'
-        const mockSingle = jest.fn().mockResolvedValue({ data: { role: 'customer' }, error: null });
-        const mockEq = jest.fn().mockReturnValue({ single: mockSingle });
-        const mockSelect = jest.fn().mockReturnValue({ eq: mockEq });
-        mockFrom.mockReturnValue({ select: mockSelect });
-
+        // NO DB call needed - role comes from JWT app_metadata
         const req = createReq('/admin/dashboard');
         const res = await updateSession(req);
 
@@ -63,13 +58,8 @@ describe('Middleware Auth Logic', () => {
     });
 
     it('redirects staff role from /admin/users to /admin/orders (or dashboard?)', async () => {
-        // Staff attempting restricted route
-        mockGetUser.mockResolvedValue({ data: { user: { id: 'u2' } }, error: null });
-
-        const mockSingle = jest.fn().mockResolvedValue({ data: { role: 'staff' }, error: null });
-        const mockEq = jest.fn().mockReturnValue({ single: mockSingle });
-        const mockSelect = jest.fn().mockReturnValue({ eq: mockEq });
-        mockFrom.mockReturnValue({ select: mockSelect });
+        // Staff attempting restricted route - role comes from JWT
+        mockGetUser.mockResolvedValue({ data: { user: { id: 'u2', app_metadata: { role: 'staff' } } }, error: null });
 
         const req = createReq('/admin/users');
         const res = await updateSession(req);
@@ -82,13 +72,9 @@ describe('Middleware Auth Logic', () => {
     });
 
     it('allows admin access to /admin/users', async () => {
-        mockGetUser.mockResolvedValue({ data: { user: { id: 'u3' } }, error: null });
+        mockGetUser.mockResolvedValue({ data: { user: { id: 'u3', app_metadata: { role: 'admin' } } }, error: null });
 
-        const mockSingle = jest.fn().mockResolvedValue({ data: { role: 'admin' }, error: null });
-        const mockEq = jest.fn().mockReturnValue({ single: mockSingle });
-        const mockSelect = jest.fn().mockReturnValue({ eq: mockEq });
-        mockFrom.mockReturnValue({ select: mockSelect });
-
+        // NO DB call needed - role comes from JWT app_metadata
         const req = createReq('/admin/users');
         const res = await updateSession(req);
 
