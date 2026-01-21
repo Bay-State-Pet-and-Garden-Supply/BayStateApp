@@ -1,15 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, ShoppingBag, Loader2 } from 'lucide-react';
+import { ArrowLeft, ShoppingBag, Loader2, CreditCard } from 'lucide-react';
 import { useCartStore } from '@/lib/cart-store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PromoCodeInput } from '@/components/storefront/promo-code-input';
+import { PaymentForm, PaymentMethodSelector } from '@/components/storefront/payments/payment-form';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -23,6 +24,10 @@ export default function CheckoutPage() {
   const hasFreeShipping = useCartStore((state) => state.hasFreeShipping());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'pickup' | 'credit_card' | 'paypal'>('pickup');
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [orderId, setOrderId] = useState<string | null>(null);
+  const [step, setStep] = useState<'info' | 'payment' | 'complete'>('info');
 
   const discountedSubtotal = Math.max(0, subtotal - discount);
   const tax = discountedSubtotal * 0.0625;
@@ -55,6 +60,32 @@ export default function CheckoutPage() {
     }
   };
 
+  const createPaymentIntent = async (orderId: string) => {
+    const response = await fetch('/api/payments/intent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        amount: total,
+        customerEmail: (document.getElementById('email') as HTMLInputElement)?.value,
+        customerName: (document.getElementById('name') as HTMLInputElement)?.value,
+        orderId,
+        items: items.map((item) => ({
+          id: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          unitPrice: item.price,
+        })),
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to create payment intent');
+    }
+
+    const data = await response.json();
+    return data;
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -70,26 +101,80 @@ export default function CheckoutPage() {
       promoCode: promo.code,
       promoCodeId: promo.promoCodeId,
       discountAmount: discount,
+      paymentMethod: paymentMethod,
     };
 
     try {
-      const response = await fetch('/api/orders', {
+      if (paymentMethod === 'pickup') {
+        const response = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(customerData),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to create order');
+        }
+
+        const { order } = await response.json();
+        clearCart();
+        router.push(`/order-confirmation/${order.id}`);
+        return;
+      }
+
+      const orderResponse = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(customerData),
+        body: JSON.stringify({
+          ...customerData,
+          paymentStatus: 'processing',
+        }),
       });
 
-      if (!response.ok) {
+      if (!orderResponse.ok) {
         throw new Error('Failed to create order');
       }
 
-      const { order } = await response.json();
-      clearCart();
-      router.push(`/order-confirmation/${order.id}`);
+      const { order } = await orderResponse.json();
+      setOrderId(order.id);
+
+      const paymentData = await createPaymentIntent(order.id);
+      setClientSecret(paymentData.clientSecret);
+      setStep('payment');
     } catch {
       setError('There was a problem placing your order. Please try again.');
+    } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handlePaymentSuccess = async (paymentIntentId: string) => {
+    if (!orderId) return;
+
+    try {
+      const response = await fetch(`/api/orders/${orderId}/payment-complete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          paymentIntentId,
+          paymentMethod,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to complete payment');
+      }
+
+      clearCart();
+      setStep('complete');
+      router.push(`/order-confirmation/${orderId}`);
+    } catch {
+      setError('Payment succeeded but order update failed. Please contact support.');
+    }
+  };
+
+  const handlePaymentError = (errorMessage: string) => {
+    setError(errorMessage);
   };
 
   if (items.length === 0) {
@@ -101,6 +186,80 @@ export default function CheckoutPage() {
         <Button size="lg" asChild>
           <Link href="/products">Browse Products</Link>
         </Button>
+      </div>
+    );
+  }
+
+  if (step === 'payment' && clientSecret) {
+    return (
+      <div className="w-full px-4 py-8">
+        <button
+          onClick={() => setStep('info')}
+          className="mb-6 inline-flex items-center text-sm text-zinc-700 hover:text-zinc-900"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Checkout
+        </button>
+
+        <h1 className="mb-8 text-3xl font-bold text-zinc-900">Complete Payment</h1>
+
+        <div className="max-w-lg mx-auto">
+          <Card>
+            <CardHeader>
+              <CardTitle>Order Summary</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="divide-y">
+                {items.map((item) => (
+                  <li key={item.id} className="flex justify-between py-3">
+                    <div>
+                      <p className="font-medium text-zinc-900">{item.name}</p>
+                      <p className="text-sm text-zinc-700">Qty: {item.quantity}</p>
+                    </div>
+                    <p className="font-medium text-zinc-900">
+                      {formatCurrency(item.price * item.quantity)}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-4 space-y-2 border-t pt-4">
+                <div className="flex justify-between text-sm">
+                  <span className="text-zinc-700">Subtotal</span>
+                  <span className="font-medium">{formatCurrency(subtotal)}</span>
+                </div>
+                {discount > 0 && (
+                  <div className="flex justify-between text-sm text-green-600">
+                    <span>Discount ({promo.code})</span>
+                    <span className="font-medium">-{formatCurrency(discount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-sm">
+                  <span className="text-zinc-700">Tax (6.25%)</span>
+                  <span className="font-medium">{formatCurrency(tax)}</span>
+                </div>
+                <div className="flex justify-between border-t pt-2 text-lg font-semibold">
+                  <span>Total</span>
+                  <span>{formatCurrency(total)}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Payment</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PaymentForm
+                clientSecret={clientSecret}
+                amount={total}
+                onSuccess={handlePaymentSuccess}
+                onError={handlePaymentError}
+              />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -166,6 +325,14 @@ export default function CheckoutPage() {
                   />
                 </div>
 
+                <div className="mt-6">
+                  <PaymentMethodSelector
+                    selected={paymentMethod}
+                    onSelect={setPaymentMethod}
+                    disabled={isSubmitting}
+                  />
+                </div>
+
                 {error && (
                   <div className="rounded-md bg-red-50 p-4 text-sm text-red-600">
                     {error}
@@ -181,16 +348,22 @@ export default function CheckoutPage() {
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Placing Order...
+                      {step === 'payment' ? 'Processing Payment...' : 'Placing Order...'}
                     </>
-                  ) : (
+                  ) : paymentMethod === 'pickup' ? (
                     `Place Order • ${formatCurrency(total)}`
+                  ) : (
+                    <>
+                      <CreditCard className="mr-2 h-5 w-5" />
+                      Continue to Payment • {formatCurrency(total)}
+                    </>
                   )}
                 </Button>
 
                 <p className="text-center text-xs text-zinc-700">
-                  By placing this order, you agree to our terms of service.
-                  This is a reservation—payment will be collected at pickup.
+                  {paymentMethod === 'pickup'
+                    ? 'By placing this order, you agree to our terms of service. Payment will be collected at pickup.'
+                    : 'Your payment is secured by Stripe. You will be charged after reviewing your order.'}
                 </p>
               </form>
             </CardContent>
